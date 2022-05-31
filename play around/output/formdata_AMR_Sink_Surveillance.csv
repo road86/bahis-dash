@@ -1,0 +1,2 @@
+,live_bird_market_id,market_name,ward_number,city_north_or_south,date_sample_collected,remarks,sample_collected_by,sample_recieved_date_by_lab,sample_recieved_by,br_id,br_lab_identification,so_id,so_lab_identification,type,username
+0,CC-W31-011,Riazuddin Bazar,31,3,11-07-2019,sfaasfas,Dr. Japu Chakrabarty,15-07-2019,192,CC-W31-011-BR-11-07-2019,supertest01,CC-W31-011-SO-11-07-2019,supertest02,"['Broiler (BR) Cecal Sample', 'Sonali (SO) Cecal Sample']",192

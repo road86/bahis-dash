@@ -1,0 +1,4 @@
+,investigation_id,species_name_id,date_sample_collected,upazila,lab_id,date_lab_received,lab_result,result_date,username,id
+0,AI-30-93-28-09-0002,Deshi (Backyard) Chicken,2019/07/31,"Upazila Livestock Ofice, GHATAIL",510,31-07-2019,Postive,31-07-2019,192,8
+1,AI-30-93-28-09-0002,Deshi (Backyard) Chicken,2019/07/15,"Upazila Livestock Ofice, GHATAIL",23,30-06-2019,252,18-07-2019,192,7
+2,AI-30-33-36-02-0001,Deshi (Backyard) Chicken,2019/06/14,"Upazila Livestock Ofice, KAPASIA",ULO1,30-07-2019,10,30-07-2019,192,4
