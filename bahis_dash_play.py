@@ -9,7 +9,7 @@ import streamlit as st
 import pandas as pd
 import pydeck as pdk
 
-basepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/play around'
+basepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around'
 datapath = '/output/'
 logopath = '/logos/'
 
@@ -30,10 +30,12 @@ txt_missfarm="missFarm"
 # define page layout
 st.set_page_config(layout="wide")
 
+#50105485791.0 no mouza but upazila? 501054.0 yes
+
+
 #### side window
 #sidebar
-# logo !!!!!SOURCE
-st.sidebar.image(basepath + logopath + "bahis-logo.png", width=150)
+st.sidebar.image("/Users/yoshka/Documents/GitHub/bahis-dash/play_around/logos/bahis-logo.png", use_column_width=True)
 option = st.sidebar.selectbox(
      txt_select,
      (txt_farms, txt_geocluster, txt_shpfiles, txt_aviinvest, txt_avisample,
@@ -47,7 +49,31 @@ if option == txt_farms:
     filename = basepath + datapath + 'farms_matched.csv'
     bahis_data = pd.read_csv(filename)
     st.dataframe(bahis_data)
+    choice = st.checkbox("age arrival farm bahis")
+    if choice:
+        occurencesFarmsA=bahis_data['age_arrival_farm_bahis'].value_counts()
+        st.bar_chart(occurencesFarmsA)
+        cola1, cola2, cola3 = st.columns(3) 
+        
+        with cola1:
+            st.metric(label='adult', value="{:0,.0f}".format(int(occurencesFarmsA['Adult'])))
+            
+        with cola2:
+            st.metric(label='doc', value="{:0,.0f}".format(int(occurencesFarmsA['DOC'])))
+        
+        with cola3:
+            st.metric(label='pullet', value="{:0,.0f}".format(int(occurencesFarmsA['Pullet'])))
 
+    occurencesFarmsB=bahis_data['antibacterial_frequency_product1_bahis'].value_counts()
+    st.bar_chart(occurencesFarmsB)
+    occurencesFarmsB=bahis_data['antibacterial_usage_salesman_product1'].value_counts()
+    st.dataframe(occurencesFarmsB)
+    occurencesFarmsB=bahis_data['birds_production_purpose_bahis'].value_counts()
+    st.bar_chart(occurencesFarmsB)
+
+    # concept via st.empty if you want to fill something being loaded later in the program
+    # placeholder=st.empty()    
+    
 if option == txt_geocluster:
     filename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'
     bahis_data = pd.read_csv(filename)
@@ -55,6 +81,7 @@ if option == txt_geocluster:
     st.map(df) 
     st.dataframe(bahis_data)
     
+    # polygon and shpaefile did not work because of map base and geopandas.
 #if option == txt_shpfiles:
     # polygon = gpd.read_file(r"C:/Users/yoshka/Documents/GitHub/bahis_dash/bangladesh-geojson-master/bangladesh.geojson")
     # polygon=polygon.set_crs('epsg:4326')
@@ -74,10 +101,10 @@ if option == txt_geocluster:
 if option == txt_aviinvest:
     filename = basepath + datapath + 'formdata_Avian_Influenza_Investigation.csv'
     bahis_data = pd.read_csv(filename)
- #   occurencesDC = bahis_data['date_completed'].value_counts()
+ # ?  occurencesDC = bahis_data['date_completed'].value_counts()
     bahis_data['date_completed']=pd.to_datetime(bahis_data['date_completed'])
- # take this when fixed   occurencesDates=bahis_data.groupby([bahis_data['date_completed'].dt.year.rename('year'), bahis_data['date_completed'].dt.month.rename('month')]).agg({'count'})
- # take this too   occurencesDates=bahis_data.groupby([bahis_data['date_completed'].dt.year.rename('year') , bahis_data['date_completed'].dt.month.rename('month')]).agg({'count'})
+ # take this? when fixed   occurencesDates=bahis_data.groupby([bahis_data['date_completed'].dt.year.rename('year'), bahis_data['date_completed'].dt.month.rename('month')]).agg({'count'})
+ # take this? too   occurencesDates=bahis_data.groupby([bahis_data['date_completed'].dt.year.rename('year') , bahis_data['date_completed'].dt.month.rename('month')]).agg({'count'})
     occurencesDates=bahis_data.groupby([bahis_data['date_completed'].dt.month.rename('month')]).agg({'count'})
     occurencesDates=occurencesDates['date_completed']
     occurencesDates= pd.to_datetime(occurencesDates.index)
@@ -173,5 +200,25 @@ min_val=0
 max_val=bahis_data.shape[0]
 values = st.slider(
       'Select entry',
-      min_val, max_val, 1)
+      min_val, max_val, 1)-1
 st.write('Values:', values)
+tableordataframe = st.checkbox("dataframe if checked otherwise table")
+if tableordataframe:
+    st.table(bahis_data.iloc[values,:].astype(str))
+else:
+    st.dataframe(bahis_data.iloc[values,:].astype(str))
+
+if option == txt_farms:
+    st.write("The selected place from farms shown on the following map")
+    with st.expander("a map can be shown"):
+        searchcolumn=bahis_data["upazila_bahis"]
+        searchplace=int(searchcolumn.iloc[values])
+        
+        filename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'
+        bahis_datageo = pd.read_csv(filename)
+        searchindex=bahis_datageo[bahis_datageo["value"]==searchplace]
+        st.map(searchindex)
+        st.write("Here is the selected place")
+        
+        
+        
