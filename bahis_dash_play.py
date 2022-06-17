@@ -12,6 +12,7 @@ import pydeck as pdk
 # from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
+import altair as alt
 # import datetime as dt
 # import matplotlib.pyplot as plt
 
@@ -98,6 +99,11 @@ st.write("figure 1 Livestock disease cases")
 # large animal is 1,3,5,8
 
 # slider
+
+# dates = st.slider('Select date', start_date, end_date, (start_date, end_date)) 
+# sub_cst_data=cst_data.loc[cst_data['updated_at'].between(pd.to_datetime(dates[0]), pd.to_datetime(dates[1]))]
+# date_placeholder.subheader("Selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
+# subtable(sub_cst_data) 
 
 subPoultry = bahis_dataPat[(bahis_dataPat['species']==21) | 
                          (bahis_dataPat['species']==22) | 
@@ -321,30 +327,137 @@ st.pydeck_chart(pdk.Deck(
             ],
         ))
 
+filename = basepath + datapath + 'AWaReclass.csv'
+# @st.cache
+def read_bahis_dataAWaRe(filename):
+    return pd.read_csv(filename) 
+bahis_dataAware = read_bahis_dataAWaRe(filename)
+
+filename = basepath + datapath + 'Antibiotics.csv'
+# @st.cache
+def read_bahis_dataAB(filename):
+    return pd.read_csv(filename) 
+bahis_dataAB = read_bahis_dataAB(filename)
 
 
 st.write("figure 13 Frequency histogram of antibiotics used (U2C)")
 st.write("figure 14 Antibiotics Usage")
 st.write("figure 15 Antibiotics")
 
-#subQ = bahis_dataFarm[bahis_dataFarm['date_initial_visit']=]
+#subQ = bahis_dataFarm[bahis_dataFarm['date_initial_visit'].dt.year == 2022 ]
+start_date='2022-01-01'
+end_date='2022-04-01'
+mask=(bahis_dataFarm['date_initial_visit']>= start_date) & (bahis_dataFarm['date_initial_visit'] < end_date)
+subQ = bahis_dataFarm.loc[mask]
+
+
 #### figure 18
 st.write("figure 18 Access control farm entry")
 # v-aa
+tmp = subQ['outside_worker_do_not_enter_farm'].value_counts()
+a1=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['only_workers_approved_visitor_enter_farm'].value_counts()
+a2=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['no_manure_collector_enter_farm'].value_counts()
+a3=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['fenced_duck_chicken_proof'].value_counts()
+a4=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['dead_birds_disposed_safely'].value_counts()
+a5=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['sign_posted'].value_counts()
+a6=tmp[0]/(tmp[0]+tmp[1])
+st.bar_chart([a1,a2,a3,a4,a5,a6])
+
 
 
 #### figure 19
 st.write("figure 19 Access control loading area")
 #ab-ae
+tmp = subQ['no_vehical_in_out_production_area'].value_counts()
+b1=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['only_workers_enter_production_area'].value_counts()
+b2=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['visitors_enter_production_if_approve_manager'].value_counts()
+b3=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['access_control_loading_production_sign_posted'].value_counts()
+b4=tmp[0]/(tmp[0]+tmp[1])
+st.bar_chart([b1,b2,b3,b4])
+
+
 
 #### figure 20
 st.write("figure 20 Personell managements")
 #af-ai
+tmp = subQ['footwear_left_outside'].value_counts()
+c1=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['change_clothes_entering_farm'].value_counts()
+c2=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['uses_dedicated_footwear'].value_counts()
+c3=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['shower_entering_farm'].value_counts()
+c4=tmp[0]/(tmp[0]+tmp[1])
+
+tmp = bahis_dataFarm['footwear_left_outside'].value_counts()
+c1t=tmp[0]/(tmp[0]+tmp[1])
+tmp = bahis_dataFarm['change_clothes_entering_farm'].value_counts()
+c2t=tmp[0]/(tmp[0]+tmp[1])
+tmp = bahis_dataFarm['uses_dedicated_footwear'].value_counts()
+c3t=tmp[0]/(tmp[0]+tmp[1])
+tmp = bahis_dataFarm['shower_entering_farm'].value_counts()
+c4t=tmp[0]/(tmp[0]+tmp[1])
+
+source = pd.DataFrame({
+    '% of Total Farm': ['c1. Outside footwear left outside farm',
+                        'c2. Workers and visitors change clothes upon entering farm',
+                        'c3. Workers and visitors use only dedicated footwear in production area',
+                        'c4. Workers and visitors shower upon entering farm'],
+    '% of Total Farm (timeperiod; n=)': [c1, c2, c3, c4],
+    '% of Cumulative Total Farm (timeperiod; n=)': [c1t, c2t, c3t, c4t]
+})
+
+bar = alt.Chart(source).mark_bar().encode(
+    x='% of Total Farm:O',
+    y='% of Total Farm (timeperiod; n=):Q'
+).properties(
+    width=alt.Step(120)  # controls width of bar.
+)
+
+point = alt.Chart(source).mark_point(
+    color='black',
+  #  size=120 * 0.9,  # controls width of tick.
+).encode(
+    x='% of Total Farm:O',
+    y='% of Cumulative Total Farm (timeperiod; n=):Q'
+)
+fig=bar+point
+st.altair_chart(fig)  
+st.altair_chart(bar, use_container_width=True)  
+st.altair_chart(point, use_container_width=True)   
+# bar + tick
+
+# st.bar_chart([c1,c2,c3,c4])
 
 #### figure 21
 st.write("figure 21 Equipment managements")
 #aj-ak
+tmp = subQ['returning_materials_cleaned'].value_counts()
+d1=tmp[0]/(tmp[0]+tmp[1])
+tmp = subQ['returning_materials_disinfect'].value_counts()
+d2=tmp[0]/(tmp[0]+tmp[1])
+source = pd.DataFrame({'Percentage of (%) total farm': [d1,d2],
+                       '% of Total Farm': ['d1. Materials returning from market or other farm cleaned with soap and water before entereing farm', 
+                                           'd2. Materials returning from market or ther farm disinfected before entering the farm']
+                       })
 
+bar_chart = alt.Chart(source).mark_bar().encode(
+    y='Percentage of (%) total farm:Q',
+    x='% of Total Farm:O',
+    )
+ 
+st.altair_chart(bar_chart, use_container_width=True)                      
+                       
+
+#st.bar_chart([d1,d2])
 
 
 
