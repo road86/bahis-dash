@@ -28,7 +28,7 @@ https://github.com/road86/bahis-dash/tree/main/Version1checked
 comments:
 - if you are using spyder, there is an error message, which can be ignored: https://github.com/spyder-ide/spyder/issues/15387
 
-- download and copy into output folder: 
+- for newest files, download and copy into output folder: 
 	STATICBAHIS_geo_cluster_202204301723.csv
 	AWaReclass.csv
 	Antibiotics.csv		Done with repo
