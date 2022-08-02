@@ -14,6 +14,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import altair as alt
 import json 
+from streamlit_plotly_events import plotly_events
 # import datetime as dt
 # import matplotlib.pyplot as plt
 
@@ -68,11 +69,11 @@ maptest= st.sidebar.checkbox("Maps")
 
 if maptest:
  
-    path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM0-all/geoBoundaries-BGD-ADM0.geojson"
-    path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM1-all/geoBoundaries-BGD-ADM1.geojson"
-    path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM2-all/geoBoundaries-BGD-ADM2.geojson"
-    path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM3-all/geoBoundaries-BGD-ADM3.geojson"
-    path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM4-all/geoBoundaries-BGD-ADM4.geojson"
+    path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM0-all/geoBoundaries-BGD-ADM0.geojson" #1 Nation
+    path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM1-all/geoBoundaries-BGD-ADM1.geojson" #8 Division
+    path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM2-all/geoBoundaries-BGD-ADM2.geojson" #64 District
+    path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM3-all/geoBoundaries-BGD-ADM3.geojson" #495 Upazila
+    path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM4-all/geoBoundaries-BGD-ADM4.geojson" #4562 Union
 
 
 
@@ -81,7 +82,7 @@ if maptest:
     filename = basepath + datapath + 'formdata_Farm_Assessment_Monitoring.csv'
     def read_bahis_dataFarm(filename):
         return pd.read_csv(filename, low_memory=False) #bad way of mixed variables. but there were too many columns
-    # (17,33,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69) have mixed types. and tehre was something with 3?
+    # (17,33,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69) have mixed types. and there was something with 3?
     bahis_dataFarm= read_bahis_dataFarm(filename)
     cases = bahis_dataFarm['district'].value_counts().to_frame()
     cases['districtname'] = cases.index
@@ -116,13 +117,208 @@ if maptest:
                            color_continuous_scale="Viridis",
                            range_color=(0, cases['district'].max()),
                            mapbox_style="carto-positron",
-                           zoom=3, center = {"lat": 23.7, "lon": 90},
+                           zoom=6, center = {"lat": 23.7, "lon": 90},
                            opacity=0.5,
                            labels={'district':'district blah'}
                           )
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
     st.plotly_chart(fig, use_container_width=True)
+ #   fig.on_click(st.write('works'))
  
+    
+ #########################
+omaptest = st.sidebar.checkbox("OMaps")
+
+if omaptest:
+
+    filename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'
+    bahis_datageo = pd.read_csv(filename)
+    filename = basepath + datapath + 'formdata_Farm_Assessment_Monitoring.csv'
+    def read_bahis_dataFarm(filename):
+        return pd.read_csv(filename, low_memory=False) #bad way of mixed variables. but there were too many columns
+    # (17,33,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69) have mixed types. and there was something with 3?
+    bahis_dataFarm= read_bahis_dataFarm(filename)
+    cases = bahis_dataFarm['district'].value_counts().to_frame()
+    cases['districtname'] = cases.index
+    cases= cases.loc[cases['districtname'] != 'nan']
+    # cases=cases.dropna()
+    subDist=bahis_datageo[(bahis_datageo["loc_type"]==2)]
+    subDist['cases']=subDist.index
+    for i in range(cases.shape[0]):
+        cases['districtname'].iloc[i] = subDist.loc[subDist['value']==int(cases['districtname'].iloc[i]),'name'].iloc[0]
+    #for i in range(cases.shape[0]):
+        subDist['cases'][subDist.loc[subDist['name']==cases['districtname'].iloc[i]].index[0]] = cases['district'].iloc[i]
+    cases=cases.sort_values('districtname')
+    cases['districtname']=cases['districtname'].str.title()
+    
+    # fig=px.bar(cases, x='districtname', y='district', labels= {'district':'incidences'})
+
+    # st.plotly_chart(fig)
+    
+     
+#    @st.cache 
+    def open_data(path):
+        with open(path) as f:
+            data = json.load(f)
+            return data
+    
+    granularity= st.selectbox('level',('0: Nation' ,'1: Division', '2: District', '3: Upazila', '4: Union'))
+    if granularity=='0: Nation':
+        path= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM0-all/geoBoundaries-BGD-ADM0.geojson" #1 Nation     
+    if granularity=='1: Division':
+        path= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM1-all/geoBoundaries-BGD-ADM1.geojson" #8 Division
+    if granularity=='2: District':
+        path= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM2-all/geoBoundaries-BGD-ADM2.geojson" #64 District
+    if granularity=='3: Upazila':
+        path= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM3-all/geoBoundaries-BGD-ADM3.geojson" #495 Upazila
+    if granularity=='4: Union':
+        path= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM4-all/geoBoundaries-BGD-ADM4.geojson" #4562 Union
+        
+    data = open_data(path)
+    
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(" Division","") 
+        
+    fig = px.choropleth_mapbox(data['features'], 
+                           geojson=data, 
+                           locations='id', 
+#                           locations='districtname', 
+#                           color='district',
+#                           color_continuous_scale="Viridis",
+#                           range_color=(0, cases['district'].max()),
+                           mapbox_style="carto-positron",
+                           zoom=5, 
+                           center = {"lat": 23.7, "lon": 90},
+                           opacity=0.5
+#                           labels={'district':'district blah'}
+                          )
+    #fig.update_layout(autosize=True, width= 1000, height=500, margin={"r":0,"t":0,"l":0,"b":0})
+    # st.plotly_chart(fig, use_container_width=True)
+
+    mouseselect=plotly_events(fig)
+    st.write(mouseselect)
+    st.write(mouseselect[0]['pointNumber'])
+ 
+ #############
+ 
+othermaptest = st.sidebar.checkbox("OtherMaps")
+
+if othermaptest:
+    
+    path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM0-all/geoBoundaries-BGD-ADM0.geojson" #1 Nation
+    path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM1-all/geoBoundaries-BGD-ADM1.geojson" #8 Division
+    path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM2-all/geoBoundaries-BGD-ADM2.geojson" #64 District
+    path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM3-all/geoBoundaries-BGD-ADM3.geojson" #495 Upazila
+    path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM4-all/geoBoundaries-BGD-ADM4.geojson" #4562 Union
+
+    filename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'
+    bahis_datageo = pd.read_csv(filename)
+    filename = basepath + datapath + 'formdata_Farm_Assessment_Monitoring.csv'
+    def read_bahis_dataFarm(filename):
+        return pd.read_csv(filename, low_memory=False) #bad way of mixed variables. but there were too many columns
+    # (17,33,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69) have mixed types. and there was something with 3?
+    bahis_dataFarm= read_bahis_dataFarm(filename)
+    cases = bahis_dataFarm['district'].value_counts().to_frame()
+    cases['districtname'] = cases.index
+    cases= cases.loc[cases['districtname'] != 'nan']
+    # cases=cases.dropna()
+    subDist=bahis_datageo[(bahis_datageo["loc_type"]==2)]
+    subDist['cases']=subDist.index
+
+    for i in range(cases.shape[0]):
+        cases['districtname'].iloc[i] = subDist.loc[subDist['value']==int(cases['districtname'].iloc[i]),'name'].iloc[0]
+    #for i in range(cases.shape[0]):
+        subDist['cases'][subDist.loc[subDist['name']==cases['districtname'].iloc[i]].index[0]] = cases['district'].iloc[i]
+    cases=cases.sort_values('districtname')
+    cases['districtname']=cases['districtname'].str.title()
+    
+    def open_data(path):
+        with open(path) as f:
+            data = json.load(f)
+            return data
+        
+    data = open_data(path1)
+    
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(" Division","")         
+ 
+    selection_lookup = {feature['properties']['shapeName']: feature 
+                       for feature in data['features']}
+    def get_highlights(selections, geojson=data, place_lookup=selection_lookup):
+        geojson_highlights = dict()
+        for k in geojson.keys():
+            if k != 'features':
+                geojson_highlights[k] = geojson[k]
+            else:
+                geojson_highlights[k] = [selection_lookup[selection] for selection in selections]        
+        return geojson_highlights
+        
+        
+    def get_figure(selections):
+        # Base choropleth layer --------------#
+        fig = px.choropleth_mapbox(cases, geojson=data, locations='districtname', 
+                               # color='district',
+                               # color_continuous_scale="Viridis",
+                               # range_color=(0, cases['district'].max()),
+                               mapbox_style="carto-positron",
+                               zoom=6, center = {"lat": 23.7, "lon": 90},
+                               opacity=0.5,
+                               labels={'district':'district blah'}
+                              )
+        
+                                # (df, geojson=data, 
+                                #    color="Bergeron",                               
+                                #    locations="district", 
+                                #    featureidkey="properties.district",
+                                #    opacity=0.5)
+    
+        # Second layer - Highlights ----------#
+        if len(selections) > 0:
+            # highlights contain the geojson information for only 
+            # the selected districts
+            highlights = get_highlights(selections)
+            fig.add_trace(
+                px.choropleth_mapbox(cases, geojson=highlights, locations='districtname', 
+                                       # color='district',
+                                       # color_continuous_scale="Viridis",
+                                       # range_color=(0, cases['district'].max()),
+                                       mapbox_style="carto-positron",
+                                       zoom=10, center = {"lat": 23.7, "lon": 90},
+                                       opacity=0.5,
+                                       labels={'district':'district blah'}
+                                      )
+                
+            #                     (df, geojson=highlights, 
+            #                          color="Bergeron",
+            #                          locations="district", 
+            #                          featureidkey="properties.district",                                 
+            #                          opacity=1).data[0]
+             )
+    
+        #------------------------------------#
+    
+    fig = px.choropleth_mapbox(cases, geojson=data, locations='districtname', 
+                            # color='district',
+                            # color_continuous_scale="Viridis",
+                            # range_color=(0, cases['district'].max()),
+                            mapbox_style="carto-positron",
+                            zoom=5.5, center = {"lat": 23.7, "lon": 90},
+                            opacity=0.5,
+                            labels={'district':'district blah'}
+                            )
+    # fig.update_layout(mapbox_style="carto-positron", 
+    #                       mapbox_zoom=5.5,
+    #                       mapbox_center={"lat": 23.7, "lon": 90},
+    #                       margin={"r":0,"t":0,"l":0,"b":0},
+    #                       uirevision='constant')
+        
+  #      return fig
+#    fig.show() 
+    
+#    st.plotly_chart(fig, use_container_width=True)
+    mouseselect=plotly_events(fig)
+    st.write(mouseselect)
+
 
 if reportchoice: 
     

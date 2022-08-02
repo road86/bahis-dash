@@ -26,6 +26,13 @@ path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BG
 path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM3-all/geoBoundaries-BGD-ADM3.geojson" #495 Upazila
 path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/geoBoundaries-BGD-ADM4-all/geoBoundaries-BGD-ADM4.geojson" #4562 Union
 
+path0b= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/small/small_bangladesh_geojson_adm0_whole_bangladesh_outline.json"
+path1b= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/small/small_bangladesh_geojson_adm1_8_divisions_bibhags.json"
+path2b= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/small/small_bangladesh_geojson_adm2_64_districts_zillas.json"
+path3b= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/small/small_bangladesh_geojson_adm3_492_upozila.json"
+path4b= "C:/Users/yoshka/Documents/GitHub/bahis-dash/play_around/small/small_bangladesh_geojson_adm4_5160_unions_thanas.json"
+
+
 
 # set textfiles probably changeable language
 #txtQrep = "quarterly report template"
@@ -711,5 +718,13 @@ if choice == txtRepStat:
             st.plotly_chart(fig, use_container_width=True)
             
 
-            
-            
+if choice == txtLocalInfo:
+    st.write('to be done')
+    # sub_bahis_farmdata=bahis_farmdata
+    # path= path1
+    # subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
+    # cases = sub_bahis_farmdata['division'].value_counts().to_frame()
+    # cases['divisionname'] = cases.index
+    # cases= cases.loc[cases['divisionname'] != 'nan']
+    # st.dataframe(cases)
+    # st.downloadbutton
