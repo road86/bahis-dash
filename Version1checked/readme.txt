@@ -7,14 +7,32 @@ Win11, python 3.9.7 64-bit
 
 -	Extract zip to main path
 
-- conda env create -f bahisDashEnv.yml
+- "conda env create -f bahisDashEnv.yml"
 
-- (if you are using spyder, there is an error message, which can be ignored: https://github.com/spyder-ide/spyder/issues/15387)
+- "conda activate bahisDash1"
+
+- clone repo:
+https://github.com/road86/bahis-dash/tree/main/Version1checked
+
+- adjust "basepath = " on line 17 in bahis_dash_V1.py
+
+- neglect or comment out or adjust logo paths on line 73 (would apply for line 78-80 too, but they are left in a way one can see the comparison.
+
+- change to folder where bahis_dash_V1.py is stored
+
+- "streamlit run bahis_dash_V1.py"
+
+
+
+
+(- if you are using spyder, there is an error message, which can be ignored: https://github.com/spyder-ide/spyder/issues/15387
 
 - download and copy into output folder: 
 	STATICBAHIS_geo_cluster_202204301723.csv
 	AWaReclass.csv
-	Antibiotics.csv
+	Antibiotics.csv)
+
+
 
 
 - known problems, 
