@@ -5,30 +5,32 @@ Created on Thu Jun  2 10:14:48 2022
 @author: yoshka
 """
 
-import streamlit as st
-import pandas as pd
-#import pydeck as pdk
-import plotly.graph_objects as go
-import plotly.express as px
-import altair as alt
-import json 
+# with the import command, additional libraries can be used which can simplify the programming
 
-# set paths and sources
+import streamlit as st            # streamlit is a web publishing possibility
+import pandas as pd               # pandas for datahandling
+#import pydeck as pdk             #
+import plotly.graph_objects as go # plotly for graphic visualisation, pydeck is an alternative, but it became plotly
+import plotly.express as px       #
+import altair as alt              # altair for graphs 
+import json                       # json file format to import geodata
+
+# set paths and sources           # basic paths which need to be changed
 basepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/Version1checked'
 datapath = '/output/'
 logopath = '/logos/'
-geofilename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'
-patfilename = basepath + datapath + 'formdata_Patients_Registry.csv'
-farmfilename = basepath + datapath + 'formdata_Farm_Assessment_Monitoring.csv'
-path0= basepath + "/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation
+geofilename = basepath + datapath + 'STATICBAHIS_geo_cluster_202204301723.csv'   # the available geodata from the bahis project
+patfilename = basepath + datapath + 'formdata_Patients_Registry.csv'             # data raised by bahis
+farmfilename = basepath + datapath + 'formdata_Farm_Assessment_Monitoring.csv'   # data raised by bahis
+path0= basepath + "/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= basepath + "/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
 path2= basepath + "/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
 path3= basepath + "/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
 path4= basepath + "/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
-# set textfiles probably changeable language
+# set textfiles probably changeable language                                     # from my past, it seemed variables for textfiles are more versatile. therefore I initiated the majority of text appearing in this tool
 #txtQrep = "quarterly report template"
-txtTitle = "Information on Bahis Database"
+txtTitle = "Information on Bahis Database"                   # different choices (from the left of the webpage) and structured according to the quarterl report, figure numbering are also according to the report             
 txtInfections = "Reported Infections"
 txtTempBars = "Explore Time Development"
 txtMapChoice = "Explore Regional Status"
@@ -39,7 +41,7 @@ txtPoultry = "Poultry"
 txtLAnimals = "Large Animals"
 
 
-txt1Buffalo = 'Buffalo'
+txt1Buffalo = 'Buffalo'                                      # coding from the data raised by bahis. there are numbers and animal species belonging to it.
 txt2Cat = 'Cat'
 txt3Cattle = 'Cattle'
 txt4Dog = 'Dog'
@@ -57,7 +59,7 @@ txt27Turkey = 'Turkey'
 txt28Parrot = 'Parrot'
     
 
-txtFMD = 'Cases of Foot and Mouth Disease'
+txtFMD = 'Cases of Foot and Mouth Disease'                    # diseases mentioned
 txtPPR = 'Cases of Pesti de Petits Ruminants in goat'   
 txtMP = 'Cases of mycoplasma in poultry'   
 txtND = 'Cases of Newcastle Disease in poultry'   
@@ -67,28 +69,30 @@ months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 # define page layout
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")                            # streamlit commands addressed with st (see import) 
 
-# logos from sponsors in the sidebar
+# logos from sponsors in the sidebar                         # sidebar is a signalword to address the sidebar
 st.sidebar.image("/Users/yoshka/Documents/GitHub/bahis-dash/Version1checked/logos/bahis-logo.png", use_column_width=True)
-st.sidebar.subheader(txtTitle)
+st.sidebar.subheader(txtTitle)                               # image to create image, subheader is a text size, selectbox/checkbox
 choice= st.sidebar.selectbox('Choose', (txtInfections, txtTempBars, txtMapChoice, txtLMeasures, txtRepStat, txtLocalInfo))
 #blnQrep = st.sidebar.checkbox(txtQrep)
 
-st.sidebar.image(basepath + logopath + "DGHS logo.png", use_column_width=True)
+st.sidebar.image(basepath + logopath + "DGHS logo.png", use_column_width=True) # somehow the logopath does not work properly, while the direct path without variable seem to work
 st.sidebar.image(basepath + logopath + "FAO logo.png", use_column_width=True)
 st.sidebar.image(basepath + logopath + "USAID logo.png", use_column_width=True)
 
-#@st.cache
+@st.cache                                                  # a streamlit way to cache calculations, otherwise it goes through every part of the code
 def read_geoData():
-    return pd.read_csv(geofilename)  
+    return pd.read_csv(geofilename)                                                 
+@st.cache                                                  # wasn't sure, if st.cache needs to be before every function, so I added it for all three.
 def read_patData():
-    return pd.read_csv(patfilename, low_memory=False) #bad way of mixed variables. but there were too many columns
+    return pd.read_csv(patfilename, low_memory=False)  # bad way of mixed variables. but there were too many columns
+@st.cache                                                  # all three are loading basic data. need to read a bit more on caching https://docs.streamlit.io/library/advanced-features/caching
 def read_farmData():
-    return pd.read_csv(farmfilename, low_memory=False) #bad way of mixed variables. but there were too many columns
+    return pd.read_csv(farmfilename, low_memory=False) # (low-memory option bad way of mixed variables. but there were too many columns
 
-bahis_geodata = read_geoData()
-bahis_patdata = read_patData()
+bahis_geodata = read_geoData()                         # prepare data convert string to numeric, date to panda datetime
+bahis_patdata = read_patData()                         
 bahis_patdata['date'] = pd.to_datetime(bahis_patdata['date'],format='%Y/%m/%d')
 bahis_farmdata = read_farmData()
 bahis_farmdata['division'] = pd.to_numeric(bahis_farmdata['division'])
@@ -101,15 +105,15 @@ if choice == txtInfections:
 
 #    st.dataframe(bahis_patdata)
 
-    start_date=min(bahis_patdata['date']).date()
+    start_date=min(bahis_patdata['date']).date()        # get first available date and last
     end_date=max(bahis_patdata['date']).date()
-    date_placeholder=st.empty()    
-    dates = st.slider('Select date', start_date, end_date, (start_date, end_date)) 
+    date_placeholder=st.empty()                         # a copy case, forgot to include this. it is meant to show the dates besides the slider, which is sometimes invisible
+    dates = st.slider('Select date', start_date, end_date, (start_date, end_date))  # this is the streamlit slider
     sub_bahis_patdata=bahis_patdata.loc[bahis_patdata['date'].between(pd.to_datetime(dates[0]), pd.to_datetime(dates[1]))] 
+                                                        # get subdata declared with slider
     
-    
-    colPoultry, colLAnimals= st.columns(2)
-    with colPoultry:
+    colPoultry, colLAnimals= st.columns(2)              # streamlit columns structure
+    with colPoultry:                                    # addressing columns
         st.subheader(txtPoultry)
         selectionP = st.multiselect('Selected species', [txt21Chicken, txt22Duck, txt23Goose, txt24Moyana, txt25Pigeon, txt26Quail, txt27Turkey, txt28Parrot],
                        [txt21Chicken, txt22Duck, txt23Goose, txt25Pigeon, txt26Quail, txt27Turkey])
@@ -117,8 +121,8 @@ if choice == txtInfections:
         # preselection to be modified and included into DF subPoultry
         # select either Top10 or all
         # select time range
-        # select map accumulation
-        subPoultry = None
+        # select map accumulation                          maybe this is already done...
+        subPoultry = None                                  # selection of the species according to multiselect see above 
         if txt21Chicken in selectionP:
             subPoultry = pd.concat([subPoultry,sub_bahis_patdata[(sub_bahis_patdata['species']==21)]])
         if txt22Duck in selectionP:
@@ -142,9 +146,9 @@ if choice == txtInfections:
         #                           (bahis_patdata['species']==25) |
         #                           (bahis_patdata['species']==26) | 
         #                           (bahis_patdata['species']==27) ]
-        DoccurPoultry= subPoultry['tentative_diagnosis'].value_counts()
+        DoccurPoultry= subPoultry['tentative_diagnosis'].value_counts()   #adding up all values 
         figP= px.bar(DoccurPoultry[9::-1], x='tentative_diagnosis', labels={"tentative_diagnosis":"Incidences", "index":"Disease"}, title="Poultry Top10", orientation='h')
-        st.write(figP)
+        st.write(figP)                 #graph creation
         
     with colLAnimals:
         st.subheader(txtLAnimals)
@@ -178,12 +182,12 @@ if choice == txtInfections:
         DoccurLarge = subLarge['tentative_diagnosis'].value_counts()    
         figL= px.bar(DoccurLarge[9::-1], x='tentative_diagnosis', labels={"tentative_diagnosis":"Incidences", "index":"Disease"}, title="Large Animals Top10", orientation='h')
         st.write(figL)
-
+                                    # analogue to poultry column
 
 if choice == txtTempBars:
     
     DChoice = st.selectbox('Select Disease', (txtFMD, txtPPR, txtMP, txtND))
- 
+                                        # select different diseases with selectbox. prepare data, make it faster by including them into the if clause
     #########to do
     # work with st.cache make function
     subFMD = bahis_patdata[(bahis_patdata['tentative_diagnosis']=="['Foot and Mouth Disease (FMD)']")]   
@@ -192,7 +196,7 @@ if choice == txtTempBars:
     subND = bahis_patdata[(bahis_patdata['tentative_diagnosis']=="['Newcastle Disease']")]  
     
     if DChoice == txtFMD:
-        ##### figure 2
+        ##### figure 2                                       #count values by year. simultaneous for all other diseases
         cases=subFMD['date'].groupby(subFMD.date.dt.to_period("M")).agg({'count'})
         cases.index=cases.index.astype(str)
         cases.index=pd.to_datetime(cases.index)
@@ -327,13 +331,13 @@ if choice == txtTempBars:
         st.plotly_chart(fig, use_container_width=True)
         
     
-if choice == txtMapChoice:
+if choice == txtMapChoice:                 # according to report, take district case values 
     
     cases = bahis_farmdata['district'].value_counts().to_frame()
     cases['districtname'] = cases.index
-    cases= cases.loc[cases['districtname'] != 'nan']
+    cases= cases.loc[cases['districtname'] != 'nan']  # neglect empty entries
     # cases=cases.dropna()
-    subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
+    subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)] # take district 
     subDist['cases']=subDist.index
     for i in range(cases.shape[0]):
         cases['districtname'].iloc[i] = subDist.loc[subDist['value']==int(cases['districtname'].iloc[i]),'name'].iloc[0]
@@ -347,17 +351,17 @@ if choice == txtMapChoice:
     st.plotly_chart(fig)
     
      
-#    @st.cache 
+    @st.cache 
     def open_data(path):
         with open(path) as f:
             data = json.load(f)
             return data
         
-    data = open_data(path2)
+    data = open_data(path2)  #path2 is for districts couldbe more elegant
     
     for i in data['features']:
         i['id']= i['properties']['shapeName'].replace(" District","") 
-        
+        ##shape choropleth maps
     fig = px.choropleth_mapbox(cases, geojson=data, locations='districtname', color='district',
                             color_continuous_scale="Viridis",
                             range_color=(0, cases['district'].max()),
@@ -372,7 +376,7 @@ if choice == txtMapChoice:
 
 
 
-if choice == txtLMeasures:
+if choice == txtLMeasures:                              # needs probably most attention. graphs are not nice yet and antibiotics in data is not yet dissolved
     filename = basepath + datapath + 'AWaReclass.csv'
     # @st.cache
     def read_bahis_dataAWaRe(filename):
@@ -384,7 +388,7 @@ if choice == txtLMeasures:
     def read_bahis_dataAB(filename):
         return pd.read_csv(filename) 
     bahis_dataAB = read_bahis_dataAB(filename)
-    
+                                                     # the antibiotics is not included yet
     
     # st.write("figure 13 Frequency histogram of antibiotics used (U2C)")
     # st.write("figure 14 Antibiotics Usage")
@@ -396,7 +400,7 @@ if choice == txtLMeasures:
     mask=(bahis_farmdata['date_initial_visit']>= start_date) & (bahis_farmdata['date_initial_visit'] < end_date)
     subQ = bahis_farmdata.loc[mask]
     
-    #### figure 18
+    #### figure 18                                      # create date subdatabase and then count and calculate values needed according to report
     st.write("figure 18 Access control farm entry")
     # v-aa
     tmp = subQ['outside_worker_do_not_enter_farm'].value_counts()
@@ -504,7 +508,7 @@ if choice == txtLMeasures:
     
     #st.bar_chart([d1,d2])
     
-if choice == txtRepStat:
+if choice == txtRepStat:     # only thing not coming from the report, this is a requirement set by  Rahela(?) reporting status per district. I played arround with the possibilites, upazillas, choropleth...
     #######todo
     # at slider time period
     st.subheader('Reporting Status')
@@ -543,7 +547,7 @@ if choice == txtRepStat:
 #     st.plotly_chart(fig)
     
      
-#    @st.cache 
+    @st.cache 
     def open_data(path):
         with open(path) as f:
             data = json.load(f)
@@ -551,21 +555,21 @@ if choice == txtRepStat:
     
 #    values = ['<select>', '0: Nation' ,'1: Division', '2: District', '3: Upazila', '4: Union']
     values = ['<select>', '0: Nation' , '1: Division', '2: District', '3: Upazila']
-    defaultV = values.index('2: District')
+    defaultV = values.index('2: District')  # default value
     granularity= st.selectbox('level', values, index=defaultV) 
     # if granularity=='0: Nation':
     #     path= path0    
     #     subDist=bahis_geodata[(bahis_geodata["loc_type"]==0)]
     
-    if granularity=='0: Nation':
-        path= path0
-        subDist=bahis_geodata
+    if granularity=='0: Nation':  # example for antion, the rest is analog
+        path= path0               # nation path
+        subDist=bahis_geodata    
         data = open_data(path)
   
-        colTmp, colMap, colBar = st.columns(3)
-        with colTmp:
+        colTmp, colMap, colBar = st.columns(3) # three columns
+        with colTmp:                           # line chart with visits
             st.line_chart(sub_bahis_farmdata['date_initial_visit'].value_counts())        
-        with colMap:
+        with colMap:                           # map chart with visits
             data = open_data(path)
             
             for i in data['features']:
@@ -582,7 +586,7 @@ if choice == txtRepStat:
             fig.update_layout(autosize=True, width= 1000, height=500, margin={"r":0,"t":0,"l":0,"b":0})
             st.plotly_chart(fig, use_container_width=True)
             
-        with colBar:
+        with colBar:                         # in numbers
             st.metric(label= 'Cases', value= sub_bahis_farmdata.shape[0] )
             
     if granularity=='1: Division':
@@ -710,7 +714,7 @@ if choice == txtRepStat:
             st.plotly_chart(fig, use_container_width=True)
             
 
-if choice == txtLocalInfo:
+if choice == txtLocalInfo:    # this was a play around option.
     st.write('to be done')
     # sub_bahis_farmdata=bahis_farmdata
     # path= path1
