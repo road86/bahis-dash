@@ -80,14 +80,14 @@ choice= st.sidebar.selectbox('Choose', (txtInfections, txtTempBars, txtMapChoice
 st.sidebar.image(basepath + logopath + "DGHS logo.png", use_column_width=True) # somehow the logopath does not work properly, while the direct path without variable seem to work
 st.sidebar.image(basepath + logopath + "FAO logo.png", use_column_width=True)
 st.sidebar.image(basepath + logopath + "USAID logo.png", use_column_width=True)
-
-@st.cache                                                  # a streamlit way to cache calculations, otherwise it goes through every part of the code
+    
+#@st.cache                                                  # a streamlit way to cache calculations, otherwise it goes through every part of the code
 def read_geoData():
     return pd.read_csv(geofilename)                                                 
-@st.cache                                                  # wasn't sure, if st.cache needs to be before every function, so I added it for all three.
+#@st.cache                                                  # wasn't sure, if st.cache needs to be before every function, so I added it for all three.
 def read_patData():
     return pd.read_csv(patfilename, low_memory=False)  # bad way of mixed variables. but there were too many columns
-@st.cache                                                  # all three are loading basic data. need to read a bit more on caching https://docs.streamlit.io/library/advanced-features/caching
+#@st.cache                                                  # all three are loading basic data. need to read a bit more on caching https://docs.streamlit.io/library/advanced-features/caching
 def read_farmData():
     return pd.read_csv(farmfilename, low_memory=False) # (low-memory option bad way of mixed variables. but there were too many columns
 
@@ -98,7 +98,7 @@ bahis_farmdata = read_farmData()
 bahis_farmdata['division'] = pd.to_numeric(bahis_farmdata['division'])
 bahis_farmdata['district'] = pd.to_numeric(bahis_farmdata['district'])
 bahis_farmdata['upazila'] = pd.to_numeric(bahis_farmdata['upazila'])
-bahis_farmdata.loc[:, "district"] = bahis_farmdata["district"].map('{:.0f}'.format)
+bahis_farmdata.loc[:, "district"] = bahis_farmdata["district"].map('{:.0f}'.format)   ####look
 bahis_farmdata['date_initial_visit'] = pd.to_datetime(bahis_farmdata['date_initial_visit'],format='%Y/%m/%d')
     
 if choice == txtInfections: 
@@ -547,7 +547,7 @@ if choice == txtRepStat:     # only thing not coming from the report, this is a 
 #     st.plotly_chart(fig)
     
      
-    @st.cache 
+    #@st.cache 
     def open_data(path):
         with open(path) as f:
             data = json.load(f)
@@ -716,6 +716,8 @@ if choice == txtRepStat:     # only thing not coming from the report, this is a 
 
 if choice == txtLocalInfo:    # this was a play around option.
     st.write('to be done')
+    st.subheader("another text but bigger")
+    st.header("another text but even bigger")
     # sub_bahis_farmdata=bahis_farmdata
     # path= path1
     # subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
