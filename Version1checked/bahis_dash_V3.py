@@ -269,3 +269,18 @@ if granularity=='3: Upazila':
         fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
         st.plotly_chart(fig, use_container_width=True)
             
+subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
+findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
+
+indexD= subDist[subDist==findDiv.upper()].index[0]
+disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexD]]['value'])]['name'].str.capitalize()
+findDis= st.selectbox('District', disList)
+
+indexU= disList[disList==findDis].index[0]
+upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexU]]['value'])]['name'].str.capitalize()
+findUpa= st.selectbox('Upazila', upaList)
+
+indexUS = upaList[upaList==findUpa].index[0]
+Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
+sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
+st.bar_chart(sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts()) 
