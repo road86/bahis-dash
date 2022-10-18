@@ -1,3 +1,10 @@
+Status 221018:
+same environment, new Version 3
+- environment same
+- the exported new data from the new server needs to be put into a folder named "exported data"
+
+
+
 Status 220802: Win11, python 3.9.7 64-bit
 
 
