@@ -12,7 +12,7 @@ import pandas as pd               # pandas for datahandling
 #import pydeck as pdk             #
 #import plotly.graph_objects as go # plotly for graphic visualisation, pydeck is an alternative, but it became plotly
 import plotly.express as px       #
-#import altair as alt              # altair for graphs 
+import altair as alt              # altair for graphs 
 import json                       # json file format to import geodata
 import datetime as dt
 from datetime import datetime, timedelta
@@ -268,19 +268,57 @@ if granularity=='3: Upazila':
         fig=px.bar(cases, x='upazilaname', y='basic_info_upazila', labels= {'upazila':'incidences'})
         fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
         st.plotly_chart(fig, use_container_width=True)
+          
+
+st.header('Upazila data')
+
+colUpa1, colUpa2 = st.columns([1,4])
+with colUpa1:
+    subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
+    findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
+    
+    indexD= subDist[subDist==findDiv.upper()].index[0]
+    disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexD]]['value'])]['name'].str.capitalize()
+    findDis= st.selectbox('District', disList)
+    
+    indexU= disList[disList==findDis].index[0]
+    upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexU]]['value'])]['name'].str.capitalize()
+    findUpa= st.selectbox('Upazila', upaList)
+    
+    indexUS = upaList[upaList==findUpa].index[0]
+    Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
+with colUpa2:
+    correcttraining= st.checkbox('Delete first')
+    sub_bahis_sourcedata=bahis_sourcedata.loc[mask]    
+
+    st.write(bahis_geodata.iloc[[indexU]]['name'].str.capitalize())
+    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].value_counts().size == 0:
+        st.write('No reports submitted')
+    else: 
+       df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].dt.date.value_counts()
+       df=df.sort_index()
+       st.dataframe(df)
+       c=alt.Chart(df.reset_index()).mark_bar().encode(
+           x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
+           y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
+           )
+       st.altair_chart(c, use_container_width=True) 
+
+    st.write(bahis_geodata.iloc[[indexUS]]['name'].str.capitalize())       
+    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size == 0:
+        st.write('No reports submitted')
+    else: 
+       df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].dt.date.value_counts()
+       df=df.sort_index()
+       st.dataframe(df)
+       if correcttraining:
+           df=df.sort_index()
+           df.drop(index=df.index[0], 
+               axis=0, 
+               inplace=True)
+       c=alt.Chart(df.reset_index()).mark_bar().encode(
+           x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
+           y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
+           )
+       st.altair_chart(c, use_container_width=True) 
             
-subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
-
-indexD= subDist[subDist==findDiv.upper()].index[0]
-disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexD]]['value'])]['name'].str.capitalize()
-findDis= st.selectbox('District', disList)
-
-indexU= disList[disList==findDis].index[0]
-upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexU]]['value'])]['name'].str.capitalize()
-findUpa= st.selectbox('Upazila', upaList)
-
-indexUS = upaList[upaList==findUpa].index[0]
-Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
-sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
-st.bar_chart(sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts()) 
