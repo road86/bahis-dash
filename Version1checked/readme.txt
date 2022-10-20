@@ -1,3 +1,35 @@
+Update 221020_ Version 4:
+- clone repo:
+https://github.com/road86/bahis-dash/tree/main/Version1checked
+
+++++++++++++ list of necessary files +++++++++
+bahis_dash_V4.py
+bahisDashEnv2.yml
+readme.txt
+/logos/Logo.png
+/geodata/*
+++++++++ further data see next topic ++++++++++
+
+- Download data from server(?) 
+	https://drive.google.com/drive/folders/1YI7q_OAlvSp-vWaBuwQUWWX-0HO6yNwj?usp=sharing
+- Extract data to following folder
+	/exported data/
+
++++++++++ list of necessary files from this folder +++++++++
+newbahis_geo_cluster.csv
+newbahis_bahis_patient_registrydyncsv_live_table.csv
+++++++++ end of list in "exported data" folder +++++++++++++
+
+- "conda env create -f bahisDashEnv.yml", does not work on linux yet
+
+- adjust "basepath=" variable on line 22 in bahis_dash_V4.py to project folder
+
+- change to folder where bahis_dash_V4.py is stored
+
+- "streamlit run bahis_dash_V4.py"
+
+
+
 Status 221018:
 same environment, new Version 3
 - environment same
