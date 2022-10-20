@@ -1,5 +1,5 @@
 ## Installation
-First [https://pipenv.pypa.io/en/latest/install/](install pipenv), or run the command below to confirm it works.
+First [install pipenv](https://pipenv.pypa.io/en/latest/install/), or run the command below to confirm it works.
 ```
 pipenv install
 ```
