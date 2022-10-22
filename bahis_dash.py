@@ -35,7 +35,7 @@ bahis_sourcedata = pd.read_csv(sourcefilename)
 bahis_sourcedata['basic_info_division'] = pd.to_numeric(bahis_sourcedata['basic_info_division'])
 bahis_sourcedata['basic_info_district'] = pd.to_numeric(bahis_sourcedata['basic_info_district'])
 bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(bahis_sourcedata['basic_info_upazila'])
-bahis_sourcedata['basic_info_date'] = pd.to_datetime(bahis_sourcedata['basic_info_date'],format='%Y/%m/%d')
+bahis_sourcedata['basic_info_date'] = pd.to_datetime(bahis_sourcedata['basic_info_date'])
 
 start_date=min(bahis_sourcedata['basic_info_date']).date()
 end_date=max(bahis_sourcedata['basic_info_date']).date()
@@ -94,11 +94,7 @@ data = open_data(path)
 for i in data['features']:
     i['id']= i['properties']['shapeName'].replace(" "+str(value1).capitalize(),"")
 
-def read_geoData():
-    return pd.read_csv(geofilename)
 
-start_date=dt.date.fromisoformat('2020-06-01')  #min(bahis_sourcedata['basic_info_date']).date()
-end_date=max(bahis_sourcedata['basic_info_date']).date()
 date_placeholder=st.empty()
 
 dates = st.slider('Select date', start_date, end_date, (start_date, end_date))
@@ -369,6 +365,6 @@ with colUpa2:
 
 st.header('Disease cases')
 
-diseases = bahis_sourcedata['diagnosis_treatment_tentative_diagnosis'].value_counts().to_frame()
+diseases = bahis_sourcedata['top_diagnosis'].value_counts().to_frame()
 
-st.bar_chart(sub_bahis_sourcedata['diagnosis_treatment_tentative_diagnosis'].value_counts())
+st.bar_chart(sub_bahis_sourcedata['top_diagnosis'].value_counts())
