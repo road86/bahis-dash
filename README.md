@@ -3,9 +3,17 @@ First [install pipenv](https://pipenv.pypa.io/en/latest/install/), or run the co
 ```
 pipenv install
 ```
-and copy data to `exported_data`
+and copy data to `exported_data`.
+
+If you get an error when running install
+```
+Resolving dependencies...
+✘ Locking Failed!
+```
+remove the `Pipfile.lock` file and run again.
 ## Running
 ```
 pipenv shell
+python prep_data.py
 streamlit run bahis_dash.py
 ```

@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 gifpath = 'logos/'
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
-sourcefilename =sourcepath + 'newbahis_bahis_patient_registrydyncsv_live_table.csv'
+sourcefilename =sourcepath + 'preped_data.csv'
 path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
 path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
@@ -30,7 +30,7 @@ path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
 path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 bahis_geodata = pd.read_csv(geofilename)
-bahis_sourcedata = pd.read_csv(sourcefilename)#, low_memory=False)
+bahis_sourcedata = pd.read_csv(sourcefilename)
 
 bahis_sourcedata['basic_info_division'] = pd.to_numeric(bahis_sourcedata['basic_info_division'])
 bahis_sourcedata['basic_info_district'] = pd.to_numeric(bahis_sourcedata['basic_info_district'])
@@ -59,7 +59,7 @@ reports=reports.sort_values('basic_info_'+str(value1))
 reports['basic_info_'+str(value1)]=reports['basic_info_'+str(value1)].str.title()
 
 
-img_logo= 'logos/bahis-logo.png'
+img_logo= 'logos/Logo.png'
 
 st.set_page_config(layout="wide")                            # streamlit commands addressed with st (see import)
 
