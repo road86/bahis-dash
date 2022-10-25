@@ -259,27 +259,27 @@ if granularity=='3: Upazila':
 
 st.header('Upazila data')
 
-colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
-with colUpa1:
-    subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
-    indexD= subDist[subDist==findDiv.upper()].index[0]
-with colUpa2:
-    correcttraining= st.checkbox('Delete first')
-    sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
+#colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
+#with colUpa1:
+subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
+findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
+indexD= subDist[subDist==findDiv.upper()].index[0]
+#with colUpa2:
+correcttraining= st.checkbox('Delete first')
+sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
 
-    st.subheader(bahis_geodata.iloc[[indexD]]['name'].str.capitalize())
-    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_division']==int(bahis_geodata.iloc[[indexD]]['value'])]['basic_info_date'].value_counts().size == 0:
-        st.write('No reports submitted')
-    else:
-       df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_division']==int(bahis_geodata.iloc[[indexD]]['value'])]['basic_info_date'].dt.date.value_counts()
-       df=df.sort_index()
+st.subheader(bahis_geodata.iloc[[indexD]]['name'].str.capitalize())
+if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_division']==int(bahis_geodata.iloc[[indexD]]['value'])]['basic_info_date'].value_counts().size == 0:
+    st.write('No reports submitted')
+else:
+   df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_division']==int(bahis_geodata.iloc[[indexD]]['value'])]['basic_info_date'].dt.date.value_counts()
+   df=df.sort_index()
 #       st.dataframe(df)
-       c=alt.Chart(df.reset_index()).mark_bar().encode(
-           x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
-           y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
-           )
-       st.altair_chart(c, use_container_width=True)
+   c=alt.Chart(df.reset_index()).mark_bar().encode(
+       x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
+       y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
+       )
+   st.altair_chart(c, use_container_width=True)
 
 # #    st.write(bahis_geodata.iloc[[indexU]]['name'].str.capitalize())
 #     if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].value_counts().size == 0:
@@ -315,52 +315,52 @@ with colUpa2:
 
 #with colUpa3:
 
-colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
-with colUpa1:
-    disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexD]]['value'])]['name'].str.capitalize()
-    findDis= st.selectbox('District', disList)
-    indexU= disList[disList==findDis].index[0]
-with colUpa2:
-    sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
-    st.subheader(bahis_geodata.iloc[[indexU]]['name'].str.capitalize())
-    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].value_counts().size == 0:
-        st.write('No reports submitted')
-    else:
-       df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].dt.date.value_counts()
-       df=df.sort_index()
+#colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
+#with colUpa1:
+disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexD]]['value'])]['name'].str.capitalize()
+findDis= st.selectbox('District', disList)
+indexU= disList[disList==findDis].index[0]
+#with colUpa2:
+sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
+st.subheader(bahis_geodata.iloc[[indexU]]['name'].str.capitalize())
+if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].value_counts().size == 0:
+    st.write('No reports submitted')
+else:
+   df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].dt.date.value_counts()
+   df=df.sort_index()
 #       st.dataframe(df)
-       c=alt.Chart(df.reset_index()).mark_bar().encode(
-           x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
-           y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
-           )
-       st.altair_chart(c, use_container_width=True)
+   c=alt.Chart(df.reset_index()).mark_bar().encode(
+       x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
+       y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
+       )
+   st.altair_chart(c, use_container_width=True)
 
-colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
-with colUpa1:
-    upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexU]]['value'])]['name'].str.capitalize()
-    findUpa= st.selectbox('Upazila', upaList)
-    indexUS = upaList[upaList==findUpa].index[0]
-    Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
-with colUpa2:
-    sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
-    st.subheader(bahis_geodata.iloc[[indexUS]]['name'].str.capitalize())
-    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size != 0:
+#colUpa1, colUpa2 = st.columns([1,4]) #, colUpa3 = st.columns([1,4,2])
+#with colUpa1:
+upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexU]]['value'])]['name'].str.capitalize()
+findUpa= st.selectbox('Upazila', upaList)
+indexUS = upaList[upaList==findUpa].index[0]
+Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
+#with colUpa2:
+sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
+st.subheader(bahis_geodata.iloc[[indexUS]]['name'].str.capitalize())
+if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size != 0:
 #    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size == 0:
 #        st.write('No reports submitted')
 #    else:
-       df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].dt.date.value_counts()
-       df=df.sort_index()
+   df=sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].dt.date.value_counts()
+   df=df.sort_index()
 #       st.dataframe(df)
-       if correcttraining:
-           df=df.sort_index()
-           df.drop(index=df.index[0],
-               axis=0,
-               inplace=True)
-       c=alt.Chart(df.reset_index()).mark_bar().encode(
-           x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
-           y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
-           )
-       st.altair_chart(c, use_container_width=True)
+   if correcttraining:
+       df=df.sort_index()
+       df.drop(index=df.index[0],
+           axis=0,
+           inplace=True)
+   c=alt.Chart(df.reset_index()).mark_bar().encode(
+       x=alt.X('index',axis=alt.Axis(format='%Y/%m/%d', title='Date')),
+       y=alt.Y('basic_info_date', axis=alt.Axis(title='Reports')),
+       )
+   st.altair_chart(c, use_container_width=True)
 
 
 st.header('Disease cases')
