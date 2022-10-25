@@ -120,7 +120,7 @@ st.bar_chart(sub_bahis_sourcedata['basic_info_date'].value_counts())
 
 values = ['0: Nation' , '1: Division', '2: District', '3: Upazila']
 defaultV = values.index('2: District')  # default value
-granularity= st.radio('level', values, index=defaultV, horizontal= True)
+granularity= st.selectbox('Select level', values, index=defaultV) #, horizontal= True)
 
 if granularity=='0: Nation':
     path= path0
@@ -265,10 +265,10 @@ subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
 findDiv = st.selectbox('Divsion', bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize())
 indexD= subDist[subDist==findDiv.upper()].index[0]
 #with colUpa2:
-correcttraining= st.checkbox('Delete first')
+correcttraining= False #st.checkbox('Delete first')
 sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
 
-st.subheader(bahis_geodata.iloc[[indexD]]['name'].str.capitalize())
+st.subheader(bahis_geodata.iloc[[indexD]]['name'].str.capitalize().to_string(index=False))
 if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_division']==int(bahis_geodata.iloc[[indexD]]['value'])]['basic_info_date'].value_counts().size == 0:
     st.write('No reports submitted')
 else:
@@ -322,7 +322,7 @@ findDis= st.selectbox('District', disList)
 indexU= disList[disList==findDis].index[0]
 #with colUpa2:
 sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
-st.subheader(bahis_geodata.iloc[[indexU]]['name'].str.capitalize())
+st.subheader(bahis_geodata.iloc[[indexU]]['name'].str.capitalize().to_string(index=False))
 if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_district']==int(bahis_geodata.iloc[[indexU]]['value'])]['basic_info_date'].value_counts().size == 0:
     st.write('No reports submitted')
 else:
@@ -343,7 +343,7 @@ indexUS = upaList[upaList==findUpa].index[0]
 Upazila= int(bahis_geodata.iloc[[indexUS]]['value'])
 #with colUpa2:
 sub_bahis_sourcedata=bahis_sourcedata.loc[mask]
-st.subheader(bahis_geodata.iloc[[indexUS]]['name'].str.capitalize())
+st.subheader(bahis_geodata.iloc[[indexUS]]['name'].str.capitalize().to_string(index=False))
 if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size != 0:
 #    if sub_bahis_sourcedata[sub_bahis_sourcedata['basic_info_upazila']==Upazila]['basic_info_date'].value_counts().size == 0:
 #        st.write('No reports submitted')
