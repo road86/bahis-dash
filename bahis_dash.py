@@ -65,7 +65,7 @@ st.set_page_config(layout="wide")                            # streamlit command
 
 st.image(img_logo, width=400)
 
-st.title('bahis dashboard')
+st.title('BAHIS dashboard')
 
 bahis_sourcedata['basic_info_date']=pd.to_datetime(bahis_sourcedata.basic_info_date).dt.tz_localize(None).astype('datetime64[ns]')
 mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
@@ -873,7 +873,8 @@ with st.expander('Disease cases'):
         disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDiv]]['value'])]['name'].str.capitalize()
         itemlistDis=pd.concat([pd.Series(['Select'], name='name'),disList])
     with col3:
-        disease_chosen= st.multiselect('Disease', diseaselist)
+        itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
+        disease_chosen= st.multiselect('Disease', itemlistDiseases)
 
     col1, col2, col3 = st.columns([2,3,5])
     with col1:
@@ -887,8 +888,7 @@ with st.expander('Disease cases'):
                 itemlistUpa=pd.concat([pd.Series(['Select'], name='name'),upaList])
         else:
             findDis = st.selectbox('District', ['Select'], key = 'Dis2')
-#    with col3:
-#        st.write(disease_chosen)
+
     col1, col2 = st.columns([1,4])
     with col1:
         if findDiv!= 'Select':
@@ -905,8 +905,11 @@ with st.expander('Disease cases'):
     sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
     
     #dmask=(bahis_sourcedata['top_diagnosis']==dis_chosen)
-    sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
-    
+    if 'Select All' in disease_chosen:
+        sub_bahis_sourcedata=sub_bahis_sourcedata #[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+    else:
+        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+        
     if disease_chosen :
         if findDiv == 'Select':
             colMap, colBars= st.columns(2)
@@ -938,7 +941,7 @@ with st.expander('Disease cases'):
                     for i in range(reports.shape[0]):
                         reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
         #            reports=reports.sort_values('divisionname')
-                    reports['divisionname']=reports['divisionname'].str.capitalize()
+                    reports['divisionname']=reports['divisionname'].str.title()
                     for i in data['features']:
                         i['id']= i['properties']['shapeName'].replace(" Division","")
         
@@ -957,20 +960,19 @@ with st.expander('Disease cases'):
                 st.subheader('Bangladesh') 
                 
                 #st.subheader('Reports')
-                sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
                 #st.write('Registered reports')
                 #tmp=sub_bahis_sourcedata['basic_info_date'].value_counts()
                 #tmp.index=pd.to_datetime(tmp.index)
                 #st.line_chart(sub_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
                 
-                sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+                #sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
         
                 tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
                 tmp=tmp.reset_index()
                 tmp=tmp.rename(columns={'index':'date'})
-                tmp['date'] = pd.to_datetime(tmp['date'])
-                
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                tmp['date'] = pd.to_datetime(tmp['date'])                
+                line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                     alt.X('date:T', title='report date'),
                     alt.Y('basic_info_date:Q', title='reports'),
                     color=alt.Color('Category:N', legend=None)
@@ -986,7 +988,7 @@ with st.expander('Disease cases'):
                 tmp['date']=tmp['date'].astype(str)
                 tmp['date'] = pd.to_datetime(tmp['date'])
                 
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                     alt.X('date:T', title='report date'),
                     alt.Y('patient_info_sick_number:Q', title='reports'),
                     color=alt.Color('Category:N', legend=None)
@@ -1000,7 +1002,7 @@ with st.expander('Disease cases'):
                 tmp['date']=tmp['date'].astype(str)
                 tmp['date'] = pd.to_datetime(tmp['date'])
                 
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                     alt.X('date:T', title='report date'),
                     alt.Y('patient_info_dead_number:Q', title='reports'),
                     color=alt.Color('Category:N', legend=None)
@@ -1031,7 +1033,7 @@ with st.expander('Disease cases'):
                         for i in range(reports.shape[0]):
                             reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
                         reports=reports.sort_values('divisionname')
-                        reports['divisionname']=reports['divisionname'].str.capitalize()          
+                        reports['divisionname']=reports['divisionname'].str.title()          
                         for i in data['features']:
                             i['id']= i['properties']['shapeName'].replace(" Division","")
                 
@@ -1061,7 +1063,7 @@ with st.expander('Disease cases'):
                         for i in range(reports.shape[0]):
                             reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
                         reports=reports.sort_values('districtname')
-                        reports['districtname']=reports['districtname'].str.capitalize()
+                        reports['districtname']=reports['districtname'].str.title()
                         for i in data['features']:
                             i['id']= i['properties']['shapeName'].replace(" District","")
                         fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
@@ -1083,35 +1085,35 @@ with st.expander('Disease cases'):
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
                 subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
-                subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                #subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
                 #st.dataframe(subs_bahis_sourcedata)
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
                     
-                    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
                     
-                    sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+                    #sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
             
-                    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                    tmp=subs_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'index':'date'})
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('basic_info_date:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
                         ).properties(title='Registered reports')
                     st.altair_chart(line_chart, use_container_width=True)
                     
-                    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('patient_info_sick_number:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
@@ -1119,13 +1121,13 @@ with st.expander('Disease cases'):
                     st.altair_chart(line_chart, use_container_width=True)
                     
                     
-                    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('patient_info_dead_number:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
@@ -1156,7 +1158,7 @@ with st.expander('Disease cases'):
                         for i in range(reports.shape[0]):
                             reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
                         reports=reports.sort_values('districtname')
-                        reports['districtname']=reports['districtname'].str.capitalize()          
+                        reports['districtname']=reports['districtname'].str.title()          
                         for i in data['features']:
                             i['id']= i['properties']['shapeName'].replace(" District","")
                 
@@ -1186,7 +1188,7 @@ with st.expander('Disease cases'):
                         for i in range(reports.shape[0]):
                             reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
                         reports=reports.sort_values('upazilaname')
-                        reports['upazilaname']=reports['upazilaname'].str.capitalize()
+                        reports['upazilaname']=reports['upazilaname'].str.title()
                         for i in data['features']:
                             i['id']= i['properties']['shapeName'].replace(" Upazila","")
                         fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
@@ -1206,35 +1208,35 @@ with st.expander('Disease cases'):
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
                 subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
-                subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                #subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
                 #st.dataframe(subs_bahis_sourcedata)
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
     
-                    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
     
-                    sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+                    #sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
             
-                    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                    tmp=subs_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'index':'date'})
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('basic_info_date:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
                         ).properties(title='Registered reports')
                     st.altair_chart(line_chart, use_container_width=True)
                     
-                    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('patient_info_sick_number:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
@@ -1242,13 +1244,13 @@ with st.expander('Disease cases'):
                     st.altair_chart(line_chart, use_container_width=True)
                     
                     
-                    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
                     tmp['date'] = pd.to_datetime(tmp['date'])
                     
-                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                    line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                         alt.X('date:T', title='report date'),
                         alt.Y('patient_info_dead_number:Q', title='reports'),
                         color=alt.Color('Category:N', legend=None)
@@ -1279,7 +1281,7 @@ with st.expander('Disease cases'):
                            for i in range(reports.shape[0]):
                                reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
                            reports=reports.sort_values('upazilaname')
-                           reports['upazilaname']=reports['upazilaname'].str.capitalize()          
+                           reports['upazilaname']=reports['upazilaname'].str.title()          
                            for i in data['features']:
                                i['id']= i['properties']['shapeName'].replace(" Upazila","")
                    
@@ -1301,35 +1303,35 @@ with st.expander('Disease cases'):
                    #st.dataframe(subDist)
                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
-                   subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                   #subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
                    #st.dataframe(subs_bahis_sourcedata)
                    if subs_bahis_sourcedata.empty:
                        st.write('no data')
                    else: 
                        
-                       sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                       #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
                        
-                       sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+                       #sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
                
-                       tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                       tmp=subs_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
                        tmp=tmp.reset_index()
                        tmp=tmp.rename(columns={'index':'date'})
                        tmp['date'] = pd.to_datetime(tmp['date'])
                        
-                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                       line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode(
                            alt.X('date:T', title='report date'),
                            alt.Y('basic_info_date:Q', title='reports'),
                            color=alt.Color('Category:N', legend=None)
                            ).properties(title='Registered reports')
                        st.altair_chart(line_chart, use_container_width=True)
                        
-                       tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                       tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                        tmp=tmp.reset_index()
                        tmp=tmp.rename(columns={'basic_info_date':'date'})
                        tmp['date']=tmp['date'].astype(str)
                        tmp['date'] = pd.to_datetime(tmp['date'])
                        
-                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                       line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode(
                            alt.X('date:T', title='report date'),
                            alt.Y('patient_info_sick_number:Q', title='reports'),
                            color=alt.Color('Category:N', legend=None)
@@ -1337,13 +1339,13 @@ with st.expander('Disease cases'):
                        st.altair_chart(line_chart, use_container_width=True)
                        
                        
-                       tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                       tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                        tmp=tmp.reset_index()
                        tmp=tmp.rename(columns={'basic_info_date':'date'})
                        tmp['date']=tmp['date'].astype(str)
                        tmp['date'] = pd.to_datetime(tmp['date'])
                        
-                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                       line_chart= alt.Chart(tmp, height=180).mark_line(point=alt.OverlayMarkDef(color="red")).encode(
                            alt.X('date:T', title='report date'),
                            alt.Y('patient_info_dead_number:Q', title='reports'),
                            color=alt.Color('Category:N', legend=None)
