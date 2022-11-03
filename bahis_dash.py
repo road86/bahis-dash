@@ -865,7 +865,7 @@ with st.expander('Disease cases'):
     col1, col2, col3 = st.columns([2,3,5])
     with col1:
         itemlistDiv=pd.concat([pd.Series(['Select'], name='name'),bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()])
-        findDiv = st.selectbox('Divsion', itemlistDiv, key = 'div2')
+        findDiv = st.selectbox('Divsion', itemlistDiv, key = 'Div2')
     if findDiv != 'Select':
         indexDiv= subDist[subDist==findDiv.upper()].index[0]
         sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
@@ -886,14 +886,14 @@ with st.expander('Disease cases'):
                 upaList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDis]]['value'])]['name'].str.capitalize()
                 itemlistUpa=pd.concat([pd.Series(['Select'], name='name'),upaList])
         else:
-            findDis = st.selectbox('District', ['Select'])
+            findDis = st.selectbox('District', ['Select'], key = 'Dis2')
 #    with col3:
 #        st.write(disease_chosen)
     col1, col2 = st.columns([1,4])
     with col1:
         if findDiv!= 'Select':
             if findDis != 'Select':
-                findUpa= st.selectbox('Upazila', itemlistUpa)
+                findUpa= st.selectbox('Upazila', itemlistUpa, key = 'Upa2')
                 if findUpa != 'Select':
                     indexUpa = upaList[upaList==findUpa].index[0]
                     Upazila= int(bahis_geodata.iloc[[indexUpa]]['value'])
