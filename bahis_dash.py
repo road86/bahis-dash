@@ -907,135 +907,41 @@ with st.expander('Disease cases'):
     #dmask=(bahis_sourcedata['top_diagnosis']==dis_chosen)
     sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
     
-    
-    if findDiv == 'Select':
-        colMap, colBars= st.columns(2)
-        with colMap:
-            overview = st.checkbox("Checked for overall view - Unchecked for clustered map")
-            if overview:
-                path= path0
-                subDist=bahis_geodata
-                data = open_data(path)
-                #data = open_data(path)
-                for i in data['features']:
-                    i['id']= i['properties']['shapeName'].replace(" District","")
-                fig = px.choropleth_mapbox(data['features'],
-                                       geojson=data,
-                                       locations='id',
-                                       mapbox_style="carto-positron",
-                                       zoom=6,
-                                       center = {"lat": 23.7, "lon": 90},
-                                       opacity=0.5
-                                      )
-                fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, showlegend= False)
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                path= path1
-                subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-                reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
-                reports['divisionname'] = reports.index
-                reports= reports.loc[reports['divisionname'] != 'nan']    
-                data = open_data(path)
-                for i in range(reports.shape[0]):
-                    reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
-    #            reports=reports.sort_values('divisionname')
-                reports['divisionname']=reports['divisionname'].str.capitalize()
-                for i in data['features']:
-                    i['id']= i['properties']['shapeName'].replace(" Division","")
-    
-                fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
-                                        color_continuous_scale="Viridis",
-                                        range_color=(0, reports['basic_info_division'].max()),
-                                        mapbox_style="carto-positron",
-                                        zoom=6, center = {"lat": 23.7, "lon": 90},
-                                        opacity=0.5,
-                                        labels={'division':'Incidences per division'}
-                                      )
-                fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
-                st.plotly_chart(fig, use_container_width=True)
-        with colBars:
-            
-            st.subheader('Bangladesh') 
-            
-            #st.subheader('Reports')
-            sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
-            #st.write('Registered reports')
-            #tmp=sub_bahis_sourcedata['basic_info_date'].value_counts()
-            #tmp.index=pd.to_datetime(tmp.index)
-            #st.line_chart(sub_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
-            
-            sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
-    
-            tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
-            tmp=tmp.reset_index()
-            tmp=tmp.rename(columns={'index':'date'})
-            tmp['date'] = pd.to_datetime(tmp['date'])
-            
-            line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                alt.X('date:T', title='report date'),
-                alt.Y('basic_info_date:Q', title='reports'),
-                color=alt.Color('Category:N', legend=None)
-                ).properties(title='Registered reports')
-            st.altair_chart(line_chart, use_container_width=True)
- 
-            # st.subheader('Sick Counts')
-            # st.write('Registered sick animals')
-            
-            tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-            tmp=tmp.reset_index()
-            tmp=tmp.rename(columns={'basic_info_date':'date'})
-            tmp['date']=tmp['date'].astype(str)
-            tmp['date'] = pd.to_datetime(tmp['date'])
-            
-            line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                alt.X('date:T', title='report date'),
-                alt.Y('patient_info_sick_number:Q', title='reports'),
-                color=alt.Color('Category:N', legend=None)
-                ).properties(title='Registered sick animals')
-            st.altair_chart(line_chart, use_container_width=True)
-            
-            
-            tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-            tmp=tmp.reset_index()
-            tmp=tmp.rename(columns={'basic_info_date':'date'})
-            tmp['date']=tmp['date'].astype(str)
-            tmp['date'] = pd.to_datetime(tmp['date'])
-            
-            line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                alt.X('date:T', title='report date'),
-                alt.Y('patient_info_dead_number:Q', title='reports'),
-                color=alt.Color('Category:N', legend=None)
-                ).properties(title='Registered dead animals')
-            st.altair_chart(line_chart, use_container_width=True)
-            
-            #st.line_chart(sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-            #st.subheader('Dead Counts')
-            #st.write('Registered dead animals')
-            #st.line_chart(sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-    
-    if (findDiv != 'Select') and (findDis == 'Select'):
-        colMap, colBar = st.columns(2)
-        with colMap:
-            overview = st.checkbox("Toggle: Overview Map - Clustered Map" , key = 'tog')
-            if overview:
-                path= path1
-                subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
-                geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
-                if subs_bahis_sourcedata.empty:
-                    st.write('no data')
-                else:  
-                    reports = subs_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+    if disease_chosen :
+        if findDiv == 'Select':
+            colMap, colBars= st.columns(2)
+            with colMap:
+                overview = st.checkbox("Checked for overall view - Unchecked for clustered map" , key = 'tog2')
+                if overview:
+                    path= path0
+                    subDist=bahis_geodata
+                    data = open_data(path)
+                    for i in data['features']:
+                        i['id']= i['properties']['shapeName'].replace(" District","")
+                    fig = px.choropleth_mapbox(data['features'],
+                                           geojson=data,
+                                           locations='id',
+                                           mapbox_style="carto-positron",
+                                           zoom=6,
+                                           center = {"lat": 23.7, "lon": 90},
+                                           opacity=0.5
+                                          )
+                    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, showlegend= False)
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    path= path1
+                    subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
+                    reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
                     reports['divisionname'] = reports.index
-                    reports= reports.loc[reports['divisionname'] != 'nan']
+                    reports= reports.loc[reports['divisionname'] != 'nan']    
                     data = open_data(path)
                     for i in range(reports.shape[0]):
                         reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
-                    reports=reports.sort_values('divisionname')
-                    reports['divisionname']=reports['divisionname'].str.capitalize()          
+        #            reports=reports.sort_values('divisionname')
+                    reports['divisionname']=reports['divisionname'].str.capitalize()
                     for i in data['features']:
                         i['id']= i['properties']['shapeName'].replace(" Division","")
-            
+        
                     fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
                                             color_continuous_scale="Viridis",
                                             range_color=(0, reports['basic_info_division'].max()),
@@ -1046,51 +952,16 @@ with st.expander('Disease cases'):
                                           )
                     fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
                     st.plotly_chart(fig, use_container_width=True)
-            else:
-                path= path2
-                subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-                geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
-                if subs_bahis_sourcedata.empty:
-                    st.write('no data')
-                else:                
-                    reports = subs_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
-                    reports['districtname'] = reports.index
-                    reports= reports.loc[reports['districtname'] != 'nan']
-                    subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
-                    data = open_data(path)
-                    for i in range(reports.shape[0]):
-                        reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
-                    reports=reports.sort_values('districtname')
-                    reports['districtname']=reports['districtname'].str.capitalize()
-                    for i in data['features']:
-                        i['id']= i['properties']['shapeName'].replace(" District","")
-                    fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
-                                            color_continuous_scale="Viridis",
-                                            range_color=(0, reports['basic_info_district'].max()),
-                                            mapbox_style="carto-positron",
-                                            zoom=6, center = {"lat": 23.7, "lon": 90},
-                                            opacity=0.5,
-                                            labels={'district':'Incidences per district'}
-                                          )
-                    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
-                    st.plotly_chart(fig, use_container_width=True)
+            with colBars:
                 
-        with colBar:
-            
-            st.subheader(findDiv.capitalize()) 
-            
-            #st.subheader('Reports')
-            subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
-            geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-            subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
-            subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
-            #st.dataframe(subs_bahis_sourcedata)
-            if subs_bahis_sourcedata.empty:
-                st.write('no data')
-            else: 
+                st.subheader('Bangladesh') 
                 
+                #st.subheader('Reports')
                 sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                #st.write('Registered reports')
+                #tmp=sub_bahis_sourcedata['basic_info_date'].value_counts()
+                #tmp.index=pd.to_datetime(tmp.index)
+                #st.line_chart(sub_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
                 
                 sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
         
@@ -1105,6 +976,9 @@ with st.expander('Disease cases'):
                     color=alt.Color('Category:N', legend=None)
                     ).properties(title='Registered reports')
                 st.altair_chart(line_chart, use_container_width=True)
+     
+                # st.subheader('Sick Counts')
+                # st.write('Registered sick animals')
                 
                 tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                 tmp=tmp.reset_index()
@@ -1133,221 +1007,346 @@ with st.expander('Disease cases'):
                     ).properties(title='Registered dead animals')
                 st.altair_chart(line_chart, use_container_width=True)
                 
-                # st.line_chart(subs_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
-                # st.line_chart(subs_bahis_sourcedata['patient_info_sick_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-                # st.line_chart(subs_bahis_sourcedata['patient_info_dead_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-         
-
-    if (findDiv != 'Select') and (findDis != 'Select') and (findUpa =='Select'):
-        colMap, colBar = st.columns(2)
-        with colMap:
-            overview = st.checkbox("Toggle: Overview Map - Clustered Map", key = 'tog')
-            if overview:
-                path= path2
+                #st.line_chart(sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+                #st.subheader('Dead Counts')
+                #st.write('Registered dead animals')
+                #st.line_chart(sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+        
+        if (findDiv != 'Select') and (findDis == 'Select'):
+            colMap, colBar = st.columns(2)
+            with colMap:
+                overview = st.checkbox("Toggle: Overview Map - Clustered Map" , key = 'tog2')
+                if overview:
+                    path= path1
+                    subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
+                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
+                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    if subs_bahis_sourcedata.empty:
+                        st.write('no data')
+                    else:  
+                        reports = subs_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+                        reports['divisionname'] = reports.index
+                        reports= reports.loc[reports['divisionname'] != 'nan']
+                        data = open_data(path)
+                        for i in range(reports.shape[0]):
+                            reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
+                        reports=reports.sort_values('divisionname')
+                        reports['divisionname']=reports['divisionname'].str.capitalize()          
+                        for i in data['features']:
+                            i['id']= i['properties']['shapeName'].replace(" Division","")
+                
+                        fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
+                                                color_continuous_scale="Viridis",
+                                                range_color=(0, reports['basic_info_division'].max()),
+                                                mapbox_style="carto-positron",
+                                                zoom=6, center = {"lat": 23.7, "lon": 90},
+                                                opacity=0.5,
+                                                labels={'division':'Incidences per division'}
+                                              )
+                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+                        st.plotly_chart(fig, use_container_width=True)
+                else:
+                    path= path2
+                    subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
+                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
+                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    if subs_bahis_sourcedata.empty:
+                        st.write('no data')
+                    else:                
+                        reports = subs_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
+                        reports['districtname'] = reports.index
+                        reports= reports.loc[reports['districtname'] != 'nan']
+                        subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
+                        data = open_data(path)
+                        for i in range(reports.shape[0]):
+                            reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
+                        reports=reports.sort_values('districtname')
+                        reports['districtname']=reports['districtname'].str.capitalize()
+                        for i in data['features']:
+                            i['id']= i['properties']['shapeName'].replace(" District","")
+                        fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
+                                                color_continuous_scale="Viridis",
+                                                range_color=(0, reports['basic_info_district'].max()),
+                                                mapbox_style="carto-positron",
+                                                zoom=6, center = {"lat": 23.7, "lon": 90},
+                                                opacity=0.5,
+                                                labels={'district':'Incidences per district'}
+                                              )
+                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+                        st.plotly_chart(fig, use_container_width=True)
+                    
+            with colBar:
+                
+                st.subheader(findDiv.capitalize()) 
+                
+                #st.subheader('Reports')
+                subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
+                geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
+                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                #st.dataframe(subs_bahis_sourcedata)
+                if subs_bahis_sourcedata.empty:
+                    st.write('no data')
+                else: 
+                    
+                    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                    
+                    sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+            
+                    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'index':'date'})
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('basic_info_date:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered reports')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'basic_info_date':'date'})
+                    tmp['date']=tmp['date'].astype(str)
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('patient_info_sick_number:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered sick animals')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    
+                    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'basic_info_date':'date'})
+                    tmp['date']=tmp['date'].astype(str)
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('patient_info_dead_number:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered dead animals')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    # st.line_chart(subs_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
+                    # st.line_chart(subs_bahis_sourcedata['patient_info_sick_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+                    # st.line_chart(subs_bahis_sourcedata['patient_info_dead_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+             
+    
+        if (findDiv != 'Select') and (findDis != 'Select') and (findUpa =='Select'):
+            colMap, colBar = st.columns(2)
+            with colMap:
+                overview = st.checkbox("Toggle: Overview Map - Clustered Map", key = 'tog2')
+                if overview:
+                    path= path2
+                    subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
+                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
+                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                    if subs_bahis_sourcedata.empty:
+                        st.write('no data')
+                    else:  
+                        reports = subs_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
+                        reports['districtname'] = reports.index
+                        reports= reports.loc[reports['districtname'] != 'nan']
+                        data = open_data(path)
+                        for i in range(reports.shape[0]):
+                            reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
+                        reports=reports.sort_values('districtname')
+                        reports['districtname']=reports['districtname'].str.capitalize()          
+                        for i in data['features']:
+                            i['id']= i['properties']['shapeName'].replace(" District","")
+                
+                        fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
+                                                color_continuous_scale="Viridis",
+                                                range_color=(0, reports['basic_info_district'].max()),
+                                                mapbox_style="carto-positron",
+                                                zoom=6, center = {"lat": 23.7, "lon": 90},
+                                                opacity=0.5,
+                                                labels={'district':'Incidences per district'}
+                                              )
+                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+                        st.plotly_chart(fig, use_container_width=True)
+                else:
+                    path= path3
+                    subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
+                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
+                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
+                    if subs_bahis_sourcedata.empty:
+                        st.write('no data')
+                    else:                
+                        reports = subs_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
+                        reports['upazilaname'] = reports.index
+                        reports= reports.loc[reports['upazilaname'] != 'nan']
+                        subDist=bahis_geodata[(bahis_geodata["loc_type"]==3)] 
+                        data = open_data(path)
+                        for i in range(reports.shape[0]):
+                            reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
+                        reports=reports.sort_values('upazilaname')
+                        reports['upazilaname']=reports['upazilaname'].str.capitalize()
+                        for i in data['features']:
+                            i['id']= i['properties']['shapeName'].replace(" Upazila","")
+                        fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
+                                                color_continuous_scale="Viridis",
+                                                range_color=(0, reports['basic_info_upazila'].max()),
+                                                mapbox_style="carto-positron",
+                                                zoom=6, center = {"lat": 23.7, "lon": 90},
+                                                opacity=0.5,
+                                                labels={'upazila':'Incidences per upazila'}
+                                              )
+                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+                        st.plotly_chart(fig, use_container_width=True)
+                    
+            with colBar:
+                st.subheader(findDis.capitalize()) 
+                #st.subheader('Reports')
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
                 subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                #st.dataframe(subs_bahis_sourcedata)
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
-                else:  
-                    reports = subs_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
-                    reports['districtname'] = reports.index
-                    reports= reports.loc[reports['districtname'] != 'nan']
-                    data = open_data(path)
-                    for i in range(reports.shape[0]):
-                        reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
-                    reports=reports.sort_values('districtname')
-                    reports['districtname']=reports['districtname'].str.capitalize()          
-                    for i in data['features']:
-                        i['id']= i['properties']['shapeName'].replace(" District","")
+                else: 
+    
+                    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+    
+                    sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
             
-                    fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
-                                            color_continuous_scale="Viridis",
-                                            range_color=(0, reports['basic_info_district'].max()),
-                                            mapbox_style="carto-positron",
-                                            zoom=6, center = {"lat": 23.7, "lon": 90},
-                                            opacity=0.5,
-                                            labels={'district':'Incidences per district'}
-                                          )
-                    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
-                    st.plotly_chart(fig, use_container_width=True)
-            else:
-                path= path3
-                subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
-                geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
-                if subs_bahis_sourcedata.empty:
-                    st.write('no data')
-                else:                
-                    reports = subs_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
-                    reports['upazilaname'] = reports.index
-                    reports= reports.loc[reports['upazilaname'] != 'nan']
-                    subDist=bahis_geodata[(bahis_geodata["loc_type"]==3)] 
-                    data = open_data(path)
-                    for i in range(reports.shape[0]):
-                        reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
-                    reports=reports.sort_values('upazilaname')
-                    reports['upazilaname']=reports['upazilaname'].str.capitalize()
-                    for i in data['features']:
-                        i['id']= i['properties']['shapeName'].replace(" Upazila","")
-                    fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
-                                            color_continuous_scale="Viridis",
-                                            range_color=(0, reports['basic_info_upazila'].max()),
-                                            mapbox_style="carto-positron",
-                                            zoom=6, center = {"lat": 23.7, "lon": 90},
-                                            opacity=0.5,
-                                            labels={'upazila':'Incidences per upazila'}
-                                          )
-                    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
-                    st.plotly_chart(fig, use_container_width=True)
-                
-        with colBar:
-            st.subheader(findDis.capitalize()) 
-            #st.subheader('Reports')
-            subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
-            geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-            subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
-            subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
-            #st.dataframe(subs_bahis_sourcedata)
-            if subs_bahis_sourcedata.empty:
-                st.write('no data')
-            else: 
-
-                sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
-
-                sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
-        
-                tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
-                tmp=tmp.reset_index()
-                tmp=tmp.rename(columns={'index':'date'})
-                tmp['date'] = pd.to_datetime(tmp['date'])
-                
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                    alt.X('date:T', title='report date'),
-                    alt.Y('basic_info_date:Q', title='reports'),
-                    color=alt.Color('Category:N', legend=None)
-                    ).properties(title='Registered reports')
-                st.altair_chart(line_chart, use_container_width=True)
-                
-                tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-                tmp=tmp.reset_index()
-                tmp=tmp.rename(columns={'basic_info_date':'date'})
-                tmp['date']=tmp['date'].astype(str)
-                tmp['date'] = pd.to_datetime(tmp['date'])
-                
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                    alt.X('date:T', title='report date'),
-                    alt.Y('patient_info_sick_number:Q', title='reports'),
-                    color=alt.Color('Category:N', legend=None)
-                    ).properties(title='Registered sick animals')
-                st.altair_chart(line_chart, use_container_width=True)
-                
-                
-                tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-                tmp=tmp.reset_index()
-                tmp=tmp.rename(columns={'basic_info_date':'date'})
-                tmp['date']=tmp['date'].astype(str)
-                tmp['date'] = pd.to_datetime(tmp['date'])
-                
-                line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
-                    alt.X('date:T', title='report date'),
-                    alt.Y('patient_info_dead_number:Q', title='reports'),
-                    color=alt.Color('Category:N', legend=None)
-                    ).properties(title='Registered dead animals')
-                st.altair_chart(line_chart, use_container_width=True)
-                
-                # st.line_chart(subs_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
-                # st.line_chart(subs_bahis_sourcedata['patient_info_sick_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-                # st.line_chart(subs_bahis_sourcedata['patient_info_dead_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
-      
-                  
-    if (findDiv != 'Select') and (findDis != 'Select') and (findUpa !='Select'):
-           colMap, colBar = st.columns(2)
-           with colMap:
-                   overview = st.checkbox("Toggle: Overview Map - Clustered Map", disabled= True, key = 'Upa2')
-           #    if overview:
-                   path= path3
-                   subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
+                    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'index':'date'})
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('basic_info_date:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered reports')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'basic_info_date':'date'})
+                    tmp['date']=tmp['date'].astype(str)
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('patient_info_sick_number:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered sick animals')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    
+                    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=tmp.reset_index()
+                    tmp=tmp.rename(columns={'basic_info_date':'date'})
+                    tmp['date']=tmp['date'].astype(str)
+                    tmp['date'] = pd.to_datetime(tmp['date'])
+                    
+                    line_chart= alt.Chart(tmp, height=180).mark_line().encode( #interpolate='basis').encode(
+                        alt.X('date:T', title='report date'),
+                        alt.Y('patient_info_dead_number:Q', title='reports'),
+                        color=alt.Color('Category:N', legend=None)
+                        ).properties(title='Registered dead animals')
+                    st.altair_chart(line_chart, use_container_width=True)
+                    
+                    # st.line_chart(subs_bahis_sourcedata['basic_info_date'].value_counts(), height=150)
+                    # st.line_chart(subs_bahis_sourcedata['patient_info_sick_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+                    # st.line_chart(subs_bahis_sourcedata['patient_info_dead_number'].groupby(subs_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum(), height=150)
+          
+                      
+        if (findDiv != 'Select') and (findDis != 'Select') and (findUpa !='Select'):
+               colMap, colBar = st.columns(2)
+               with colMap:
+                       overview = st.checkbox("Toggle: Overview Map - Clustered Map", disabled= True, key = 'tog2')
+               #    if overview:
+                       path= path3
+                       subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
+                       geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
+                       subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                       if subs_bahis_sourcedata.empty:
+                           st.write('no data')
+                       else:  
+                           reports = subs_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
+                           reports['upazilaname'] = reports.index
+                           reports= reports.loc[reports['upazilaname'] != 'nan']
+                           data = open_data(path)
+                           for i in range(reports.shape[0]):
+                               reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
+                           reports=reports.sort_values('upazilaname')
+                           reports['upazilaname']=reports['upazilaname'].str.capitalize()          
+                           for i in data['features']:
+                               i['id']= i['properties']['shapeName'].replace(" Upazila","")
+                   
+                           fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
+                                                   color_continuous_scale="Viridis",
+                                                   range_color=(0, reports['basic_info_upazila'].max()),
+                                                   mapbox_style="carto-positron",
+                                                   zoom=6, center = {"lat": 23.7, "lon": 90},
+                                                   opacity=0.5,
+                                                   labels={'upazila':'Incidences per upazila'}
+                                                 )
+                           fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+                           st.plotly_chart(fig, use_container_width=True)
+                       
+               with colBar:
+                   st.subheader(findUpa.capitalize()) 
+                   #st.subheader('Reports')
+                   subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]    
+                   #st.dataframe(subDist)
                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                   subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
+                   #st.dataframe(subs_bahis_sourcedata)
                    if subs_bahis_sourcedata.empty:
                        st.write('no data')
-                   else:  
-                       reports = subs_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
-                       reports['upazilaname'] = reports.index
-                       reports= reports.loc[reports['upazilaname'] != 'nan']
-                       data = open_data(path)
-                       for i in range(reports.shape[0]):
-                           reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
-                       reports=reports.sort_values('upazilaname')
-                       reports['upazilaname']=reports['upazilaname'].str.capitalize()          
-                       for i in data['features']:
-                           i['id']= i['properties']['shapeName'].replace(" Upazila","")
+                   else: 
+                       
+                       sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+                       
+                       sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
                
-                       fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
-                                               color_continuous_scale="Viridis",
-                                               range_color=(0, reports['basic_info_upazila'].max()),
-                                               mapbox_style="carto-positron",
-                                               zoom=6, center = {"lat": 23.7, "lon": 90},
-                                               opacity=0.5,
-                                               labels={'upazila':'Incidences per upazila'}
-                                             )
-                       fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
-                       st.plotly_chart(fig, use_container_width=True)
-                   
-           with colBar:
-               st.subheader(findUpa.capitalize()) 
-               #st.subheader('Reports')
-               subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]    
-               #st.dataframe(subDist)
-               geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-               subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
-               subs_bahis_sourcedata=subs_bahis_sourcedata.loc[tmask]
-               #st.dataframe(subs_bahis_sourcedata)
-               if subs_bahis_sourcedata.empty:
-                   st.write('no data')
-               else: 
-                   
-                   sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
-                   
-                   sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
-           
-                   tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
-                   tmp=tmp.reset_index()
-                   tmp=tmp.rename(columns={'index':'date'})
-                   tmp['date'] = pd.to_datetime(tmp['date'])
-                   
-                   line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
-                       alt.X('date:T', title='report date'),
-                       alt.Y('basic_info_date:Q', title='reports'),
-                       color=alt.Color('Category:N', legend=None)
-                       ).properties(title='Registered reports')
-                   st.altair_chart(line_chart, use_container_width=True)
-                   
-                   tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-                   tmp=tmp.reset_index()
-                   tmp=tmp.rename(columns={'basic_info_date':'date'})
-                   tmp['date']=tmp['date'].astype(str)
-                   tmp['date'] = pd.to_datetime(tmp['date'])
-                   
-                   line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
-                       alt.X('date:T', title='report date'),
-                       alt.Y('patient_info_sick_number:Q', title='reports'),
-                       color=alt.Color('Category:N', legend=None)
-                       ).properties(title='Registered sick animals')
-                   st.altair_chart(line_chart, use_container_width=True)
-                   
-                   
-                   tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-                   tmp=tmp.reset_index()
-                   tmp=tmp.rename(columns={'basic_info_date':'date'})
-                   tmp['date']=tmp['date'].astype(str)
-                   tmp['date'] = pd.to_datetime(tmp['date'])
-                   
-                   line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
-                       alt.X('date:T', title='report date'),
-                       alt.Y('patient_info_dead_number:Q', title='reports'),
-                       color=alt.Color('Category:N', legend=None)
-                       ).properties(title='Registered dead animals')
-                   st.altair_chart(line_chart, use_container_width=True)
-  
+                       tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                       tmp=tmp.reset_index()
+                       tmp=tmp.rename(columns={'index':'date'})
+                       tmp['date'] = pd.to_datetime(tmp['date'])
+                       
+                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                           alt.X('date:T', title='report date'),
+                           alt.Y('basic_info_date:Q', title='reports'),
+                           color=alt.Color('Category:N', legend=None)
+                           ).properties(title='Registered reports')
+                       st.altair_chart(line_chart, use_container_width=True)
+                       
+                       tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                       tmp=tmp.reset_index()
+                       tmp=tmp.rename(columns={'basic_info_date':'date'})
+                       tmp['date']=tmp['date'].astype(str)
+                       tmp['date'] = pd.to_datetime(tmp['date'])
+                       
+                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                           alt.X('date:T', title='report date'),
+                           alt.Y('patient_info_sick_number:Q', title='reports'),
+                           color=alt.Color('Category:N', legend=None)
+                           ).properties(title='Registered sick animals')
+                       st.altair_chart(line_chart, use_container_width=True)
+                       
+                       
+                       tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                       tmp=tmp.reset_index()
+                       tmp=tmp.rename(columns={'basic_info_date':'date'})
+                       tmp['date']=tmp['date'].astype(str)
+                       tmp['date'] = pd.to_datetime(tmp['date'])
+                       
+                       line_chart= alt.Chart(tmp, height=180).mark_line(interpolate='basis').encode(
+                           alt.X('date:T', title='report date'),
+                           alt.Y('patient_info_dead_number:Q', title='reports'),
+                           color=alt.Color('Category:N', legend=None)
+                           ).properties(title='Registered dead animals')
+                       st.altair_chart(line_chart, use_container_width=True)
+      
