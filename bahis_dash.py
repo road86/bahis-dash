@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 gifpath = 'logos/'
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
-sourcefilename =sourcepath + 'preped_data.csv'
+sourcefilename =sourcepath + 'preped_data2.csv'
 path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
 path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
