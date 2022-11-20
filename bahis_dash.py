@@ -77,11 +77,11 @@ with colInd1:
 with colInd2:
     tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
     diffsick=tmp_sub_data.sum().item()
-    st.metric('total reported sick animals and last 30 days in green', value=bahis_sourcedata['patient_info_sick_number'].sum(), delta= diffsick)  # less by one compared to libreoffice...?
+    st.metric('total reported sick animals and last 30 days in green', value=int(bahis_sourcedata['patient_info_sick_number'].sum()), delta= diffsick)  # less by one compared to libreoffice...?
 with colInd3:
     tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
     diffdead=tmp_sub_data.sum().item()
-    st.metric('total reported dead animals and last 30 days in green', value=bahis_sourcedata['patient_info_dead_number'].sum(), delta = diffdead)
+    st.metric('total reported dead animals and last 30 days in green', value=int(bahis_sourcedata['patient_info_dead_number'].sum()), delta = diffdead)
 
 def open_data(path):
     with open(path) as f:
@@ -98,7 +98,10 @@ date_placeholder=st.empty()
 
 st.header('# Please select the date range for the following reports')
 dates = st.slider('', start_date, end_date, (start_date, end_date))
-tmask=(bahis_sourcedata['basic_info_date']> pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] < pd.to_datetime(dates[1]))
+tmask=(bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
+
+########## tmask reduces overall numbers by 25 for all or 11 by new even if min max is selected###############
+
 
 st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
 
