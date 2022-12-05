@@ -1044,7 +1044,7 @@ with tabMonthComp:
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
         itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
-        disease_chosen= st.multiselect('Disease', itemlistDiseases, key='MonDis')
+        disease_chosen= st.multiselect('Disease', itemlistDiseases, key='MonDisease')
     
     col1, col2, col3 = st.columns([1,1,1])
     with col1:
