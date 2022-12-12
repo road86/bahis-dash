@@ -27,13 +27,31 @@ path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
 path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
 path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
-bahis_geodata = pd.read_csv(geofilename)
-bahis_sourcedata = pd.read_csv(sourcefilename)
 
-bahis_sourcedata['basic_info_division'] = pd.to_numeric(bahis_sourcedata['basic_info_division'])
-bahis_sourcedata['basic_info_district'] = pd.to_numeric(bahis_sourcedata['basic_info_district'])
-bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(bahis_sourcedata['basic_info_upazila'])
-bahis_sourcedata['basic_info_date'] = pd.to_datetime(bahis_sourcedata['basic_info_date'])
+img_logo= 'logos/Logo.png'
+
+st.set_page_config(layout="wide")                            # streamlit commands addressed with st (see import)
+
+st.image(img_logo, width=400)
+
+st.title('BAHIS dashboard')
+
+
+@st.cache
+def fetchgeodata():
+    return pd.read_csv(geofilename)
+
+@st.cache
+def fetchsourcedata():
+    bahis_sourcedata = pd.read_csv(sourcefilename)
+    bahis_sourcedata['basic_info_division'] = pd.to_numeric(bahis_sourcedata['basic_info_division'])
+    bahis_sourcedata['basic_info_district'] = pd.to_numeric(bahis_sourcedata['basic_info_district'])
+    bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(bahis_sourcedata['basic_info_upazila'])
+    bahis_sourcedata['basic_info_date'] = pd.to_datetime(bahis_sourcedata['basic_info_date'])
+    return bahis_sourcedata
+
+bahis_geodata= fetchgeodata()
+bahis_sourcedata= fetchsourcedata()
 
 # get all data from 1.1.2019
 bahis_sourcedata=bahis_sourcedata.loc[bahis_sourcedata['basic_info_date']>=pd.to_datetime("20190101")]
@@ -59,14 +77,6 @@ for i in range(reports.shape[0]):
 reports=reports.sort_values('basic_info_'+str(value1))
 reports['basic_info_'+str(value1)]=reports['basic_info_'+str(value1)].str.title()
 
-
-img_logo= 'logos/Logo.png'
-
-st.set_page_config(layout="wide")                            # streamlit commands addressed with st (see import)
-
-st.image(img_logo, width=400)
-
-st.title('BAHIS dashboard')
 
 bahis_sourcedata['basic_info_date']=pd.to_datetime(bahis_sourcedata.basic_info_date).dt.tz_localize(None).astype('datetime64[ns]')
 mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
@@ -1370,14 +1380,6 @@ with tabRepCase:
     diseaselist= bahis_sourcedata['top_diagnosis'].unique()
     diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
     diseaselist=diseaselist.sort_values(by=['Disease'])  
-    
-    # st.header('# Please select disease(s) for the report:')
-    # colph1, colph2, colph3 = st.columns(3)
-    # with colph1:
-    #     itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
-    #     itemlistDiseases=pd.concat([pd.Series(['Large Animal Related'], name='Disease'),itemlistDiseases.squeeze()])
-    #     itemlistDiseases=pd.concat([pd.Series(['Poultry Related'], name='Disease'),itemlistDiseases.squeeze()])
-    #     disease_chosen= st.multiselect('Disease', itemlistDiseases, key='RepCase')
         
     col1, col2, col3 = st.columns([1,1,1])
     with col1:
@@ -1491,39 +1493,7 @@ with tabRepCase:
                 y=alt.Y('top_diagnosis:O', sort='-x')
                 ).properties(title='Large Animal Related Diseases')
             st.altair_chart(line_chart, use_container_width=True)             
-                                    
-            
-            # tmp=tmp.reset_index()
-            # tmp=tmp.rename(columns={'basic_info_date':'date'})
-            # tmp['date']=tmp['date'].astype(str)
-            # tmp['date'] = pd.to_datetime(tmp['date'])
-            # tots= str(sub_bahis_sourcedata['patient_info_sick_number'].sum())
-            
-            # line_chart= alt.Chart(tmp, height=250).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
-            #     alt.X('date:T', title='report date'),
-            #     alt.Y('patient_info_sick_number:Q', title='reports'),
-            #     color=alt.Color('Category:N', legend=None)
-            #     ).properties(title='Registered sick animals :  ' + tots)
-            
-
-            
-            # st.subheader('Registered dead animals')            
-            # tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
-            # tmp=tmp.reset_index()
-            # tmp=tmp.rename(columns={'basic_info_date':'date'})
-            # tmp['date']=tmp['date'].astype(str)
-            # tmp['date'] = pd.to_datetime(tmp['date'])
-            # tots= str(sub_bahis_sourcedata['patient_info_dead_number'].sum())
-            
-            # line_chart= alt.Chart(tmp, height=250).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
-            #     alt.X('date:T', title='report date'),
-            #     alt.Y('patient_info_dead_number:Q', title='reports'),
-            #     color=alt.Color('Category:N', legend=None)
-            #     ).properties(title='Registered dead animals :  ' + tots) 
-            # st.altair_chart(line_chart, use_container_width=True)
-            
-            
-            
+                                        
     
     if (findDiv != 'Select') and (findDis == 'Select'):
         colMap, colBar = st.columns([1,2])
