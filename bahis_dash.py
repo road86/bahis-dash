@@ -29,109 +29,118 @@ path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 
 img_logo= 'logos/Logo.png'
-
 st.set_page_config(layout="wide")                            # streamlit commands addressed with st (see import)
-
 st.image(img_logo, width=400)
 
 st.title('BAHIS dashboard')
-    
+   
 
 @st.cache
 def fetchgeodata():
     return pd.read_csv(geofilename)
+bahis_geodata= fetchgeodata()
 
 @st.cache
 def fetchsourcedata():
-    bahis_sourcedata = pd.read_csv(sourcefilename)
-    bahis_sourcedata['basic_info_division'] = pd.to_numeric(bahis_sourcedata['basic_info_division'])
-    bahis_sourcedata['basic_info_district'] = pd.to_numeric(bahis_sourcedata['basic_info_district'])
-    bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(bahis_sourcedata['basic_info_upazila'])
-    bahis_sourcedata['basic_info_date'] = pd.to_datetime(bahis_sourcedata['basic_info_date'])
-    return bahis_sourcedata
-
-bahis_geodata= fetchgeodata()
+    bahis_sd = pd.read_csv(sourcefilename)
+    bahis_sd['basic_info_division'] = pd.to_numeric(bahis_sd['basic_info_division'])
+    bahis_sd['basic_info_district'] = pd.to_numeric(bahis_sd['basic_info_district'])
+    bahis_sd['basic_info_upazila'] = pd.to_numeric(bahis_sd['basic_info_upazila'])
+    bahis_sd['basic_info_date'] = pd.to_datetime(bahis_sd['basic_info_date'])
+    return bahis_sd
 bahis_sourcedata= fetchsourcedata()
 
-# get all data from 1.1.2019
+# FILTER: get all data from 1.1.2019 
 bahis_sourcedata=bahis_sourcedata.loc[bahis_sourcedata['basic_info_date']>=pd.to_datetime("20190101")]
 
 start_date=min(bahis_sourcedata['basic_info_date']).date()
 end_date=max(bahis_sourcedata['basic_info_date']).date()
 dates=[start_date, end_date]
-sub_bahis_sourcedata=bahis_sourcedata
 
-value1='division'
-geocode= 1
-path=path1
-subDist=bahis_geodata[(bahis_geodata["loc_type"]==geocode)]
-divisions=list(bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'])
+def show_metrics():
 
-reports = sub_bahis_sourcedata['basic_info_'+str(value1)].value_counts().rename_axis('basic_info_'+str(value1)).reset_index(name='counts')
-reports= reports.loc[reports['basic_info_'+str(value1)] != 'nan']
+    ###################
+    # initial parameter ?? maybe can be deleted, as it is old now unused code
+    # value1='division'
+    # geocode= 1
+    # path=path1
+    # subDist=bahis_geodata[(bahis_geodata["loc_type"]==geocode)]
+    # divisions=list(bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'])
+    
+    # sub_bahis_sourcedata=bahis_sourcedata
+    
+    # reports = sub_bahis_sourcedata['basic_info_'+str(value1)].value_counts().rename_axis('basic_info_'+str(value1)).reset_index(name='counts')
+    # reports= reports.loc[reports['basic_info_'+str(value1)] != 'nan']
+    
+    # #finger = reports.shape
+    # subDist.set_index('name')
+    # for i in range(reports.shape[0]):
+    #         reports['basic_info_'+str(value1)].iloc[i] = subDist.loc[subDist['value']==int(reports['basic_info_'+str(value1)].iloc[i]),'name'].iloc[0]
+            
+    # reports=reports.sort_values('basic_info_'+str(value1))
+    # reports['basic_info_'+str(value1)]=reports['basic_info_'+str(value1)].str.title()
+    ####################
+    
+    bahis_sourcedata['basic_info_date']=pd.to_datetime(bahis_sourcedata.basic_info_date).dt.tz_localize(None).astype('datetime64[ns]')
+    mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    
+    colInd0, colInd1, colInd2, colInd3 = st.columns(4)
+    with colInd0:
+        st.header('National numbers:')
+    with colInd1:
+        tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
+        diff=tmp_sub_data.shape[0]
+        st.metric('cumulated reports and last 30 days reports in green', value=f"{bahis_sourcedata.shape[0]:,}", delta=diff)
+    with colInd2:
+        tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
+        diffsick=int(tmp_sub_data.sum().item())
+        st.metric('total reported sick animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}", delta= diffsick)  # less by one compared to libreoffice...?
+    with colInd3:
+        tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
+        diffdead=int(tmp_sub_data.sum().item())
+        st.metric('total reported dead animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}", delta = diffdead)
+show_metrics()
 
-finger = reports.shape
-subDist.set_index('name')
-for i in range(reports.shape[0]):
-        reports['basic_info_'+str(value1)].iloc[i] = subDist.loc[subDist['value']==int(reports['basic_info_'+str(value1)].iloc[i]),'name'].iloc[0]
-reports=reports.sort_values('basic_info_'+str(value1))
-reports['basic_info_'+str(value1)]=reports['basic_info_'+str(value1)].str.title()
+########## maybe old unused code
+# def open_data(path):
+#     with open(path) as f:
+#         data = json.load(f)
+#         return data
 
+# data = open_data(path)
 
-bahis_sourcedata['basic_info_date']=pd.to_datetime(bahis_sourcedata.basic_info_date).dt.tz_localize(None).astype('datetime64[ns]')
-mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
-
-colInd0, colInd1, colInd2, colInd3 = st.columns(4)
-with colInd0:
-    st.header('National numbers:')
-with colInd1:
-    tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
-    diff=tmp_sub_data.shape[0]
-    st.metric('cumulated reports and last 30 days reports in green', value=f"{bahis_sourcedata.shape[0]:,}", delta=diff)
-with colInd2:
-    tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
-    diffsick=int(tmp_sub_data.sum().item())
-    st.metric('total reported sick animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}", delta= diffsick)  # less by one compared to libreoffice...?
-with colInd3:
-    tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
-    diffdead=int(tmp_sub_data.sum().item())
-    st.metric('total reported dead animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}", delta = diffdead)
-
-def open_data(path):
-    with open(path) as f:
-        data = json.load(f)
-        return data
-
-data = open_data(path)
-
-for i in data['features']:
-    i['id']= i['properties']['shapeName'].replace(" "+str(value1).capitalize(),"")
+# for i in data['features']:
+#     i['id']= i['properties']['shapeName'].replace(" "+str(value1).capitalize(),"")
+############
 
 takes_too_long=False
 
-date_placeholder=st.empty()
+####### maybe old
+#date_placeholder=st.empty()
 
-st.header('Please select the date range for the following reports')
+def set_dates():
+    st.header('Please select the date range for the following reports')
+    sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
+    edate= st.date_input('Select ending date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
+    dates=[sdate, edate]
+    st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
+    return (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
+tmask=set_dates()
 
-sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
-edate= st.date_input('Select endind date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
+@st.cache
+def date_subset():
+    return bahis_sourcedata.loc[tmask]
+sub_bahis_sourcedata=date_subset()
 
+
+#old code snipped with slider
 #dates = st.slider('', start_date, end_date, (start_date, end_date))
 
-dates=[sdate, edate]
-
-tmask=(bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
-
-########## tmask reduces overall numbers by 25 for all or 11 by new even if min max is selected###############
-
-
-st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
-
-
-reports = bahis_sourcedata['basic_info_district'].value_counts().to_frame()
-reports['districtname'] = reports.index
-reports= reports.loc[reports['districtname'] != 'nan']
-
+# maybe old unsued code 
+# reports = bahis_sourcedata['basic_info_district'].value_counts().to_frame()
+# reports['districtname'] = reports.index
+# reports= reports.loc[reports['districtname'] != 'nan']
+####
 
 #@st.cache
 def open_data(path):
@@ -141,15 +150,21 @@ def open_data(path):
 
 tabRep, tabDis, tabHeat, tabMonthComp, tabRepCase = st.tabs(['Reports', 'Diseases', 'Heat Map', 'Monthly Comparison', 'Disease reporting-case numbers'])
 
+def pull_diseaselist():
+    dislis= bahis_sourcedata['top_diagnosis'].unique()
+    dislis= pd.DataFrame(dislis, columns=['Disease'])
+    return dislis.sort_values(by=['Disease'])
+
+diseaselist= pull_diseaselist()
 
 with tabRep:
 
     region_placeholder=st.empty()
 
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    diseaselist= bahis_sourcedata['top_diagnosis'].unique()
-    diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
-    diseaselist=diseaselist.sort_values(by=['Disease'])
+    # diseaselist= bahis_sourcedata['top_diagnosis'].unique()
+    # diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
+    # diseaselist=diseaselist.sort_values(by=['Disease'])
     
     st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
@@ -163,7 +178,7 @@ with tabRep:
         findDiv = st.selectbox('Divsion', itemlistDiv, key = 'DivR')
     if findDiv != 'Select':
         indexDiv= subDist[subDist==findDiv.upper()].index[0]
-        sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+        #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
         
         disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDiv]]['value'])]['name'].str.capitalize()
         itemlistDis=pd.concat([pd.Series(['Select'], name='name'),disList])
@@ -191,18 +206,17 @@ with tabRep:
     
 
     if not takes_too_long:
-        sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]        
-        sub_bahis_sourcedata=sub_bahis_sourcedata 
+        #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]        
+        #sub_bahis_sourcedata=sub_bahis_sourcedata 
     
         if 'Select All' in disease_chosen:
-            sub_bahis_sourcedata=sub_bahis_sourcedata 
+            subd_bahis_sourcedata=sub_bahis_sourcedata 
         else:
-            sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
-            
+################### check if better disease sub set or overwrite
+            subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+        
         if disease_chosen :
-            
-            
-            
+        
             if findDiv == 'Select':
                 colMap, colBars= st.columns([1,2])
                 with colMap:
@@ -226,7 +240,7 @@ with tabRep:
                     else:
                         path= path1
                         subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-                        reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+                        reports = subd_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
                         reports['divisionname'] = reports.index
                         reports= reports.loc[reports['divisionname'] != 'nan']    
                         data = open_data(path)
@@ -248,7 +262,7 @@ with tabRep:
                         st.plotly_chart(fig, use_container_width=True)
                 with colBars:
                     region_placeholder.header('Report Dynamics for: Bangladesh')
-                    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                    tmp=subd_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'index':'date'})
                     tmp['date'] = pd.to_datetime(tmp['date'])    
@@ -269,7 +283,7 @@ with tabRep:
                     path= path1
                     subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:  
@@ -298,7 +312,7 @@ with tabRep:
                     path= path2
                     subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:                
@@ -328,7 +342,7 @@ with tabRep:
                 region_placeholder.header('Report Dynamics for: ' + findDiv.capitalize())
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
     
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
@@ -355,7 +369,7 @@ with tabRep:
                     path= path2
                     subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:  
@@ -384,7 +398,7 @@ with tabRep:
                     path= path3
                     subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:                
@@ -399,6 +413,7 @@ with tabRep:
                         reports['upazilaname']=reports['upazilaname'].str.title()
                         for i in data['features']:
                             i['id']= i['properties']['shapeName'].replace(" Upazila","")
+                            
                         fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
                                                 color_continuous_scale="Viridis",
                                                 range_color=(0, reports['basic_info_upazila'].max()),
@@ -414,7 +429,7 @@ with tabRep:
                 region_placeholder.header('Report Dynamics for: ' + findDis.capitalize())
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
@@ -440,7 +455,7 @@ with tabRep:
                        path= path3
                        subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
                        geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                       subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                       subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
                        if subs_bahis_sourcedata.empty:
                            st.write('no data')
                        else:  
@@ -470,7 +485,7 @@ with tabRep:
                    region_placeholder.header('Report Dynamics for: ' + findUpa.capitalize())
                    subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]    
                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                   subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                   subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
     
                    if subs_bahis_sourcedata.empty:
                        st.write('no data')
@@ -493,9 +508,9 @@ with tabDis:
     region_placeholder=st.empty()
 
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    diseaselist= bahis_sourcedata['top_diagnosis'].unique()
-    diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
-    diseaselist=diseaselist.sort_values(by=['Disease'])
+    # diseaselist= bahis_sourcedata['top_diagnosis'].unique()
+    # diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
+    # diseaselist=diseaselist.sort_values(by=['Disease'])
     
     st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
@@ -509,7 +524,7 @@ with tabDis:
         findDiv = st.selectbox('Divsion', itemlistDiv, key = 'DivD')
     if findDiv != 'Select':
         indexDiv= subDist[subDist==findDiv.upper()].index[0]
-        sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+        #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
         
         disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDiv]]['value'])]['name'].str.capitalize()
         itemlistDis=pd.concat([pd.Series(['Select'], name='name'),disList])
@@ -536,12 +551,13 @@ with tabDis:
         else:
             findUpa = st.selectbox('Upazila', ['Select'], key = 'UpaD')
     
-    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
 
     if 'Select All' in disease_chosen:
         sub_bahis_sourcedata=sub_bahis_sourcedata 
     else:
-        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+##### check if disease subset needed before overwritten subset        
+        sudb_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
         
     if disease_chosen :
         if findDiv == 'Select':
@@ -567,7 +583,7 @@ with tabDis:
                 else:
                     path= path1
                     subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-                    reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+                    reports = subd_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
                     reports['divisionname'] = reports.index
                     reports= reports.loc[reports['divisionname'] != 'nan']    
                     data = open_data(path)
@@ -592,12 +608,12 @@ with tabDis:
                 region_placeholder.header('Report Dynamics for: Bangladesh')
                 st.subheader('Registered sick animals')
                 
-                tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                tmp=subd_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                 tmp=tmp.reset_index()
                 tmp=tmp.rename(columns={'basic_info_date':'date'})
                 tmp['date']=tmp['date'].astype(str)
                 tmp['date'] = pd.to_datetime(tmp['date'])
-                tots= str(int(sub_bahis_sourcedata['patient_info_sick_number'].sum()))
+                tots= str(int(subd_bahis_sourcedata['patient_info_sick_number'].sum()))
                 
                 line_chart= alt.Chart(tmp, height=250).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                     alt.X('date:T', title='report date'),
@@ -607,12 +623,12 @@ with tabDis:
                 st.altair_chart(line_chart, use_container_width=True)
                 
                 st.subheader('Registered dead animals')            
-                tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                tmp=subd_bahis_sourcedata['patient_info_dead_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                 tmp=tmp.reset_index()
                 tmp=tmp.rename(columns={'basic_info_date':'date'})
                 tmp['date']=tmp['date'].astype(str)
                 tmp['date'] = pd.to_datetime(tmp['date'])
-                tots= str(int(sub_bahis_sourcedata['patient_info_dead_number'].sum()))
+                tots= str(int(subd_bahis_sourcedata['patient_info_dead_number'].sum()))
                 
                 line_chart= alt.Chart(tmp, height=250).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
                     alt.X('date:T', title='report date'),
@@ -629,7 +645,7 @@ with tabDis:
                     path= path1
                     subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    subs_bahis_sourcedata= sudb_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:  
@@ -658,7 +674,7 @@ with tabDis:
                     path= path2
                     subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:                
@@ -690,13 +706,13 @@ with tabDis:
                 
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
 
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
                     
-                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sudb_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
@@ -712,7 +728,7 @@ with tabDis:
                     st.altair_chart(line_chart, use_container_width=True)
                     
                     
-                    tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
@@ -735,7 +751,7 @@ with tabDis:
                     path= path2
                     subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:  
@@ -764,7 +780,7 @@ with tabDis:
                     path= path3
                     subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:                
@@ -796,13 +812,13 @@ with tabDis:
 
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]
 
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
                        
-                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
@@ -840,7 +856,7 @@ with tabDis:
                        path= path3
                        subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
                        geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                       subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                       subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
                        if subs_bahis_sourcedata.empty:
                            st.write('no data')
                        else:  
@@ -872,13 +888,13 @@ with tabDis:
 
                    subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]    
                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                   subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                   subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
 
                    if subs_bahis_sourcedata.empty:
                        st.write('no data')
                    else: 
                        
-                        tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                        tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                         tmp=tmp.reset_index()
                         tmp=tmp.rename(columns={'basic_info_date':'date'})
                         tmp['date']=tmp['date'].astype(str)
@@ -894,7 +910,7 @@ with tabDis:
                         st.altair_chart(line_chart, use_container_width=True)
                        
                        
-                        tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
+                        tmp=subs_bahis_sourcedata['patient_info_dead_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum()
                         tmp=tmp.reset_index()
                         tmp=tmp.rename(columns={'basic_info_date':'date'})
                         tmp['date']=tmp['date'].astype(str)
@@ -910,14 +926,14 @@ with tabDis:
                         st.altair_chart(line_chart, use_container_width=True)
 
 with tabHeat:
-    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
     
     disease_placeholder=st.empty()
 
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    diseaselist= bahis_sourcedata['top_diagnosis'].unique()
-    diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
-    diseaselist=diseaselist.sort_values(by=['Disease'])
+    # diseaselist= bahis_sourcedata['top_diagnosis'].unique()
+    # diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
+    # diseaselist=diseaselist.sort_values(by=['Disease'])
     
     st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
@@ -928,7 +944,8 @@ with tabHeat:
     if 'Select All' in disease_chosen:
         sub_bahis_sourcedata=sub_bahis_sourcedata 
     else:
-        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+#### hcck if disease subset needed instead of overwrite
+        subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
 
     if disease_chosen:
         disease_placeholder.header('Heat Map for: ' + ', '.join(disease_chosen))
@@ -963,12 +980,12 @@ with tabHeat:
                 st.plotly_chart(fig, use_container_width=True)
         
             with colBar:                         # in numbers
-                st.metric(label= 'Reports', value= sub_bahis_sourcedata.shape[0] )
+                st.metric(label= 'Reports', value= subd_bahis_sourcedata.shape[0] )
             
         if granularity=='1: Division':
             path= path1
             subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-            reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+            reports = subd_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
             reports['divisionname'] = reports.index
             reports= reports.loc[reports['divisionname'] != 'nan']
         
@@ -1002,7 +1019,7 @@ with tabHeat:
         if granularity=='2: District':
             path= path2
             subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
-            reports = sub_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
+            reports = subd_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
             reports['districtname'] = reports.index
             reports= reports.loc[reports['districtname'] != 'nan']
         
@@ -1037,7 +1054,7 @@ with tabHeat:
             path= path3
             subDist=bahis_geodata[(bahis_geodata["loc_type"]==3)]
         
-            reports = sub_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
+            reports = subd_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
             reports['upazilaname'] = reports.index
             reports= reports.loc[reports['upazilaname'] != 'nan']
             data = open_data(path)
@@ -1073,9 +1090,9 @@ with tabMonthComp:
     region_placeholder=st.empty()
 
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    diseaselist= bahis_sourcedata['top_diagnosis'].unique()
-    diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
-    diseaselist=diseaselist.sort_values(by=['Disease'])
+    # diseaselist= bahis_sourcedata['top_diagnosis'].unique()
+    # diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
+    # diseaselist=diseaselist.sort_values(by=['Disease'])
     
     st.header('# Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
@@ -1089,7 +1106,7 @@ with tabMonthComp:
         findDiv = st.selectbox('Divsion', itemlistDiv, key = 'MonDiv')
     if findDiv != 'Select':
         indexDiv= subDist[subDist==findDiv.upper()].index[0]
-        sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+       # sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
         
         disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDiv]]['value'])]['name'].str.capitalize()
         itemlistDis=pd.concat([pd.Series(['Select'], name='name'),disList])
@@ -1116,12 +1133,13 @@ with tabMonthComp:
         else:
             findUpa = st.selectbox('Upazila', ['Select'], key = 'MonUpa')
     
-    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
 
     if 'Select All' in disease_chosen:
         sub_bahis_sourcedata=sub_bahis_sourcedata 
     else:
-        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
+#check if disease subset is needed instead of overwrite
+        subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen)] 
         
     if disease_chosen :
         if findDiv == 'Select':
@@ -1129,7 +1147,7 @@ with tabMonthComp:
             with colMap:
                 path= path1
                 subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-                reports = sub_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+                reports = subd_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
                 reports['divisionname'] = reports.index
                 reports= reports.loc[reports['divisionname'] != 'nan']    
                 data = open_data(path)
@@ -1154,12 +1172,12 @@ with tabMonthComp:
                 region_placeholder.header('Report Dynamics for: Bangladesh')
                 st.subheader('Registered sick animals')
                 
-                tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+                tmp=subd_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
                 tmp=tmp.reset_index()
                 tmp=tmp.rename(columns={'basic_info_date':'date'})
                 tmp['date']=tmp['date'].astype(str)
                 tmp['date'] = pd.to_datetime(tmp['date'])
-                tots= str(sub_bahis_sourcedata['patient_info_sick_number'].sum())
+                tots= str(int(subd_bahis_sourcedata['patient_info_sick_number'].sum()))
                       
                 tmpdata={'sick':tmp['patient_info_sick_number'],
                           'date':tmp['date']}
@@ -1183,7 +1201,7 @@ with tabMonthComp:
                 path= path2
                 subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else:                
@@ -1215,13 +1233,13 @@ with tabMonthComp:
                 
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==1)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDiv]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_division']==int(geocodehit)]
 
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
                     
-                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
@@ -1251,7 +1269,7 @@ with tabMonthComp:
                 path= path3
                 subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]               
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else:                
@@ -1283,18 +1301,18 @@ with tabMonthComp:
 
                 subDist= bahis_geodata[(bahis_geodata["loc_type"]==2)]     
                 geocodehit= subDist.loc[subDist['name'].str.capitalize()==findDis]['value']
-                subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(geocodehit)]
+                subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_district']==int(geocodehit)]
 
                 if subs_bahis_sourcedata.empty:
                     st.write('no data')
                 else: 
                        
-                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+                    tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
                     tmp=tmp.reset_index()
                     tmp=tmp.rename(columns={'basic_info_date':'date'})
                     tmp['date']=tmp['date'].astype(str)
                     tmp['date'] = pd.to_datetime(tmp['date'])
-                    tots= str(subs_bahis_sourcedata['patient_info_sick_number'].sum())
+                    tots= str(int(subs_bahis_sourcedata['patient_info_sick_number'].sum()))
                     
                     tmpdata={'sick':tmp['patient_info_sick_number'],
                               'date':tmp['date']}
@@ -1319,7 +1337,7 @@ with tabMonthComp:
                     path= path3
                     subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
                     geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                    subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                    subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
                     if subs_bahis_sourcedata.empty:
                         st.write('no data')
                     else:  
@@ -1351,18 +1369,18 @@ with tabMonthComp:
 
                    subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]    
                    geocodehit= subDist.loc[subDist['name'].str.capitalize()==findUpa]['value']
-                   subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
+                   subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata['basic_info_upazila']==int(geocodehit)]
 
                    if subs_bahis_sourcedata.empty:
                        st.write('no data')
                    else: 
                        
-                        tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+                        tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
                         tmp=tmp.reset_index()
                         tmp=tmp.rename(columns={'basic_info_date':'date'})
                         tmp['date']=tmp['date'].astype(str)
                         tmp['date'] = pd.to_datetime(tmp['date'])
-                        tots= str(subs_bahis_sourcedata['patient_info_sick_number'].sum())
+                        tots= str(int(subs_bahis_sourcedata['patient_info_sick_number'].sum()))
                         
                         tmpdata={'sick':tmp['patient_info_sick_number'],
                                   'date':tmp['date']}
@@ -1378,15 +1396,14 @@ with tabMonthComp:
                               ).properties(title='Registered sick animals :  ' + tots)
                         st.altair_chart(bar_chart) #, use_container_width=True)
 
-
 with tabRepCase:
 
     region_placeholder=st.empty()
 
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
-    diseaselist= bahis_sourcedata['top_diagnosis'].unique()
-    diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
-    diseaselist=diseaselist.sort_values(by=['Disease'])  
+    # diseaselist= bahis_sourcedata['top_diagnosis'].unique()
+    # diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
+    # diseaselist=diseaselist.sort_values(by=['Disease'])  
         
     col1, col2, col3 = st.columns([1,1,1])
     with col1:
@@ -1394,7 +1411,7 @@ with tabRepCase:
         findDiv = st.selectbox('Divsion', itemlistDiv, key = 'DivRC')
     if findDiv != 'Select':
         indexDiv= subDist[subDist==findDiv.upper()].index[0]
-        sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+        #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
         
         disList = bahis_geodata[bahis_geodata['parent']==int(bahis_geodata.iloc[[indexDiv]]['value'])]['name'].str.capitalize()
         itemlistDis=pd.concat([pd.Series(['Select'], name='name'),disList])
@@ -1421,7 +1438,7 @@ with tabRepCase:
         else:
             findUpa = st.selectbox('Upazila', ['Select'], key = 'UpaRC')
     
-    sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
+    #sub_bahis_sourcedata=bahis_sourcedata.loc[tmask]
 
 
     #poultry is 21-23,25-27
