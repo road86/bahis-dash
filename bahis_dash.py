@@ -35,7 +35,7 @@ st.set_page_config(layout="wide")                            # streamlit command
 st.image(img_logo, width=400)
 
 st.title('BAHIS dashboard')
-
+    
 
 @st.cache
 def fetchgeodata():
@@ -87,15 +87,15 @@ with colInd0:
 with colInd1:
     tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
     diff=tmp_sub_data.shape[0]
-    st.metric('cumulated reports and last 30 days reports in green', value=bahis_sourcedata.shape[0], delta=diff)
+    st.metric('cumulated reports and last 30 days reports in green', value=f"{bahis_sourcedata.shape[0]:,}", delta=diff)
 with colInd2:
     tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
     diffsick=int(tmp_sub_data.sum().item())
-    st.metric('total reported sick animals and last 30 days in green', value=int(bahis_sourcedata['patient_info_sick_number'].sum()), delta= diffsick)  # less by one compared to libreoffice...?
+    st.metric('total reported sick animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}", delta= diffsick)  # less by one compared to libreoffice...?
 with colInd3:
     tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
     diffdead=int(tmp_sub_data.sum().item())
-    st.metric('total reported dead animals and last 30 days in green', value=int(bahis_sourcedata['patient_info_dead_number'].sum()), delta = diffdead)
+    st.metric('total reported dead animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}", delta = diffdead)
 
 def open_data(path):
     with open(path) as f:
@@ -111,8 +111,15 @@ takes_too_long=False
 
 date_placeholder=st.empty()
 
-st.header('# Please select the date range for the following reports')
-dates = st.slider('', start_date, end_date, (start_date, end_date))
+st.header('Please select the date range for the following reports')
+
+sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
+edate= st.date_input('Select endind date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
+
+#dates = st.slider('', start_date, end_date, (start_date, end_date))
+
+dates=[sdate, edate]
+
 tmask=(bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
 
 ########## tmask reduces overall numbers by 25 for all or 11 by new even if min max is selected###############
@@ -144,7 +151,7 @@ with tabRep:
     diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
     diseaselist=diseaselist.sort_values(by=['Disease'])
     
-    st.header('# Please select disease(s) for the report:')
+    st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
         itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
@@ -490,7 +497,7 @@ with tabDis:
     diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
     diseaselist=diseaselist.sort_values(by=['Disease'])
     
-    st.header('# Please select disease(s) for the report:')
+    st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
         itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
@@ -912,7 +919,7 @@ with tabHeat:
     diseaselist= pd.DataFrame(diseaselist, columns=['Disease'])
     diseaselist=diseaselist.sort_values(by=['Disease'])
     
-    st.header('# Please select disease(s) for the report:')
+    st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
         itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
@@ -925,7 +932,7 @@ with tabHeat:
 
     if disease_chosen:
         disease_placeholder.header('Heat Map for: ' + ', '.join(disease_chosen))
-        st.subheader('# Please select geographic resolution for the report:')
+        st.subheader('Please select geographic resolution for the report:')
         colph1, colph2, colph3 = st.columns(3)
         with colph1:
             values = ['0: Nation' , '1: Division', '2: District', '3: Upazila']
