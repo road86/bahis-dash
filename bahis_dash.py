@@ -645,38 +645,6 @@ with tabHeat:
             labv= 'division'           
             labt='Incidences per division'
             heat_map(path1, loc, title, nname, repstr, labv, labt)
-            # path= path1
-            # subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]
-            # reports = subd_bahis_sourcedata['basic_info_division'].value_counts().to_frame()
-            # reports['divisionname'] = reports.index
-            # reports= reports.loc[reports['divisionname'] != 'nan']
-        
-            # data = open_data(path)
-            # for i in data['features']:
-            #     i['id']= i['properties']['shapeName'].replace(" Division","")
-            # for i in range(reports.shape[0]):
-            #     reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
-            # reports=reports.sort_values('divisionname')
-            # reports['divisionname']=reports['divisionname'].str.capitalize()
-            # colMap, colBar = st.columns([1,2])
-            # with colMap:
-            #     for i in data['features']:
-            #         i['id']= i['properties']['shapeName'].replace(" Division","")
-        
-            #     fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
-            #                             color_continuous_scale="YlOrBr",
-            #                             range_color=(0, reports['basic_info_division'].max()),
-            #                             mapbox_style="carto-positron",
-            #                             zoom=5.6, center = {"lat": 23.7, "lon": 90},
-            #                             opacity=0.9,
-            #                             labels={'division':'Incidences per division'}
-            #                           )
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
-            # with colBar:
-            #     fig=px.bar(reports, x='divisionname', y='basic_info_division', labels= {'division':'incidences'})# ,color='basic_info_division')
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
             
         if granularity=='2: District':
             loc=2
@@ -687,39 +655,6 @@ with tabHeat:
             labt='Incidences per district'
             heat_map(path2, loc, title, nname, repstr, labv, labt)
             
-            # path= path2
-            # subDist=bahis_geodata[(bahis_geodata["loc_type"]==2)]
-            # reports = subd_bahis_sourcedata['basic_info_district'].value_counts().to_frame()
-            # reports['districtname'] = reports.index
-            # reports= reports.loc[reports['districtname'] != 'nan']
-        
-            # data = open_data(path)
-            # for i in data['features']:
-            #     i['id']= i['properties']['shapeName'].replace(" District","")
-            # for i in range(reports.shape[0]):
-            #     reports['districtname'].iloc[i] = subDist.loc[subDist['value']==int(reports['districtname'].iloc[i]),'name'].iloc[0]
-            # reports=reports.sort_values('districtname')
-            # reports['districtname']=reports['districtname'].str.capitalize()
-            # colMap, colBar = st.columns([1,2])
-            # with colMap:
-            #     for i in data['features']:
-            #         i['id']= i['properties']['shapeName'].replace(" District","")
-        
-            #     fig = px.choropleth_mapbox(reports, geojson=data, locations='districtname', color='basic_info_district',
-            #                             color_continuous_scale="YlOrBr",
-            #                             range_color=(0, reports['basic_info_district'].max()),
-            #                             mapbox_style="carto-positron",
-            #                             zoom=5.6, center = {"lat": 23.7, "lon": 90},
-            #                             opacity=0.9,
-            #                             labels={'district':'Incidences per district'}
-            #                           )
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
-            # with colBar:
-            #     fig=px.bar(reports, x='districtname', y='basic_info_district', labels= {'district':'incidences'})
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
-            
         if granularity=='3: Upazila':
             loc=3
             title='basic_info_upazila'
@@ -728,39 +663,6 @@ with tabHeat:
             labv= 'upazila'           
             labt='Incidences per upazila'
             heat_map(path3, loc, title, nname, repstr, labv, labt)
-            
-            # path= path3
-            # subDist=bahis_geodata[(bahis_geodata["loc_type"]==3)]
-        
-            # reports = subd_bahis_sourcedata['basic_info_upazila'].value_counts().to_frame()
-            # reports['upazilaname'] = reports.index
-            # reports= reports.loc[reports['upazilaname'] != 'nan']
-            # data = open_data(path)
-            # for i in data['features']:
-            #     i['id']= i['properties']['shapeName'].replace(" upazila","")
-            # for i in range(reports.shape[0]):
-            #     reports['upazilaname'].iloc[i] = subDist.loc[subDist['value']==int(reports['upazilaname'].iloc[i]),'name'].iloc[0]
-            # reports=reports.sort_values('upazilaname')
-            # reports['upazilaname']=reports['upazilaname'].str.capitalize()
-            
-            # colMap, colBar = st.columns([1,2])
-            # with colMap:
-            #     for i in data['features']:
-            #         i['id']= i['properties']['shapeName'].replace(" Upazila","")
-        
-            #     fig = px.choropleth_mapbox(reports, geojson=data, locations='upazilaname', color='basic_info_upazila',
-            #                             color_continuous_scale="YlOrBr",
-            #                             range_color=(0, reports['basic_info_upazila'].max()),
-            #                             mapbox_style="carto-positron",
-            #                             zoom=5.6, center = {"lat": 23.7, "lon": 90},
-            #                             opacity=0.9,
-            #                             labels={'upazila':'Incidences per Upazila'}
-            #                           )
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
-            # with colBar:
-            #     fig=px.bar(reports, x='upazilaname', y='basic_info_upazila', labels= {'upazila':'incidences'})
-            #     fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-            #     st.plotly_chart(fig, use_container_width=True)
+
    
 
