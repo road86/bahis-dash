@@ -87,13 +87,15 @@ takes_too_long=False
 
 def set_dates():
     #st.header('Please select the date range for the following reports')
+    Drange_placeholder=st.empty()
     colsdate, coledate, colplaceholder = st.columns([1,1,3])
     with colsdate:
         sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
     with coledate:
         edate= st.date_input('Select ending date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
+        
     dates=[sdate, edate]
-    st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
+    Drange_placeholder.header("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
     return (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
 tmask=set_dates()
 
@@ -139,7 +141,7 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
                             opacity=0.9,
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False)
+    fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= True)
     return fig
 
 def rep_plot(loc, subd_bahis_sourcedata, title, find):
@@ -201,7 +203,7 @@ def dis_plot(loc, subd_bahis_sourcedata, title, find):
         st.altair_chart(line_chart, use_container_width=True)
 
 def MC_plot(loc, subd_bahis_sourcedata, title, find):
-    st.subheader('Registered sick animals')
+    #st.subheader('Registered sick animals')
     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
     subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata[title]==int(geocodehit)]
@@ -291,7 +293,7 @@ def heat_map(path, loc, title, nname, repstr, labv, labt):
             st.plotly_chart(fig, use_container_width=True)
 
 with tabRep:
-    region_placeholder=st.empty()
+    #region_placeholder=st.empty()
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
@@ -305,7 +307,7 @@ with tabRep:
             subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen_R)] 
         
         if disease_chosen_R:
-            
+            region_placeholder=st.empty()           
             col1, col2, col3 = st.columns([1,1,1])
             with col1:
                 itemlistDiv=pd.concat([pd.Series(['Select'], name='name'),bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()])
@@ -335,10 +337,10 @@ with tabRep:
                         findUpa = st.selectbox('Upazila', ['Select'], key = 'UpaR')
                 else:
                     findUpa = st.selectbox('Upazila', ['Select'], key = 'UpaR')
-        
+
             if findDiv == 'Select':
                 colMap, colBars= st.columns([1,2])
-                region_placeholder.header('Report Dynamics for: Bangladesh')
+                region_placeholder.header('Report for: Bangladesh')
                 with colMap:
                     overview = st.checkbox("Checked for overall view - Unchecked for clustered map" , key = 'togR')
                     if overview:
@@ -355,7 +357,7 @@ with tabRep:
                                                center = {"lat": 23.7, "lon": 90},
                                                opacity=0.5
                                               )
-                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, showlegend= False)
+                        fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, showlegend= True)
                         st.plotly_chart(fig, use_container_width=True)
                     else:
                         loc=1
@@ -457,7 +459,7 @@ with tabRep:
                         
             if (findDiv != 'Select') and (findDis == 'Select'):
                 colMap, colBar = st.columns([1,2])
-                region_placeholder.header('Report Dynamics for: ' + findDiv.capitalize())
+                region_placeholder.header('Report for: ' + findDiv.capitalize())
                 with colMap:
                     overview = st.checkbox("Toggle: Overview Map - Clustered Map" , key = 'togR')
                     if overview:
@@ -508,6 +510,7 @@ with tabRep:
 
             if (findDiv != 'Select') and (findDis != 'Select') and (findUpa =='Select'):
                 colMap, colBar = st.columns([1,2])
+                region_placeholder.header('Report for: ' + findDis.capitalize())
                 with colMap:
                     overview = st.checkbox("Toggle: Overview Map - Clustered Map", key = 'togR')
                     if overview:
@@ -557,7 +560,7 @@ with tabRep:
 
             if (findDiv != 'Select') and (findDis != 'Select') and (findUpa !='Select'):
                    colMap, colBar = st.columns([1,2])
-                   region_placeholder.header('Report Dynamics for: ' + findUpa.capitalize())
+                   region_placeholder.header('Report for: ' + findUpa.capitalize())
                    with colMap:
                            overview = st.checkbox("Toggle: Overview Map - Clustered Map", disabled= True, key = 'togR')
                            subDist= bahis_geodata[(bahis_geodata["loc_type"]==3)]     
@@ -591,11 +594,11 @@ with tabRep:
 with tabHeat:
     disease_placeholder=st.empty()
     subDist = bahis_geodata[(bahis_geodata["loc_type"]==1)]['name']  
-    st.header('Please select disease(s) for the report:')
+    #st.header('Please select disease(s) for the report:')
     colph1, colph2, colph3 = st.columns(3)
     with colph1:
         itemlistDiseases=pd.concat([pd.Series(['Select All'], name='Disease'),diseaselist.squeeze()])
-        disease_chosen_H= st.multiselect('Disease', itemlistDiseases, key= 'HeatDisC')
+        disease_chosen_H= st.multiselect('Select one or more diseases', itemlistDiseases, key= 'HeatDisC')
 
     if 'Select All' in disease_chosen_H:
         subd_bahis_sourcedata=sub_bahis_sourcedata 
@@ -609,7 +612,7 @@ with tabHeat:
         with colph1:
             values = ['0: Nation' , '1: Division', '2: District', '3: Upazila']
             defaultV = values.index('0: Nation')  # default value
-            granularity= st.selectbox('Select level', values, index=defaultV, key='HeatGran') #, horizontal= True)
+            granularity= st.selectbox('Select level of geographical detail', values, index=defaultV, key='HeatGran') #, horizontal= True)
     
         if granularity=='0: Nation':
             path= path0
