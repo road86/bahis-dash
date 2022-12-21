@@ -72,15 +72,15 @@ def show_metrics():
     with colInd1:
         tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
         diff=tmp_sub_data.shape[0]
-        st.metric('cumulated reports and last 30 days reports in green', value=f"{bahis_sourcedata.shape[0]:,}", delta=diff)
+        st.metric('cumulated reports and last 30 days reports in green', value=f"{bahis_sourcedata.shape[0]:,}", delta=f"{diff:,}")
     with colInd2:
         tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
         diffsick=int(tmp_sub_data.sum().item())
-        st.metric('total reported sick animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}", delta= diffsick)  # less by one compared to libreoffice...?
+        st.metric('total reported sick animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}", delta= f"{diffsick:,}")  # less by one compared to libreoffice...?
     with colInd3:
         tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
         diffdead=int(tmp_sub_data.sum().item())
-        st.metric('total reported dead animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}", delta = diffdead)
+        st.metric('total reported dead animals and last 30 days in green', value=f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}", delta = f"{diffdead:,}")
 show_metrics()
 
 takes_too_long=False
@@ -109,9 +109,6 @@ def open_data(path):
     with open(path) as f:
         data = json.load(f)
         return data
-
-#tabRep, tabDis, tabHeat, tabMonthComp, tabRepCase = st.tabs(['Reports', 'Diseases', 'Heat Map', 'Monthly Comparison', 'Disease reporting-case numbers'])
-tabRep, tabHeat = st.tabs(['Reports', 'Heat Map'])
 
 @st.cache
 def pull_diseaselist():
@@ -291,6 +288,49 @@ def heat_map(path, loc, title, nname, repstr, labv, labt):
             fig=px.bar(reports, x=nname, y=title, labels= {labv:labt})# ,color='basic_info_division')
             fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
             st.plotly_chart(fig, use_container_width=True)
+
+def warn_map(path, loc, title, nname, repstr, labv, labt, warndata):
+        subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
+        reports = warndata[title].value_counts().to_frame()
+        reports[nname] = reports.index
+        reports= reports.loc[reports[nname] != 'nan']
+
+        data = open_data(path)
+        for i in data['features']:
+            i['id']= i['properties']['shapeName'].replace(" Division","")
+        for i in range(reports.shape[0]):
+            reports[nname].iloc[i] = subDist.loc[subDist['value']==int(reports[nname].iloc[i]),'name'].iloc[0]
+        reports=reports.sort_values(nname)
+        reports[nname]=reports[nname].str.capitalize()
+        colMap, colBar = st.columns([1,2])
+        with colMap:
+            for i in data['features']:
+                i['id']= i['properties']['shapeName'].replace(repstr,"")
+    
+            fig = px.choropleth_mapbox(reports, geojson=data, locations=nname, color=title,
+                                    color_continuous_scale="YlOrBr",
+                                    range_color=(0, reports[title].max()),
+                                    mapbox_style="carto-positron",
+                                    zoom=5.6, center = {"lat": 23.7, "lon": 90},
+                                    opacity=0.9,
+                                    labels={labv:labt}
+                                  )
+            fig.update_layout(autosize=True, width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
+            st.plotly_chart(fig, use_container_width=True)
+        with colBar:
+            
+            tmp=reports.sort_values(by='basic_info_upazila', ascending=True) 
+
+            line_chart= alt.Chart(tmp, height=550).mark_bar().encode(
+                 x='basic_info_upazila:Q',
+                 y=alt.Y('upazilaname:O', sort='-x')
+                 ).properties(title='Reports per Upazila')
+            st.altair_chart(line_chart, use_container_width=True)                
+
+
+#tabRep, tabDis, tabHeat, tabMonthComp, tabRepCase = st.tabs(['Reports', 'Diseases', 'Heat Map', 'Monthly Comparison', 'Disease reporting-case numbers'])
+tabRep, tabHeat, tabWarn = st.tabs(['Reports', 'Heat Map', 'Report Warning'])
+
 
 with tabRep:
     #region_placeholder=st.empty()
@@ -627,6 +667,7 @@ with tabHeat:
                     i['id']= i['properties']['shapeName'].replace(" District","")
         
                 fig = px.choropleth_mapbox(data['features'],
+                                       color_continuous_scale="YlOrBr",
                                        geojson=data,
                                        locations='id',
                                        mapbox_style="carto-positron",
@@ -667,5 +708,66 @@ with tabHeat:
             labt='Incidences per upazila'
             heat_map(path3, loc, title, nname, repstr, labv, labt)
 
-   
+with tabWarn:
+     
+    
+    chosenperiod= st.radio('Select observed period', ('2 weeks', '4 weeks', '6 weeks'))
+    if chosenperiod == '2 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=14)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    if chosenperiod == '4 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=28)) & (bahis_sourcedata['basic_info_date'] < datetime.now())       
+    if chosenperiod == '6 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=42)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    
+    tmp_sub_data=bahis_sourcedata.loc[mask]   
+    
+    
+    
+    tara= bahis_geodata[(bahis_geodata["loc_type"]==3)] 
+    df= tara[['value', 'name']].merge(tmp_sub_data['basic_info_upazila'].drop_duplicates(), left_on=['value'], right_on=['basic_info_upazila'],  how='left', indicator=True)
+    st.subheader('No reports registered from: ' + str(df[df['_merge'] =='left_only'].shape[0]) + ' Upazila(s)')
+    st.dataframe(df[df['_merge'] =='left_only'][['value', 'name']])
 
+    # col1, col2, col3= st.columns(3)
+    # with col1:
+    #     st.dataframe(tara[['value', 'name']])
+    # with col2:
+    #     taj= tmp_sub_data['basic_info_upazila']
+    #     st.dataframe(taj)
+    # with col3:
+    #     df= tara[['value', 'name']].merge(tmp_sub_data['basic_info_upazila'].drop_duplicates(), left_on=['value'], right_on=['basic_info_upazila'],  how='left', indicator=True)
+    #     st.dataframe(df[df['_merge'] =='left_only'])
+    
+    loc=3
+    title='basic_info_upazila'
+    nname='upazilaname'
+    repstr=" Upazila"
+    labv= 'upazila'           
+    labt='Incidences per upazila'
+    warn_map(path3, loc, title, nname, repstr, labv, labt, tmp_sub_data)
+
+    
+    # disease_placeholder=st.empty()
+    # colph1, colph2, colph3 = st.columns(3)
+    # with colph1:
+    #     itemlistDiseases=pd.concat([pd.Series(['Select All Reports'], name='Disease'),diseaselist.squeeze()])
+    #     disease_chosen_H= st.multiselect('Select one or more diseases', itemlistDiseases, key= 'HeatDisC')
+
+    # if 'Select All Reports' in disease_chosen_H:
+    #     warndata=tmp_sub_data 
+    # else:
+    #     warndata=tmp_sub_data[tmp_sub_data['top_diagnosis'].isin(disease_chosen_H)] 
+
+    # if disease_chosen_H:
+
+    #     loc=3
+    #     title='basic_info_upazila'
+    #     nname='upazilaname'
+    #     repstr=" Upazila"
+    #     labv= 'upazila'           
+    #     labt='Incidences per upazila'
+    #     warn_map(path3, loc, title, nname, repstr, labv, labt, warndata)
+
+
+
+################ disease chosen to include in heatmap
