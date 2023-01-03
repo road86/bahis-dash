@@ -711,13 +711,13 @@ with tabHeat:
 with tabWarn:
      
     
-    chosenperiod= st.radio('Select observed period', ('2 weeks', '4 weeks', '6 weeks'))
-    if chosenperiod == '2 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=14)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    chosenperiod= st.radio('Select observed period', ('4 weeks', '8 weeks', '16 weeks'))
     if chosenperiod == '4 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=28)) & (bahis_sourcedata['basic_info_date'] < datetime.now())       
-    if chosenperiod == '6 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=42)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=28)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    if chosenperiod == '8 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=56)) & (bahis_sourcedata['basic_info_date'] < datetime.now())       
+    if chosenperiod == '16 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=112)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
     
     tmp_sub_data=bahis_sourcedata.loc[mask]   
     
