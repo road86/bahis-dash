@@ -48,14 +48,33 @@ def fetchgeodata():
 bahis_geodata= fetchgeodata()
 
 @st.cache
-def fetchsourcedata():
+def fetchsourcedata(sourcefilename):
     bahis_sd = pd.read_csv(sourcefilename)
     bahis_sd['basic_info_division'] = pd.to_numeric(bahis_sd['basic_info_division'])
     bahis_sd['basic_info_district'] = pd.to_numeric(bahis_sd['basic_info_district'])
     bahis_sd['basic_info_upazila'] = pd.to_numeric(bahis_sd['basic_info_upazila'])
     bahis_sd['basic_info_date'] = pd.to_datetime(bahis_sd['basic_info_date'])
     return bahis_sd
-bahis_sourcedata= fetchsourcedata()
+bahis_sourcedata= fetchsourcedata(sourcefilename)
+
+
+################# for comparison of old and new datasource, can be deleted later on
+sourceofilename =sourcepath + 'preped_odata.csv'
+subo_bahis_sourcedata = pd.read_csv(sourceofilename)
+subo_bahis_sourcedata['basic_info_division'] = pd.to_numeric(subo_bahis_sourcedata['basic_info_division'])
+subo_bahis_sourcedata['basic_info_district'] = pd.to_numeric(subo_bahis_sourcedata['basic_info_district'])
+subo_bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(subo_bahis_sourcedata['basic_info_upazila'])
+subo_bahis_sourcedata['basic_info_date'] = pd.to_datetime(subo_bahis_sourcedata['basic_info_date'])
+subo_bahis_sourcedata=subo_bahis_sourcedata[subo_bahis_sourcedata['basic_info_date']>=pd.to_datetime("20220601")]
+
+sourcenfilename =sourcepath + 'preped_ndata.csv'
+subn_bahis_sourcedata = pd.read_csv(sourcenfilename)
+subn_bahis_sourcedata['basic_info_division'] = pd.to_numeric(subn_bahis_sourcedata['basic_info_division'])
+subn_bahis_sourcedata['basic_info_district'] = pd.to_numeric(subn_bahis_sourcedata['basic_info_district'])
+subn_bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(subn_bahis_sourcedata['basic_info_upazila'])
+subn_bahis_sourcedata['basic_info_date'] = pd.to_datetime(subn_bahis_sourcedata['basic_info_date'])
+
+##################End for comparison of old and new datasource, can be deleted later on
 
 # FILTER: get all data from 1.1.2019 
 bahis_sourcedata=bahis_sourcedata.loc[bahis_sourcedata['basic_info_date']>=pd.to_datetime("20190101")]
@@ -99,7 +118,7 @@ def set_dates():
     return (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
 tmask=set_dates()
 
-@st.cache
+#@st.cache
 def date_subset():
     return bahis_sourcedata.loc[tmask]
 sub_bahis_sourcedata=date_subset()
@@ -160,7 +179,7 @@ def rep_plot(loc, subd_bahis_sourcedata, title, find):
             alt.Y('basic_info_date:Q', title='reports'),
             color=alt.Color('Category:N', legend=None)
             ).properties(title='Registered reports :  ' + tots)
-        st.altair_chart(line_chart, use_container_width=True)
+        st.altair_chart(line_chart, use_container_width=True)              
         
 def dis_plot(loc, subd_bahis_sourcedata, title, find):
     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
@@ -411,19 +430,58 @@ with tabRep:
                 with colBars:
                     tabR, tabD, tabMC, tabCN = st.tabs(['Reports', 'Diseased Animals', 'Monthly Comparison', 'Disease Case Numbers'])
                     with tabR:
-                        tmp=subd_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
-                        tmp=tmp.reset_index()
-                        tmp=tmp.rename(columns={'index':'date'})
-                        tmp['date'] = pd.to_datetime(tmp['date'])    
-                        tots= str(sub_bahis_sourcedata.shape[0])
+                        ##### option for comparison of old and new datasoruce, which can be deleted later on except for ###*** marked part
+                        option_comp=st.checkbox("Check two database sources", key='datacomp')
+                        if not option_comp:
+                            ###*** marked part
+                            tmp=subd_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                            tmp=tmp.reset_index()
+                            tmp=tmp.rename(columns={'index':'date'})
+                            tmp['date'] = pd.to_datetime(tmp['date'])    
+                            tots= str(sub_bahis_sourcedata.shape[0])
+                            
+                            tmp2w= tmp
+                            line_chart= alt.Chart(tmp2w, height=600).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
+                                alt.X('date:T', title='report date', axis= alt.Axis(format='%Y %B %d')), # scale= alt.Scale(nice={'interval': 'week', 'step': 4})), 
+                                alt.Y('basic_info_date:Q', title='reports'),
+                                color=alt.Color('Category:N', legend=None)
+                                ).properties(title='Registered reports :  ' + tots)
+                            st.altair_chart(line_chart, use_container_width=True)
+                            ###*** marked part
+                        else:
+                            tmp=subn_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                            tmp=tmp.reset_index()
+                            tmp=tmp.rename(columns={'index':'date'})
+                            tmp['date'] = pd.to_datetime(tmp['date'])    
+                            totn= str(subn_bahis_sourcedata.shape[0])
+                            
+                            tmp2w= tmp
+                            line_chart= alt.Chart(tmp2w, height=300).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
+                                alt.X('date:T', title='report date', axis= alt.Axis(format='%Y %B %d')), # scale= alt.Scale(nice={'interval': 'week', 'step': 4})), 
+                                alt.Y('basic_info_date:Q', title='reports'),
+                                color=alt.Color('Category:N', legend=None)
+                                ).properties(title='Registered reports :  ' + totn)
+                            st.altair_chart(line_chart, use_container_width=True)
                         
-                        tmp2w= tmp
-                        line_chart= alt.Chart(tmp2w, height=600).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
-                            alt.X('date:T', title='report date', axis= alt.Axis(format='%Y %B %d')), # scale= alt.Scale(nice={'interval': 'week', 'step': 4})), 
-                            alt.Y('basic_info_date:Q', title='reports'),
-                            color=alt.Color('Category:N', legend=None)
-                            ).properties(title='Registered reports :  ' + tots)
-                        st.altair_chart(line_chart, use_container_width=True)
+                            tmp2=subo_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+                            tmp2=tmp2.reset_index()
+                            tmp2=tmp2.rename(columns={'index':'date'})
+                            tmp2['date'] = pd.to_datetime(tmp2['date'])    
+                            toto= str(subo_bahis_sourcedata.shape[0])
+                            
+                            tmp4w= tmp2
+                            line_chart= alt.Chart(tmp4w, height=300).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
+                                alt.X('date:T', title='report date', axis= alt.Axis(format='%Y %B %d')), # scale= alt.Scale(nice={'interval': 'week', 'step': 4})), 
+                                alt.Y('basic_info_date:Q', title='reports'),
+                                color=alt.Color('Category:N', legend=None)
+                                ).properties(title='Registered reports :  ' + toto)
+                            st.altair_chart(line_chart, use_container_width=True)                        
+                            
+                         ##### End option for comparison of old and new datasoruce, which can be deleted later on
+                    
+                        
+                        
+                        
                     with tabD:
                         st.subheader('Registered sick animals')
                         
