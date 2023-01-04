@@ -14,14 +14,15 @@ firstprep=False
 
 
 if firstprep:
-    oldsourcefilename =sourcepath + 'staticbahis_forms_data202212192159.csv'
+    # oldsourcefilename =sourcepath + 'staticbahis_forms_data.csv'
+    oldsourcefilename =sourcepath + 'staticbahis_forms_data.csv'
     oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
     tmp=oldbahis_sourcedata['datajson'].apply(json.loads)
     oldbahis_sourcedata=pd.json_normalize(tmp)
     oldbahis_sourcedata=oldbahis_sourcedata[oldbahis_sourcedata['date'].notna()]
     oldbahis_sourcedata.to_csv(sourcepath + 'tmp.csv')
 else:
-    oldsourcefilename =sourcepath + 'tmp.csv'
+    oldsourcefilename =sourcepath + 'formdata_Patients_Registry.csv'
     oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
     ###
 
