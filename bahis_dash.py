@@ -73,6 +73,9 @@ subn_bahis_sourcedata['basic_info_division'] = pd.to_numeric(subn_bahis_sourceda
 subn_bahis_sourcedata['basic_info_district'] = pd.to_numeric(subn_bahis_sourcedata['basic_info_district'])
 subn_bahis_sourcedata['basic_info_upazila'] = pd.to_numeric(subn_bahis_sourcedata['basic_info_upazila'])
 subn_bahis_sourcedata['basic_info_date'] = pd.to_datetime(subn_bahis_sourcedata['basic_info_date'])
+subn_bahis_sourcedata=subn_bahis_sourcedata[subn_bahis_sourcedata['patient_info_sick_number']>-1]
+subn_bahis_sourcedata=subn_bahis_sourcedata[subn_bahis_sourcedata['patient_info_dead_number']>-1]
+subn_bahis_sourcedata=subn_bahis_sourcedata[subn_bahis_sourcedata.duplicated(subset=['basic_info_division', 'basic_info_district', 'basic_info_upazila', 'patient_info_species', 'species', 'diagnosis_treatment_tentative_diagnosis', 'top_diagnosis', 'patient_info_sick_number', 'patient_info_dead_number'])]
 
 ##################End for comparison of old and new datasource, can be deleted later on
 
@@ -174,13 +177,13 @@ def rep_plot(loc, subd_bahis_sourcedata, title, find):
         tmp['date'] = pd.to_datetime(tmp['date'])
         tots= str(subs_bahis_sourcedata.shape[0])
         
-        line_chart= alt.Chart(tmp, height=600).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
+        line_chart= alt.Chart(tmp, height=600).mark_bar(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
             alt.X('date:T', title='report date'),
             alt.Y('basic_info_date:Q', title='reports'),
             color=alt.Color('Category:N', legend=None)
             ).properties(title='Registered reports :  ' + tots)
-        st.altair_chart(line_chart, use_container_width=True)              
-        
+        st.altair_chart(line_chart, use_container_width=True)      
+                
 def dis_plot(loc, subd_bahis_sourcedata, title, find):
     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
@@ -769,22 +772,36 @@ with tabHeat:
 with tabWarn:
      
     
-    chosenperiod= st.radio('Select observed period', ('4 weeks', '8 weeks', '16 weeks'))
+    chosenperiod= st.radio('Select observed period', ('2 weeks', '4 weeks', '6 weeks'))
+    if chosenperiod == '2 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=14)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
     if chosenperiod == '4 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=28)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
-    if chosenperiod == '8 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=56)) & (bahis_sourcedata['basic_info_date'] < datetime.now())       
-    if chosenperiod == '16 weeks':
-        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=112)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=28)) & (bahis_sourcedata['basic_info_date'] < datetime.now())       
+    if chosenperiod == '6 weeks':
+        mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=42)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
     
     tmp_sub_data=bahis_sourcedata.loc[mask]   
     
-    
-    
+
     tara= bahis_geodata[(bahis_geodata["loc_type"]==3)] 
     df= tara[['value', 'name']].merge(tmp_sub_data['basic_info_upazila'].drop_duplicates(), left_on=['value'], right_on=['basic_info_upazila'],  how='left', indicator=True)
     st.subheader('No reports registered from: ' + str(df[df['_merge'] =='left_only'].shape[0]) + ' Upazila(s)')
-    st.dataframe(df[df['_merge'] =='left_only'][['value', 'name']])
+    
+    col1, col2, col3 = st.columns([1,1,1])
+    with col1:
+        itemlistDiv=pd.concat([pd.Series(['Select'], name='name'),bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()])
+        findDiv = st.selectbox('Divsion', itemlistDiv, key = 'WDivR')
+    
+    if findDiv != 'Select':
+        valDiv= bahis_geodata[bahis_geodata['name']==findDiv.upper()]
+        valDiv= valDiv[valDiv['loc_type']==1]['value']
+              
+        selection=df[df['_merge'] =='left_only'][['value', 'name']]
+        selection=selection[selection['value'].astype(str).str[:2].astype(int)==int(valDiv)]
+        st.dataframe(selection)
+
+    else:
+        st.dataframe(df[df['_merge'] =='left_only'][['value', 'name']])
 
     # col1, col2, col3= st.columns(3)
     # with col1:
