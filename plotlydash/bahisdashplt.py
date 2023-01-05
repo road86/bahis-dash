@@ -6,7 +6,11 @@ Created on Wed Dec 28 15:12:34 2022
 """
 
 
+<<<<<<< Updated upstream
 from dash import Dash, dcc, html
+=======
+from dash import Dash, dcc, html, dbc ####################
+>>>>>>> Stashed changes
 #import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
@@ -110,6 +114,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
         }
     ),
     
+<<<<<<< Updated upstream
     html.H1(
         children='National numbers:',
         style={
@@ -119,6 +124,28 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
         }
     ),
        
+=======
+    html.Div(children=[
+        html.Div(children=[
+            html.H1(
+                children='National numbers:',
+                style={
+                    'textAlign': 'left',
+                    'color': colors['text'],
+                    'font-family': 'Helvetica'
+                }
+                )],#style={'display': 'inline-block', 'vertical-align': 'top', 'margin-left': '3vw', 'margin-top': '3vw'}
+        ),
+        html.Div(children=[            
+            dcc.Graph(
+                id='example-graph-2',
+                figure=fig
+            ),
+            ],style={'display': 'inline-block'}#, 'vertical-align': 'top'} #, 'margin-left': '3vw', 'margin-top': '3vw'}
+        ),
+        ], style={'display': 'inline-block'} #'display': 'inline-block', 'vertical-align': 'top', 'margin-left': '3vw', 'margin-top': '3vw'}
+    ),     
+>>>>>>> Stashed changes
     
     # subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
     # reports = subd_bahis_sourcedata[title].value_counts().to_frame()
@@ -148,6 +175,7 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
     #     'color': colors['text']
     # }),
 
+<<<<<<< Updated upstream
     dcc.Graph(
         id='example-graph-2',
         figure=fig
@@ -163,6 +191,25 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
     ),
     html.Div(id='output-container-date-picker-range')
     
+=======
+    html.Div(children=[
+    
+        dcc.DatePickerRange(
+            id='my-date-picker-range',
+            min_date_allowed=start_date,
+            max_date_allowed=end_date,
+            #initial_visible_month=start_date,
+            start_date=start_date,
+            end_date=end_date
+        ),
+        html.Div(id='output-container-date-picker-range')
+    ]),
+    
+    dcc.Graph(
+        id='example-graph-2',
+        figure=fig
+    ),        
+>>>>>>> Stashed changes
 ])
 
 @app.callback(
