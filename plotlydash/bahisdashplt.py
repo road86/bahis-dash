@@ -6,7 +6,7 @@ Created on Wed Dec 28 15:12:34 2022
 """
 
 
-from dash import Dash, dcc, html #, dbc ####################
+from dash import Dash, dcc, html #, dbc 
 #import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
@@ -32,26 +32,11 @@ def fetchsourcedata():
 bahis_sourcedata= fetchsourcedata()
 
 app = Dash(__name__)
-#print(bahis_sd)
 
 colors = {
     'background': '#ffffff',
     'text': '#000000'
 }
-
-# df = pd.DataFrame({
-#     "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-#     "Amount": [4, 1, 2, 2, 4, 5],
-#     "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-# })
-
-# fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
-
-# fig.update_layout(
-#     plot_bgcolor=colors['background'],
-#     paper_bgcolor=colors['background'],
-#     font_color=colors['text']
-# )
 
 mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
 tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
@@ -95,9 +80,12 @@ end_date=max(bahis_sourcedata['basic_info_date']).date()
 dates=[start_date, end_date]
 
 
+
+######################## Layout
+
 app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
     
-    html.Img(src=img_logo, style={'width':'25%'} ),
+    html.Img(src=img_logo, style={'width':'25%', 'margin-left': '20px'} ),
     
    
     html.H1(
@@ -131,33 +119,6 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
         ], style={'display': 'inline-block'} #'display': 'inline-block', 'vertical-align': 'top', 'margin-left': '3vw', 'margin-top': '3vw'}
     ),     
     
-    # subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
-    # reports = subd_bahis_sourcedata[title].value_counts().to_frame()
-    # reports[pname] = reports.index
-    # reports= reports.loc[reports[pname] != 'nan']    
-    # data = open_data(path)
-    # for i in range(reports.shape[0]):
-    #     reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
-    # reports[pname]=reports[pname].str.title()                   
-    # for i in data['features']:
-    #     i['id']= i['properties']['shapeName'].replace(splace,"")
-
-    # fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
-    #                         #color_continuous_scale="Viridis",
-    #                         color_continuous_scale="YlOrBr",
-    #                         range_color=(0, reports[title].max()),
-    #                         mapbox_style="carto-positron",
-    #                         zoom=6, center = {"lat": 23.7, "lon": 90},
-    #                         opacity=0.9,
-    #                         labels={variab:labl}
-    #                       )
-    # fig.update_layout(autosize=True, width= 1000, height=600, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= True)
-    
-
-    # html.Div(children='Dash: A web application framework for your data.', style={
-    #     'textAlign': 'center',
-    #     'color': colors['text']
-    # }),
 
     html.Div(children=[
     
@@ -177,6 +138,9 @@ app.layout = html.Div(style={'backgroundColor': colors['background']}, children=
         figure=fig
     ),        
 ])
+
+
+######################### Callback
 
 @app.callback(
     Output('output-container-date-picker-range', 'children'),
