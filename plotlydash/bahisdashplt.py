@@ -14,6 +14,8 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta, date
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
+import json 
+import altair as alt    
 
 
 # dbc_css = "/dbc.min.css"
@@ -28,6 +30,14 @@ geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata 
 sourcefilename =sourcepath + 'preped_data2.csv'   
 bahis_sd = pd.read_csv(sourcefilename)
 img_logo= 'assets/Logo.png'
+
+path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
+path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
+path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
+path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
+
+
 
 def fetchsourcedata():
     bahis_sd = pd.read_csv(sourcefilename) ################CC
@@ -182,6 +192,63 @@ ddDisease = html.Div(
     className="mb-4",
 )
 
+def open_data(path):
+    with open(path) as f:
+        data = json.load(f)
+        return data
+
+def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, labl):
+    #path= path1
+    subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
+    reports = subd_bahis_sourcedata[title].value_counts().to_frame()
+    reports[pname] = reports.index
+    reports= reports.loc[reports[pname] != 'nan']    
+    data = open_data(path)
+    for i in range(reports.shape[0]):
+        reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
+    reports[pname]=reports[pname].str.title()                   
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(splace,"")
+
+    fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
+                            color_continuous_scale="Viridis",
+                            range_color=(0, reports[title].max()),
+                            mapbox_style="carto-positron",
+                            zoom=5.5, center = {"lat": 23.7, "lon": 90},
+                            opacity=0.5,
+                            labels={variab:labl}
+                          )
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False) #width= 1000, height=600, 
+    return fig
+
+loc=1
+title='basic_info_division'
+pname='divisionname'
+splace=' Division' 
+variab='division'
+labl='Incidences per division'
+figMap = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
+                        
+
+figReport= go.Figure()
+#region_placeholder.header('Report Dynamics for: Bangladesh')
+tmp=bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+tmp=tmp.reset_index()
+tmp=tmp.rename(columns={'index':'date'})
+tmp['date'] = pd.to_datetime(tmp['date'])    
+tots= str(bahis_sourcedata.shape[0])
+
+figReport= px.bar(tmp, x='date', y='basic_info_date')
+    
+#     tmp2w, height=600).mark_line(point=alt.OverlayMarkDef(color="red")).encode( #interpolate='basis').encode(
+#     alt.X('date:T', title='report date', axis= alt.Axis(format='%Y %B %d')), # scale= alt.Scale(nice={'interval': 'week', 'step': 4})), 
+#     alt.Y('basic_info_date:Q', title='reports'),
+#     color=alt.Color('Category:N', legend=None)
+#     ).properties(title='Registered reports :  ' + tots)
+# altair_chart(line_chart, use_container_width=True)
+
+
+
 df = px.data.gapminder()
 years = df.year.unique()
 continents = df.continent.unique()
@@ -205,8 +272,10 @@ table = html.Div(
 tab1 = dbc.Tab([dcc.Graph(id="line-chart")], label="Line Chart")
 tab2 = dbc.Tab([dcc.Graph(id="scatter-chart")], label="Scatter Chart")
 tab3 = dbc.Tab([table], label="Table", className="p-4")
-tabs = dbc.Card(dbc.Tabs([tab1, tab2, tab3]))
+#tabs = dbc.Card(dbc.Tabs([tab1, tab2, tab3]))
 
+
+tabs=dbc.Card(dcc.Graph(figure=figReport))
 
 
 # stylesheet with the .dbc class
@@ -241,7 +310,10 @@ row = html.Div(
                      ], width=2),
                 dbc.Col([
                     dbc.Row([dbc.Card([html.H4("Description")], body=True)]),
-                    dbc.Row([dbc.Card([html.H4("MAP")], body=True)])
+                    dbc.Row([dbc.Card(dcc.Graph(
+                                    id='Map',
+                                    figure=figMap
+                                    ), body=True)])
                      ], width=5
                     ),
                 dbc.Col([tabs], width=5),
