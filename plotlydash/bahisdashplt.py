@@ -214,11 +214,11 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
-                            zoom=5.5, center = {"lat": 23.7, "lon": 90},
+                            zoom=6.5, center = {"lat": 23.7, "lon": 90},
                             opacity=0.5,
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=850 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
 
@@ -231,7 +231,7 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
 
 # figReport= px.bar(tmp, x='date', y='basic_info_date')
     
-tabs=dbc.Card(dcc.Graph(id='RepG1')) #figure=figReport))
+tabs=dbc.Card([dcc.Graph(id='RepG1'), dcc.Graph(id='RepG2')]) #figure=figReport))
 
 
 # stylesheet with the .dbc class
@@ -313,6 +313,7 @@ app.layout = dbc.Container(
     
     Output ('CMap', 'figure'),
     Output ('RepG1', 'figure'),
+    Output ('RepG2', 'figure'),
     
     Input("cDate",'start_date'),
     Input("cDisease",'value'),
@@ -367,7 +368,7 @@ def update_whatever(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    tots= str(bahis_sourcedata.shape[0])
     
     figg= px.bar(tmp, x='date', y='basic_info_date')        
-    return fig, figg
+    return fig, figg, figg
 
 if __name__ == "__main__":
     app.run_server(debug=True)
