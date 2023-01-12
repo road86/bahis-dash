@@ -203,11 +203,11 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
     reports= reports.loc[reports[pname] != 'nan']    
     data = open_data(path1)
 
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(splace,"")
     for i in range(reports.shape[0]):
         reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
     reports[pname]=reports[pname].str.title()                   
-    for i in data['features']:
-        i['id']= i['properties']['shapeName'].replace(splace,"")
 
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
                             featureidkey="Cmap",
@@ -218,7 +218,7 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
                             opacity=0.5,
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
 
@@ -321,15 +321,41 @@ app.layout = dbc.Container(
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 
-def update_CMap(start_date, cDate, cDisease, cDivision, cDistrict, cUpazila):
-    loc=1
-    title='basic_info_division'
-    pname='divisionname'
-    splace=' Division' 
-    variab='division'
-    labl='Incidences per division'
-    figM = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
-    return figM
+def update_CMap(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
+    # loc=1
+    # title='basic_info_division'
+    # pname='divisionname'
+    # splace=' Division' 
+    # variab='division'
+    # labl='Incidences per division'
+    
+  #  def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, labl):
+        subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]  
+        reports = bahis_sourcedata['basic_info_division'].value_counts().to_frame()
+        reports['divisionname'] = reports.index
+        reports= reports.loc[reports['divisionname'] != 'nan']    
+        data = open_data(path1)
+
+        for i in data['features']:
+            i['id']= i['properties']['shapeName'].replace(' Division' ,"")
+        for i in range(reports.shape[0]):
+            reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
+        reports['divisionname']=reports['divisionname'].str.title()                   
+
+        fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
+                                featureidkey="Cmap",
+                                color_continuous_scale="YlOrBr",
+                                range_color=(0, reports['basic_info_division'].max()),
+                                mapbox_style="carto-positron",
+                                zoom=5.5, center = {"lat": 23.7, "lon": 90},
+                                opacity=0.5,
+                                labels={'division':'Incidences per division'}
+                              )
+        fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}) #, coloraxis_showscale= False) #width= 1000, height=600, 
+        return fig
+    
+    #figure = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
+ #   return figure
 
 if __name__ == "__main__":
     app.run_server(debug=True)
