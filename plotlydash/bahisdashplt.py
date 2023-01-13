@@ -13,7 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, date
 from dash.dependencies import Input, Output
-from dash_bootstrap_templates import ThemeChangerAIO #template_from_url
+from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 import json  
 
 
@@ -61,8 +61,8 @@ bahis_geodata= fetchgeodata()
 def fetchdiseaselist():
     dislis= bahis_sourcedata['top_diagnosis'].unique()
     dislis= pd.DataFrame(dislis, columns=['Disease'])
-    dislis.sort_values(by=['Disease'])
-    ddDList= dislis['Disease']
+#    dislis.sort_values(by=['Disease'])
+    ddDList= dislis['Disease'].sort_values()
     return ddDList.tolist()
 ddDList= fetchdiseaselist()
 ddDList.insert(0, 'Select All')
@@ -115,7 +115,8 @@ def fIndicator():
         title = 'Dead Animals',
         value = bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
         delta = {'reference': diffdead}, #f"{diffdead:,}",
-        domain = {'row': 0, 'column': 2}))
+        domain = {'row': 0, 'column': 2},
+        ))
     
     figIndic.update_layout(height=250,
         grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
@@ -138,12 +139,17 @@ dpDate = html.Div(
     className='mb-4',
 )
 
-
 def date_subset(sdate, edate):
     dates=[sdate, edate]
     tmask= (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
     return bahis_sourcedata.loc[tmask]
 
+def disease_subset(cDisease, sub_bahis_sourcedata):
+    if 'Select All' in cDisease:
+        sub_bahis_sourcedata=sub_bahis_sourcedata 
+    else:
+        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)] 
+    return sub_bahis_sourcedata
 
 ddDivision = html.Div(
     [
@@ -189,8 +195,9 @@ ddDisease = html.Div(
         dbc.Label("Select disease"),
         dcc.Dropdown(
             ddDList,
-            "pop",
+            "Select All",
             id="cDisease",
+            multi=True,
             clearable=False,
         ),
     ],
@@ -210,28 +217,31 @@ def open_data(path):
         data = json.load(f)
         return data
 
-def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, labl):
+def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme):
     subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  
-    reports = bahis_sourcedata[title].value_counts().to_frame()
-    reports.index = reports.index.astype(int)
+    reports = sub_bahis_sourcedata[title].value_counts().to_frame()
+    #reports.index = reports.index.astype(int)
     reports[pname] = reports.index
+    reports.index = reports.index.astype(int)
     reports= reports.loc[reports[pname] != 'nan']    
     data = open_data(path1)
 
-    for i in data['features']:
-        i['id']= i['properties']['shapeName'].replace(splace,"")
     for i in range(reports.shape[0]):
         #reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
-        reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0]
-#    reports[pname]=reports[pname].str.title()                   
-
+        reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy
+    reports[pname]=reports[pname].str.title()  
+#    reports.set_index(pname)                 
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(splace,"")
+    
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
-                            featureidkey="Cmap",
+#                            featureidkey="Cmap",
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
                             zoom=6.4, center = {"lat": 23.7, "lon": 90},
                             opacity=0.5,
+                            template=template_from_url(theme),
                             labels={variab:labl}
                           )
     fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=850 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
@@ -342,20 +352,23 @@ app.layout = dbc.Container(
 
 def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):
  
+    sub_bahis_sourcedata=date_subset(start_date, end_date)
+    sub_bahis_sourcedata=disease_subset(cDisease, sub_bahis_sourcedata)
+                          
     loc=1
     title='basic_info_division'
     pname='divisionname'
-    splace=' Division' 
+    splace=' Division'
     variab='division'
     labl='Incidences per division'
     
-    fig = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
+    fig = plot_map(path1, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme)
 
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    figReport= go.Figure()
 
 
-    sub_bahis_sourcedata=date_subset(start_date, end_date)
+
 
     tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
     tmp=tmp.reset_index()
