@@ -39,7 +39,7 @@ path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 
 def fetchsourcedata():
-    bahis_sd = pd.read_csv(sourcefilename) ################CC
+    bahis_sd = pd.read_csv(sourcefilename) 
     bahis_sd['basic_info_division'] = pd.to_numeric(bahis_sd['basic_info_division'])
     bahis_sd['basic_info_district'] = pd.to_numeric(bahis_sd['basic_info_district'])
     bahis_sd['basic_info_upazila'] = pd.to_numeric(bahis_sd['basic_info_upazila'])
@@ -50,7 +50,6 @@ bahis_sourcedata= fetchsourcedata()
 def fetchgeodata():
     return pd.read_csv(geofilename)
 bahis_geodata= fetchgeodata()
-
 
 # app = Dash(__name__)
 
@@ -139,6 +138,25 @@ dpDate = html.Div(
     className='mb-4',
 )
 
+
+# def set_dates():
+#     st.header('Please select the date range for the following reports')
+#     colsdate, coledate, colplaceholder = st.columns([1,1,3])
+#     with colsdate:
+#         sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
+#     with coledate:
+#         edate= st.date_input('Select ending date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
+#     dates=[sdate, edate]
+#     st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
+#     return (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
+# tmask=set_dates()
+
+# @st.cache
+# def date_subset():
+#     return bahis_sourcedata.loc[tmask]
+# sub_bahis_sourcedata=date_subset()
+
+
 ddDivision = html.Div(
     [
         dbc.Label("Select Division"),
@@ -191,6 +209,14 @@ ddDisease = html.Div(
     className="mb-4",
 )
 
+
+    # if 'Select All' in disease_chosen_D:
+    #     subd_bahis_sourcedata=sub_bahis_sourcedata 
+    # else:     
+    #     subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen_D)] 
+        
+        
+
 def open_data(path):
     with open(path) as f:
         data = json.load(f)
@@ -199,6 +225,7 @@ def open_data(path):
 def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, labl):
     subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  
     reports = bahis_sourcedata[title].value_counts().to_frame()
+    reports.index = reports.index.astype(int)
     reports[pname] = reports.index
     reports= reports.loc[reports[pname] != 'nan']    
     data = open_data(path1)
@@ -206,15 +233,16 @@ def plot_map(path, loc, subd_bahis_sourcedata, title, pname, splace, variab, lab
     for i in data['features']:
         i['id']= i['properties']['shapeName'].replace(splace,"")
     for i in range(reports.shape[0]):
-        reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
-    reports[pname]=reports[pname].str.title()                   
+        #reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
+        reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0]
+#    reports[pname]=reports[pname].str.title()                   
 
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
                             featureidkey="Cmap",
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
-                            zoom=6.5, center = {"lat": 23.7, "lon": 90},
+                            zoom=6.4, center = {"lat": 23.7, "lon": 90},
                             opacity=0.5,
                             labels={variab:labl}
                           )
@@ -323,7 +351,8 @@ app.layout = dbc.Container(
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 
-def update_whatever(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
+def update_whatever(start_date, cDisease, cDivision, cDistrict, cUpazila, theme):
+ 
     loc=1
     title='basic_info_division'
     pname='divisionname'
@@ -332,32 +361,6 @@ def update_whatever(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
     labl='Incidences per division'
     
     fig = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
-        # subDist=bahis_geodata[(bahis_geodata["loc_type"]==1)]  
-        # reports = bahis_sourcedata['basic_info_division'].value_counts().to_frame()
-        # reports['divisionname'] = reports.index
-        # reports= reports.loc[reports['divisionname'] != 'nan']    
-        # data = open_data(path1)
-
-        # for i in data['features']:
-        #     i['id']= i['properties']['shapeName'].replace(' Division' ,"")
-        # for i in range(reports.shape[0]):
-        #     reports['divisionname'].iloc[i] = subDist.loc[subDist['value']==int(reports['divisionname'].iloc[i]),'name'].iloc[0]
-        # reports['divisionname']=reports['divisionname'].str.title()                   
-
-        # fig = px.choropleth_mapbox(reports, geojson=data, locations='divisionname', color='basic_info_division',
-        #                         featureidkey="Cmap",
-        #                         color_continuous_scale="YlOrBr",
-        #                         range_color=(0, reports['basic_info_division'].max()),
-        #                         mapbox_style="carto-positron",
-        #                         zoom=5.5, center = {"lat": 23.7, "lon": 90},
-        #                         opacity=0.5,
-        #                         labels={'division':'Incidences per division'}
-        #                       )
-        # fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}) #, coloraxis_showscale= False) #width= 1000, height=600, 
-        #return fig
-    
-    #figure = plot_map(path1, loc, bahis_sourcedata, title, pname, splace, variab, labl)
- #   return figure
 
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    figReport= go.Figure()
