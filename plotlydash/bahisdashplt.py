@@ -6,14 +6,14 @@ Created on Wed Dec 28 15:12:34 2022
 """
 
 
-from dash import Dash, dash_table, dcc, html #, dbc 
+from dash import Dash, dcc, html #dash_table, dbc 
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, date
 from dash.dependencies import Input, Output
-from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
+from dash_bootstrap_templates import ThemeChangerAIO #template_from_url
 import json  
 
 
@@ -139,22 +139,10 @@ dpDate = html.Div(
 )
 
 
-# def set_dates():
-#     st.header('Please select the date range for the following reports')
-#     colsdate, coledate, colplaceholder = st.columns([1,1,3])
-#     with colsdate:
-#         sdate= st.date_input('Select beginning date of report', value= start_date, min_value= start_date, max_value= end_date, key='sdate')
-#     with coledate:
-#         edate= st.date_input('Select ending date of report', value= end_date, min_value= start_date, max_value= end_date, key='edate')
-#     dates=[sdate, edate]
-#     st.subheader("Currently selected Date range: From " + str(dates[0]) + " until " + str(dates[1]))
-#     return (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
-# tmask=set_dates()
-
-# @st.cache
-# def date_subset():
-#     return bahis_sourcedata.loc[tmask]
-# sub_bahis_sourcedata=date_subset()
+def date_subset(sdate, edate):
+    dates=[sdate, edate]
+    tmask= (bahis_sourcedata['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sourcedata['basic_info_date'] <= pd.to_datetime(dates[1]))
+    return bahis_sourcedata.loc[tmask]
 
 
 ddDivision = html.Div(
@@ -344,6 +332,7 @@ app.layout = dbc.Container(
     Output ('RepG2', 'figure'),
     
     Input("cDate",'start_date'),
+    Input("cDate",'end_date'),
     Input("cDisease",'value'),
     Input("cDivision",'value'),
     Input("cDistrict",'value'),
@@ -351,7 +340,7 @@ app.layout = dbc.Container(
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 
-def update_whatever(start_date, cDisease, cDivision, cDistrict, cUpazila, theme):
+def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):
  
     loc=1
     title='basic_info_division'
@@ -364,7 +353,11 @@ def update_whatever(start_date, cDisease, cDivision, cDistrict, cUpazila, theme)
 
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    figReport= go.Figure()
-    tmp=bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+
+
+    sub_bahis_sourcedata=date_subset(start_date, end_date)
+
+    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'index':'date'})
     tmp['date'] = pd.to_datetime(tmp['date'])    
