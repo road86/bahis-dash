@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, date
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 import json  
+from dash.exceptions import PreventUpdate
 
 
 # dbc_css = "/dbc.min.css"
@@ -30,11 +31,11 @@ sourcefilename =sourcepath + 'preped_data2.csv'
 bahis_sd = pd.read_csv(sourcefilename)
 img_logo= 'assets/Logo.png'
 
-path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
+path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
-path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
-path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
-path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
+path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
+path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 
 
@@ -73,7 +74,29 @@ def fetchDivisionlist():
     ddDivlist=ddDivlist.sort_values()
     return ddDivlist.tolist()
 ddDivlist=fetchDivisionlist()
-ddDivlist.insert(0,'Select All')
+#ddDivlist.insert(0,'Select All')
+
+def fetchDistrictlist(SelDiv):   
+    DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDiv) & (bahis_geodata['loc_type']==1),'value'].values[0]
+    ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo]['name'].str.capitalize()
+    ddDislist.name='District'
+    ddDislist=ddDislist.sort_values()
+    return ddDislist.tolist()
+
+def fetchUpazilalist(SelDis):   
+    DisNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDis) & (bahis_geodata['loc_type']==2),'value'].values[0]
+    ddUpalist=bahis_geodata[bahis_geodata['parent']==DisNo]['name'].str.capitalize()
+    ddUpalist.name='Upazila'
+    ddUpalist=ddUpalist.sort_values()
+    return ddUpalist.tolist()
+
+# if SelDiv:
+#     ddDislist=fetchDistrictlist(SelDiv)
+#     ddDislist.insert(0,'Select All')
+# else:
+ddDislist=[]
+
+ddDislist.insert(0,'Select All')
 
 start_date=min(bahis_sourcedata['basic_info_date']).date()
 end_date=max(bahis_sourcedata['basic_info_date']).date()
@@ -151,14 +174,15 @@ def disease_subset(cDisease, sub_bahis_sourcedata):
         sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)] 
     return sub_bahis_sourcedata
 
+#def geo_subset()
+
 ddDivision = html.Div(
     [
         dbc.Label("Select Division"),
         dcc.Dropdown(
             ddDivlist,
-            "pop",
             id="cDivision",
-            clearable=False,
+            clearable=True,
         ),
     ],
     className="mb-4",
@@ -168,10 +192,8 @@ ddDistrict = html.Div(
     [
         dbc.Label("Select District"),
         dcc.Dropdown(
-            ["District", "Funny Disease", "Don't care Disease"],
-            "pop",
             id="cDistrict",
-            clearable=False,
+            clearable=True,
         ),
     ],
     className="mb-4",
@@ -181,10 +203,8 @@ ddUpazila = html.Div(
     [
         dbc.Label("Select Upazila"),
         dcc.Dropdown(
-            ["Upazila", "Funny Disease", "Don't care Disease"],
-            "pop",
             id="cUpazila",
-            clearable=False,
+            clearable=True,
         ),
     ],
     className="mb-4",
@@ -224,7 +244,7 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
     reports[pname] = reports.index
     reports.index = reports.index.astype(int)
     reports= reports.loc[reports[pname] != 'nan']    
-    data = open_data(path1)
+    data = open_data(path)
 
     for i in range(reports.shape[0]):
         #reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
@@ -336,7 +356,30 @@ app.layout = dbc.Container(
 )
 
 @app.callback(
-    
+    Output ('cUpazila', 'options'),
+    Input ('cDistrict', 'value')
+    )
+def set_Upalist(cDistrict):  
+    ddUpalist=None
+    if cDistrict is None:
+        raise PreventUpdate
+    else:
+        ddUpalist=fetchUpazilalist(cDistrict)
+    return ddUpalist
+
+@app.callback(
+        Output ('cDistrict', 'options'),
+        Input ('cDivision', 'value')
+        )
+def set_Dislist(cDivision):  
+    ddDislist=None
+    if cDivision is None:
+        raise PreventUpdate
+    else:
+        ddDislist=fetchDistrictlist(cDivision)
+    return ddDislist
+
+@app.callback(
     Output ('CMap', 'figure'),
     Output ('RepG1', 'figure'),
     Output ('RepG2', 'figure'),
@@ -349,26 +392,65 @@ app.layout = dbc.Container(
     Input("cUpazila",'value'),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
-
 def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):
  
     sub_bahis_sourcedata=date_subset(start_date, end_date)
     sub_bahis_sourcedata=disease_subset(cDisease, sub_bahis_sourcedata)
-                          
-    loc=1
-    title='basic_info_division'
-    pname='divisionname'
-    splace=' Division'
-    variab='division'
-    labl='Incidences per division'
+
+    if not cUpazila:
+        if not cDistrict:
+            if not cDivision:
+                sub_bahis_sourcedata=sub_bahis_sourcedata
+                path=path1
+                loc=1
+                title='basic_info_division'
+                pname='divisionname'
+                splace=' Division'
+                variab='division'
+                labl='Incidences per division'
+            else:
+                DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cDivision) & (bahis_geodata['loc_type']==1),'value'].values[0]
+                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(DivNo)]   
+                path=path2
+                loc=2
+                title='basic_info_district'
+                pname='districtname'
+                splace=' District'
+                variab='district'
+                labl='Incidences per district'
+        else:
+            DisNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cDistrict) & (bahis_geodata['loc_type']==2),'value'].values[0]
+            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==int(DisNo)]
+            path=path3
+            loc=3
+            title='basic_info_upazila'
+            pname='upazilaname'
+            splace=' Upazila'
+            variab='Upazila'
+            labl='Incidences per Upazila'
+    else:
+        #####check this
+        UpaNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cUpazila) & (bahis_geodata['loc_type']==2),'value'].values[0]
+        sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(UpaNo)]
+        path=path3
+        loc=3
+        title='basic_info_upazila'
+        pname='upazilaname'
+        splace=' Upazila'
+        variab='upazila'
+        labl='Incidences per upazila'
+                
+    # loc=1
+    # title='basic_info_division'
+    # pname='divisionname'
+    # splace=' Division'
+    # variab='division'
+    # labl='Incidences per division'
     
-    fig = plot_map(path1, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme)
+    fig = plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme)
 
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    figReport= go.Figure()
-
-
-
 
     tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
     tmp=tmp.reset_index()
