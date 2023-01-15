@@ -362,6 +362,7 @@ app.layout = dbc.Container(
 def set_Upalist(cDistrict):  
     ddUpalist=None
     if cDistrict is None:
+        ddUpalist=None
         raise PreventUpdate
     else:
         ddUpalist=fetchUpazilalist(cDistrict)
@@ -411,6 +412,13 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
             else:
                 DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cDivision) & (bahis_geodata['loc_type']==1),'value'].values[0]
                 sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(DivNo)]   
+                # path=path1
+                # loc=1
+                # title='basic_info_division'
+                # pname='divisionname'
+                # splace=' Division'
+                # variab='division'
+                # labl='Incidences per division'
                 path=path2
                 loc=2
                 title='basic_info_district'
@@ -430,7 +438,7 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
             labl='Incidences per Upazila'
     else:
         #####check this
-        UpaNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cUpazila) & (bahis_geodata['loc_type']==2),'value'].values[0]
+        UpaNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cUpazila) & (bahis_geodata['loc_type']==3),'value'].values[0]
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(UpaNo)]
         path=path3
         loc=3
