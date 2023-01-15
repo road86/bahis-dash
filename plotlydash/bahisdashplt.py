@@ -148,6 +148,21 @@ def fIndicator():
         )
     return figIndic
 
+ddReplist=['Reports', 'Animals', 'Monthly', 'Case Numbers', 'Heat Map', 'Alerts']
+
+ddReport = html.Div(
+    [
+        dbc.Label("Select Report"),
+        dcc.Dropdown(
+            ddReplist,
+            'Reports',
+            id="cReport",
+            clearable=False,
+        ),
+    ],
+    className="mb-4",
+)
+
 dpDate = html.Div(
     [
          dcc.DatePickerRange(
@@ -308,7 +323,7 @@ row = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    [dbc.Card([dpDate, ddDisease, ddDivision, ddDistrict, ddUpazila], body=True)
+                    [dbc.Card([ddReport, dpDate, ddDisease, ddDivision, ddDistrict, ddUpazila], body=True)
                      ], width=2),
                 dbc.Col([
                     dbc.Row([dbc.Card([html.H4("Description")], body=True)]),
