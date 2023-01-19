@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 gifpath = 'logos/'
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
+dgfilename = sourcepath + 'Diseaselist.csv'   # the available geodata from the bahis project
 sourcefilename =sourcepath + 'preped_data2.csv'
 path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
@@ -41,6 +42,16 @@ button[data-baseweb="tab"] {
 """
 
 st.write(tabs_font_css, unsafe_allow_html=True)
+
+#@st.cache
+def fetchdisgroupdata():
+    bahis_dgdata= pd.read_csv(dgfilename)
+    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]  
+    bahis_dgdata= bahis_dgdata.dropna() #[bahis_dgdata['Disease type'].astype(bool)] #.dropna(subset=['Disease type'],inplace=True) #loc[bahis_dgdata['Disease type'] != '<NA>']  
+    return bahis_dgdata
+bahis_dgdata= fetchdisgroupdata()
+#st.dataframe(bahis_dgdata)
+#st.dataframe(bahis_dgdata['Disease type'].unique())
 
 @st.cache
 def fetchgeodata():
