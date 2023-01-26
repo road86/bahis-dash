@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan 22 07:48:14 2023
+
+@author: yoshka
+"""
+
+# Import necessary libraries 
+import dash
+from dash import html
+import dash_bootstrap_components as dbc
+
+
+dash.register_page(__name__)
+
+# Define the page layout
+layout = dbc.Container([
+    dbc.Row([
+        html.Center(html.H1("Page 1")),
+        html.Br(),
+        html.Hr(),
+        dbc.Col([
+            html.P("This is column 1."), 
+            dbc.Button("Test Button", color="primary")
+        ]), 
+        dbc.Col([
+            html.P("This is column 2."), 
+            html.P("You can add many cool components using the bootstrap dash components library."),
+        ])
+    ])
+])
