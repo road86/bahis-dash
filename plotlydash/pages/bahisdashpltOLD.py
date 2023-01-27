@@ -123,27 +123,27 @@ def natNo():
 
 [diff, diffsick, diffdead]=natNo()
 
-def fIndicator():
+def fIndicator(sub_bahis_sourcedata):
     figIndic = go.Figure()
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Total Reports',
-        value = bahis_sourcedata.shape[0], #f"{bahis_sourcedata.shape[0]:,}"),
+        value = sub_bahis_sourcedata.shape[0], #f"{bahis_sourcedata.shape[0]:,}"),
         delta = {'reference': diff}, #'f"{diff:,}"},
         domain = {'row': 0, 'column': 0}))
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Sick Animals',
-        value = bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
+        value = sub_bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
         delta= {'reference': diffsick}, #f"{diffsick:,}",
         domain = {'row': 0, 'column': 1}))
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Dead Animals',
-        value = bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
+        value = sub_bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
         delta = {'reference': diffdead}, #f"{diffdead:,}",
         domain = {'row': 0, 'column': 2},
         ))
@@ -155,7 +155,7 @@ def fIndicator():
         )
     return figIndic
 
-ddReplist=['Reports', 'Animals', 'Monthly', 'Case Numbers', 'Heat Map', 'Alerts']
+ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers', 'Heat Map', 'Alerts']
 
 ddReport = html.Div(
     [
@@ -278,15 +278,22 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             template=template_from_url(theme),
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=850 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
    
-tabs=dbc.Card([dcc.Graph(id='RepG1'), dcc.Graph(id='RepG2')]) #figure=figReport))
+tabs=dbc.Card(dbc.Col([dcc.Graph(id='indicators',
+                                 #figure=fIndicator()
+                                ),
+                        #width=8),  
+              #justify="center", align="center", className="mb-42"), #"h-50"),
+                      dcc.Graph(id='RepG1')]
+                      )
+             ) #, dcc.Graph(id='RepG2')]) #figure=figReport))
 
 
 # stylesheet with the .dbc class
-dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
+#dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 #app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
 
 header = html.H4(
@@ -294,29 +301,11 @@ header = html.H4(
 )
 
 row = html.Div(
-    [
-#         dbc.Row(
-#             [
-#                 dbc.Col(html.Img(src=img_logo, style={'width':'100%', 'margin-left': '20px'} ), width=3),
-#                 dbc.Col(html.Div(header), width=8),
-# #                dbc.Col(html.Div("Placeholder"), width=1),
-#             ]),
-        dbc.Row(),
-        dbc.Row(
-            [
-                dbc.Col(html.B(html.H1("National numbers")), width=2),
-                dbc.Col(dcc.Graph(
-                                id='indicators',
-                                figure=fIndicator()
-                            ),width=8),  
-            ], justify="center", align="center", className="mb-42"), #"h-50"),
-        dbc.Row(
-            [
-                dbc.Col(
+    [ dbc.Row(
+            [   dbc.Col(
                     [dbc.Card([ddReport, dpDate, ddDisease, ddDivision, ddDistrict, ddUpazila], body=True)
                      ], width=2),
                 dbc.Col([
-                    dbc.Row([dbc.Card([html.H4("Description")], body=True)]),
                     dbc.Row([dbc.Card(dcc.Graph(
                                     id='CMap',
 #                                    figure=figMap
@@ -369,8 +358,8 @@ layout = dbc.Container(
 def set_Upalist(cDistrict):  
     ddUpalist=None
     if cDistrict is None:
-        ddUpalist=None
-        raise PreventUpdate
+        ddUpalist="",
+        #raise PreventUpdate
     else:
         ddUpalist=fetchUpazilalist(cDistrict)
     return ddUpalist
@@ -383,7 +372,8 @@ def set_Upalist(cDistrict):
 def set_Dislist(cDivision):  
     ddDislist=None
     if cDivision is None:
-        raise PreventUpdate
+        ddDislist="",
+        #raise PreventUpdate
     else:
         ddDislist=fetchDistrictlist(cDivision)
     return ddDislist
@@ -392,8 +382,11 @@ def set_Dislist(cDivision):
 @callback(
     Output ('CMap', 'figure'),
     Output ('RepG1', 'figure'),
-    Output ('RepG2', 'figure'),
+    Output ('indicators', 'figure'),
     
+    #Output ('RepG2', 'figure'),
+    
+    Input("cReport", 'value'),
     Input("cDate",'start_date'),
     Input("cDate",'end_date'),
     Input("cDisease",'value'),
@@ -402,7 +395,9 @@ def set_Dislist(cDivision):
     Input("cUpazila",'value'),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
-def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):
+def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):   
+   
+#    ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers', 'Heat Map', 'Alerts']
  
     sub_bahis_sourcedata=date_subset(start_date, end_date)
     sub_bahis_sourcedata=disease_subset(cDisease, sub_bahis_sourcedata)
@@ -449,6 +444,7 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
         #####check this
         UpaNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cUpazila) & (bahis_geodata['loc_type']==3),'value'].values[0]
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==int(UpaNo)]
+        #sub_bahis_sourcedata= sub_bahis_sourcedata
         path=path3
         loc=3
         title='basic_info_upazila'
@@ -469,14 +465,81 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
 #    figReport= go.Figure()
 
-    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'index':'date'})
-    tmp['date'] = pd.to_datetime(tmp['date'])    
-#    tots= str(bahis_sourcedata.shape[0])
+# 'Monthly Comparison', 'Top 10 Numbers', 'Heat Map', 'Alerts']
     
-    figg= px.bar(tmp, x='date', y='basic_info_date')        
-    return fig, figg, figg
+    #print(sub_bahis_sourcedata.dtypes)
+    if cReport=="Reports":
+        tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+        tmp=tmp.reset_index()
+        tmp=tmp.rename(columns={'index':'date'})
+        tmp['date'] = pd.to_datetime(tmp['date'])    
+        #print(tmp.dtypes)        
+        figg= px.bar(tmp, x='date', y='basic_info_date')  
+    if cReport=='Diseased Animals':
+        tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum().astype(int)
+        tmp=tmp.reset_index()
+        tmp=tmp.rename(columns={'basic_info_date':'date'})
+        tmp['date'] = tmp['date'].astype('datetime64[D]')
+        #print(tmp.dtypes)
+        figg= px.bar(tmp, x='date', y='patient_info_sick_number')  
+    if cReport=='Dead Animals':
+        tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum().astype(int)
+        tmp=tmp.reset_index()
+        tmp=tmp.rename(columns={'basic_info_date':'date'})
+        tmp['date'] = tmp['date'].astype('datetime64[D]')
+        #print(tmp.dtypes)
+        figg= px.bar(tmp, x='date', y='patient_info_dead_number')  
+    if cReport=='Monthly Comparison':
+        tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+        tmp=tmp.reset_index()
+        tmp=tmp.rename(columns={'basic_info_date':'date'})
+        tmp['date']=tmp['date'].astype(str)
+        tmp['date'] = pd.to_datetime(tmp['date'])
+        #tots= str(int(subs_bahis_sourcedata['patient_info_sick_number'].sum()))
+        tmpdata={'sick':tmp['patient_info_sick_number'],
+                  'date':tmp['date']}
+        tmpdata=pd.DataFrame(tmpdata)
+        print(tmpdata.dtypes)
+        figg= px.bar(tmpdata, x='month(date)', y='Sick:Q', color='year(date)', barmode ='group')
+    if cReport=='Top 10 numbers':
+        poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+        sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
+            x='counts:Q',
+            y=alt.Y('top_diagnosis:O', sort='-x')
+            ).properties(title='Poultry Related Diseases')
+        st.altair_chart(line_chart, use_container_width=True)             
+        
+        lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+        sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)] 
+        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
+            x='counts:Q',
+            y=alt.Y('top_diagnosis:O', sort='-x')
+            ).properties(title='Large Animal Related Diseases')
+        st.altair_chart(line_chart, use_container_width=True)  
+        figg=[fpoul, flani]
+
+                    
+              #        height=460).mark_bar().encode(
+              # alt.Column('month(date):N', ),
+              # alt.X('year(date):O', title='', scale=alt.Scale(8), axis=alt.Axis(labels=False, ticks=False)),
+              # alt.Y('sick:Q', title='reports'),
+              # alt.Color('year(date):O', scale=alt.Scale(scheme='dark2'),),
+              # ).properties(title='Registered sick animals :  ' + tots)
+        
+#    figgg={}
+    
+    findic=fIndicator(sub_bahis_sourcedata)
+
+    return fig, figg, findic #, figgg, 
 
 # if __name__ == "__main__":
 #     app.run_server(debug=True)
@@ -485,6 +548,62 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
 
 
 
+
+# def MC_plot(loc, subd_bahis_sourcedata, title, find):
+#     #st.subheader('Registered sick animals')
+#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
+#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
+#     subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata[title]==int(geocodehit)]
+#     if subs_bahis_sourcedata.empty:
+#         st.write('no data')
+#     else: 
+#         tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+#         tmp=tmp.reset_index()
+#         tmp=tmp.rename(columns={'basic_info_date':'date'})
+#         tmp['date']=tmp['date'].astype(str)
+#         tmp['date'] = pd.to_datetime(tmp['date'])
+#         tots= str(int(subs_bahis_sourcedata['patient_info_sick_number'].sum()))
+#         tmpdata={'sick':tmp['patient_info_sick_number'],
+#                   'date':tmp['date']}
+#         tmpdata=pd.DataFrame(tmpdata)
+#         bar_chart= alt.Chart(tmpdata, height=460).mark_bar().encode(
+#               alt.Column('month(date):N', ),
+#               alt.X('year(date):O', title='', scale=alt.Scale(8), axis=alt.Axis(labels=False, ticks=False)),
+#               alt.Y('sick:Q', title='reports'),
+#               alt.Color('year(date):O', scale=alt.Scale(scheme='dark2'),),
+#               ).properties(title='Registered sick animals :  ' + tots)
+#         st.altair_chart(bar_chart) 
+
+# def CN_plot(loc, subd_bahis_sourcedata, title, find):
+#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
+#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
+#     subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata[title]==int(geocodehit)]
+#     if subs_bahis_sourcedata.empty:
+#         st.write('no data')
+#     else: 
+#         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+#         sub_bahis_sourcedataP=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(poultry)]
+#         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#         tmp=tmp.sort_values(by='species', ascending=False)
+#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+#         tmp=tmp.head(10)
+#         line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
+#             x='counts:Q',
+#             y=alt.Y('top_diagnosis:O', sort='-x')
+#             ).properties(title='Poultry Related Diseases')
+#         st.altair_chart(line_chart, use_container_width=True)             
+        
+#         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+#         sub_bahis_sourcedataLA=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(lanimal)] 
+#         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#         tmp=tmp.sort_values(by='species', ascending=False)
+#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+#         tmp=tmp.head(10)
+#         line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
+#             x='counts:Q',
+#             y=alt.Y('top_diagnosis:O', sort='-x')
+#             ).properties(title='Large Animal Related Diseases')
+#         st.altair_chart(line_chart, use_container_width=True) 
 
 
 
