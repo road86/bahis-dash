@@ -16,6 +16,15 @@ from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
 import json  
 from dash.exceptions import PreventUpdate
+from plotly.subplots import make_subplots
+
+
+#### hanlde with care suppresses: 
+# SettingWithCopyWarning:
+# A value is trying to be set on a copy of a slice from a DataFrame
+# See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+pd.options.mode.chained_assignment = None
+
 
 dash.register_page(__name__, path='/')
 
@@ -109,46 +118,50 @@ start_date=min(bahis_sourcedata['basic_info_date']).date()
 end_date=max(bahis_sourcedata['basic_info_date']).date()
 start_date=date(2021, 1, 1)
 
-def natNo():
-    mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
-    tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
+def natNo(sub_bahis_sourcedata):
+    mask=(sub_bahis_sourcedata['basic_info_date']>= datetime.now()-timedelta(days=30)) & (sub_bahis_sourcedata['basic_info_date'] <= datetime.now())
+    ################print(mask.value_counts(True])
+    tmp_sub_data=sub_bahis_sourcedata['basic_info_date'].loc[mask]
     diff=tmp_sub_data.shape[0]
-    
-    tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
+        
+    tmp_sub_data=sub_bahis_sourcedata['patient_info_sick_number'].loc[mask]
     diffsick=int(tmp_sub_data.sum().item())
     
-    tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
+    tmp_sub_data=sub_bahis_sourcedata['patient_info_dead_number'].loc[mask]
     diffdead=int(tmp_sub_data.sum().item())
     return([diff, diffsick, diffdead])
 
-[diff, diffsick, diffdead]=natNo()
+#[diff, diffsick, diffdead]=natNo()
 
 def fIndicator(sub_bahis_sourcedata):
+    
+    [diff, diffsick, diffdead]=natNo(sub_bahis_sourcedata)
+ 
     figIndic = go.Figure()
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Total Reports',
         value = sub_bahis_sourcedata.shape[0], #f"{bahis_sourcedata.shape[0]:,}"),
-        delta = {'reference': diff}, #'f"{diff:,}"},
+        delta = {'reference': sub_bahis_sourcedata.shape[0]-diff}, #'f"{diff:,}"},
         domain = {'row': 0, 'column': 0}))
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Sick Animals',
         value = sub_bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
-        delta= {'reference': diffsick}, #f"{diffsick:,}",
+        delta= {'reference': sub_bahis_sourcedata['patient_info_sick_number'].sum()-diffsick}, #f"{diffsick:,}",
         domain = {'row': 0, 'column': 1}))
     
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Dead Animals',
         value = sub_bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
-        delta = {'reference': diffdead}, #f"{diffdead:,}",
+        delta = {'reference': sub_bahis_sourcedata['patient_info_dead_number'].sum()-diffdead}, #f"{diffdead:,}",
         domain = {'row': 0, 'column': 2},
         ))
     
-    figIndic.update_layout(height=250,
+    figIndic.update_layout(height=235,
         grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
         #?template=template_from_url(theme),
     
@@ -273,7 +286,7 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
-                            zoom=6.4, center = {"lat": 23.7, "lon": 90},
+                            zoom=6.4, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
                             template=template_from_url(theme),
                             labels={variab:labl}
@@ -475,6 +488,7 @@ def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistric
         tmp['date'] = pd.to_datetime(tmp['date'])    
         #print(tmp.dtypes)        
         figg= px.bar(tmp, x='date', y='basic_info_date')  
+        figg.update_layout(height=400)   
     if cReport=='Diseased Animals':
         tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum().astype(int)
         tmp=tmp.reset_index()
@@ -482,15 +496,18 @@ def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistric
         tmp['date'] = tmp['date'].astype('datetime64[D]')
         #print(tmp.dtypes)
         figg= px.bar(tmp, x='date', y='patient_info_sick_number')  
+        figg.update_layout(height=400)   
     if cReport=='Dead Animals':
         tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum().astype(int)
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'basic_info_date':'date'})
         tmp['date'] = tmp['date'].astype('datetime64[D]')
         #print(tmp.dtypes)
+        #print(tmp)
         figg= px.bar(tmp, x='date', y='patient_info_dead_number')  
+        figg.update_layout(height=400)   
     if cReport=='Monthly Comparison':
-        tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
+        tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum().astype(int)
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'basic_info_date':'date'})
         tmp['date']=tmp['date'].astype(str)
@@ -499,20 +516,20 @@ def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistric
         tmpdata={'sick':tmp['patient_info_sick_number'],
                   'date':tmp['date']}
         tmpdata=pd.DataFrame(tmpdata)
-        print(tmpdata.dtypes)
-        figg= px.bar(tmpdata, x='month(date)', y='Sick:Q', color='year(date)', barmode ='group')
-    if cReport=='Top 10 numbers':
+#        figg= px.bar(tmpdata, x='month(date)', y='sick:Q', color='year(date)', barmode ='group')
+        figg= px.bar(tmpdata, x=pd.DatetimeIndex(tmpdata['date']).month, y='sick', color=pd.DatetimeIndex(tmpdata['date']).year.astype(str), barmode ='group')
+#        figg.update_layout(height=400,xaxis=dict(tickformat="%d-%m"))   
+    if cReport=='Top 10 Numbers':
+        #subpl= make_subplots(rows=2, cols=1),
         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
-        line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
-            x='counts:Q',
-            y=alt.Y('top_diagnosis:O', sort='-x')
-            ).properties(title='Poultry Related Diseases')
-        st.altair_chart(line_chart, use_container_width=True)             
+        tmp=tmp.iloc[::-1]
+        fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+        #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
         
         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
         sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)] 
@@ -520,12 +537,22 @@ def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistric
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
-        line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
-            x='counts:Q',
-            y=alt.Y('top_diagnosis:O', sort='-x')
-            ).properties(title='Large Animal Related Diseases')
-        st.altair_chart(line_chart, use_container_width=True)  
-        figg=[fpoul, flani]
+        tmp=tmp.iloc[::-1]
+        flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
+        #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
+        subpl=[fpoul, flani]
+        figg= make_subplots(rows=2, cols=1)
+        for i, figure in enumerate(subpl):
+            for trace in range(len(figure['data'])):
+                figg.append_trace(figure['data'][trace], row=i+1, col=1)
+        figg.update_layout(height=700)        
+        
+        # line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
+        #     x='counts:Q',
+        #     y=alt.Y('top_diagnosis:O', sort='-x')
+        #     ).properties(title='Large Animal Related Diseases')
+        # st.altair_chart(line_chart, use_container_width=True)  
+        #figg=[fpoul, flani]
 
                     
               #        height=460).mark_bar().encode(
