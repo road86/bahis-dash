@@ -39,7 +39,7 @@ bahis_sourcedata= fetchsourcedata()
 def fetchgeodata():
     return pd.read_csv(geofilename)
 bahis_geodata= fetchgeodata()
-print(bahis_geodata)
+
 
 def fetchDivisionlist():   
     ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()

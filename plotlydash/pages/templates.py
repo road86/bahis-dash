@@ -26,7 +26,7 @@ from plotly.subplots import make_subplots
 pd.options.mode.chained_assignment = None
 
 
-dash.register_page(__name__, path='/')
+dash.register_page(__name__)
 
 # ##these for other solution
 # dash.register_page(
@@ -82,7 +82,7 @@ def fetchdiseaselist():
     ddDList= dislis['Disease'].sort_values()
     return ddDList.tolist()
 ddDList= fetchdiseaselist()
-ddDList.insert(0, 'Select All')
+ddDList.insert(0, 'All Diseases')
 
 def fetchDivisionlist():   
     ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()
@@ -110,9 +110,11 @@ def fetchUpazilalist(SelDis):
 #     ddDislist=fetchDistrictlist(SelDiv)
 #     ddDislist.insert(0,'Select All')
 # else:
-ddDislist=[]
+    
+    
+# ddDislist=[]
 
-ddDislist.insert(0,'Select All')
+# ddDislist.insert(0,'Select All Diseases')
 
 start_date=min(bahis_sourcedata['basic_info_date']).date()
 end_date=max(bahis_sourcedata['basic_info_date']).date()
@@ -168,11 +170,11 @@ def fIndicator(sub_bahis_sourcedata):
         )
     return figIndic
 
-ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers']
+ddReplist=['Reports', 'Sick Animals', 'Dead Animals', 'Month-wise comparison', 'Livestock Disease Cases']
 
 ddReport = html.Div(
     [
-        dbc.Label("Select Report"),
+#        dbc.Label("Select Report"),
         dcc.Dropdown(
             ddReplist,
             'Reports',
@@ -203,7 +205,7 @@ def date_subset(sdate, edate):
     return bahis_sourcedata.loc[tmask]
 
 def disease_subset(cDisease, sub_bahis_sourcedata):
-    if 'Select All' in cDisease:
+    if 'All Diseases' in cDisease:
         sub_bahis_sourcedata=sub_bahis_sourcedata 
     else:
         sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)] 
@@ -213,11 +215,12 @@ def disease_subset(cDisease, sub_bahis_sourcedata):
 
 ddDivision = html.Div(
     [
-        dbc.Label("Select Division"),
+        #dbc.Label("Select Division"),
         dcc.Dropdown(
             ddDivlist,
             id="cDivision",
             clearable=True,
+            placeholder="Division",
         ),
     ],
     className="mb-4",
@@ -225,10 +228,11 @@ ddDivision = html.Div(
 
 ddDistrict = html.Div(
     [
-        dbc.Label("Select District"),
+        #dbc.Label("Select District"),
         dcc.Dropdown(
             id="cDistrict",
             clearable=True,
+            placeholder="District",
         ),
     ],
     className="mb-4",
@@ -236,10 +240,11 @@ ddDistrict = html.Div(
 
 ddUpazila = html.Div(
     [
-        dbc.Label("Select Upazila"),
+        #dbc.Label("Select Upazila"),
         dcc.Dropdown(
             id="cUpazila",
             clearable=True,
+            placeholder="Upazila",
         ),
     ],
     className="mb-4",
@@ -247,10 +252,10 @@ ddUpazila = html.Div(
 
 ddDisease = html.Div(
     [
-        dbc.Label("Select disease"),
+#        dbc.Label("Select disease"),
         dcc.Dropdown(
             ddDList,
-            "Select All",
+            "All Diseases",
             id="cDisease",
             multi=True,
             clearable=False,
@@ -286,12 +291,12 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
-                            zoom=6.2, center = {"lat": 23.7, "lon": 90.3},
+                            zoom=5, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
                             template=template_from_url(theme),
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, height=700) #, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, height=300) #, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
    
@@ -314,21 +319,38 @@ header = html.H4(
 )
 
 row = html.Div(
-    [ dbc.Row(
-            [   dbc.Col(
-                    [dbc.Card([ddReport, dpDate, ddDisease, ddDivision, ddDistrict, ddUpazila], body=True)
-                     ], width=2),
-                dbc.Col([
-                    dbc.Row([dbc.Card(dcc.Graph(
+    dbc.Row(
+        [
+        dbc.Col(
+            dbc.Card(
+                dbc.CardBody([
+        #            dbc.Col([            
+                        dbc.Row([
+                            dbc.Card([ddReport, dpDate, ddDisease, ddDivision, ddDistrict, ddUpazila], body=True)
+                            ]), #, width=3),
+        #                ], align='center'), 
+                        html.Br(),
+                        dbc.Row([
+                            dbc.Card(dcc.Graph(
                                     id='CMap',
-#                                    figure=figMap
-                                    ), body=True)])
-                     ], width=5
-                    ),
-                dbc.Col([tabs], width=5),
-            ]
-        ),
-    ]
+                                    ), body=True)
+        #                    ]), #, width=3),
+                        ]), #, width=2),#, align='center'),
+        #                style={"width": "18rem"},
+                ])
+            ),
+            width=3),
+       dbc.Col(     
+            dbc.Card(    
+                dbc.CardBody([             
+                    dbc.Col([tabs
+                        #dbc.Col([tabs])
+                        ])# , width="auto")#, align='center')     
+                    ])
+                ),
+            width=9),
+       ]#color = 'dark'
+    )
 )
 
 theme_colors = [
@@ -507,7 +529,7 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
         #print(tmp.dtypes)        
         figg= px.bar(tmp, x='date', y='basic_info_date')  
         figg.update_layout(height=400)   
-    if cReport=='Diseased Animals':
+    if cReport=='Sick Animals':
         tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('D')).sum().astype(int)
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'basic_info_date':'date'})
@@ -524,7 +546,7 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
         #print(tmp)
         figg= px.bar(tmp, x='date', y='patient_info_dead_number')  
         figg.update_layout(height=400)   
-    if cReport=='Monthly Comparison':
+    if cReport=='Month-wise comparison':
         tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum().astype(int)
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'basic_info_date':'date'})
@@ -537,7 +559,7 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
 #        figg= px.bar(tmpdata, x='month(date)', y='sick:Q', color='year(date)', barmode ='group')
         figg= px.bar(tmpdata, x=pd.DatetimeIndex(tmpdata['date']).month, y='sick', color=pd.DatetimeIndex(tmpdata['date']).year.astype(str), barmode ='group')
 #        figg.update_layout(height=400,xaxis=dict(tickformat="%d-%m"))   
-    if cReport=='Top 10 Numbers':
+    if cReport=='Livestock Disease Cases':
         #subpl= make_subplots(rows=2, cols=1),
         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
