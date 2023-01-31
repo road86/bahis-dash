@@ -45,6 +45,7 @@ img_logo= 'assets/Logo.png'
 gifpath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/logos/'
 sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
+dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_data2.csv'   
 bahis_sd = pd.read_csv(sourcefilename)
 img_logo= 'assets/Logo.png'
@@ -67,6 +68,14 @@ bahis_sourcedata= fetchsourcedata()
 def fetchgeodata():
     return pd.read_csv(geofilename)
 bahis_geodata= fetchgeodata()
+
+def fetchdisgroupdata():
+    bahis_dgdata= pd.read_csv(dgfilename)
+    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]  
+    bahis_dgdata= bahis_dgdata[['name', 'Disease type']]
+    bahis_dgdata= bahis_dgdata.dropna() 
+    return bahis_dgdata
+bahis_dgdata= fetchdisgroupdata()
 
 # app = Dash(__name__)
 
@@ -559,10 +568,16 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
 #        figg= px.bar(tmpdata, x='month(date)', y='sick:Q', color='year(date)', barmode ='group')
         figg= px.bar(tmpdata, x=pd.DatetimeIndex(tmpdata['date']).month, y='sick', color=pd.DatetimeIndex(tmpdata['date']).year.astype(str), barmode ='group')
 #        figg.update_layout(height=400,xaxis=dict(tickformat="%d-%m"))   
-    if cReport=='Livestock Disease Cases':
+    if cReport=='Livestock Disease Cases':          #######very slow! maybe a little less brute force...
         #subpl= make_subplots(rows=2, cols=1),
         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+
+        tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+        to_replace=tmpdg['name'].tolist()
+        replace_with=tmpdg['Disease type'].tolist()
+        sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)                                        
+
         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
@@ -573,6 +588,12 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
         
         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
         sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)] 
+   
+        tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+        to_replace=tmpdg['name'].tolist()
+        replace_with=tmpdg['Disease type'].tolist()
+        sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)  
+    
         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
@@ -586,23 +607,6 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
             for trace in range(len(figure['data'])):
                 figg.append_trace(figure['data'][trace], row=i+1, col=1)
         figg.update_layout(height=700)        
-        
-        # line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
-        #     x='counts:Q',
-        #     y=alt.Y('top_diagnosis:O', sort='-x')
-        #     ).properties(title='Large Animal Related Diseases')
-        # st.altair_chart(line_chart, use_container_width=True)  
-        #figg=[fpoul, flani]
-
-                    
-              #        height=460).mark_bar().encode(
-              # alt.Column('month(date):N', ),
-              # alt.X('year(date):O', title='', scale=alt.Scale(8), axis=alt.Axis(labels=False, ticks=False)),
-              # alt.Y('sick:Q', title='reports'),
-              # alt.Color('year(date):O', scale=alt.Scale(scheme='dark2'),),
-              # ).properties(title='Registered sick animals :  ' + tots)
-        
-#    figgg={}
     
     findic=fIndicator(sub_bahis_sourcedata)
 
@@ -610,95 +614,6 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
 
 # if __name__ == "__main__":
 #     app.run_server(debug=True)
-
-
-
-
-# to do: Disease grouping
-# def fetchdisgroupdata():
-#     bahis_dgdata= pd.read_csv(dgfilename)
-#     bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]  
-#     bahis_dgdata= bahis_dgdata[['name', 'Disease type']] # 'species', 'name', 'id', 'Disease type']]  
-#     bahis_dgdata= bahis_dgdata.dropna() #[bahis_dgdata['Disease type'].astype(bool)] #.dropna(subset=['Disease type'],inplace=True) #loc[bahis_dgdata['Disease type'] != '<NA>']  
-#     return bahis_dgdata
-# bahis_dgdata= fetchdisgroupdata()
-
-
-# def CN_plot(loc, subd_bahis_sourcedata, title, find):
-    
-#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
-#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
-#     subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata[title]==int(geocodehit)]
-#     else: 
-#         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-#         sub_bahis_sourcedataP=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(poultry)]
-        
-#         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-#         to_replace=tmpdg['name'].tolist()
-#         replace_with=tmpdg['Disease type'].tolist()
-#         sub_bahis_sourcedataP['top_diagnosis'] = sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-#         #st.dataframe(sub_bahis_sourcedataP)
-        
-#         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#         tmp=tmp.sort_values(by='species', ascending=False)
-#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-        
-#         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-#         sub_bahis_sourcedataLA=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(lanimal)] 
-        
-#         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-#         to_replace=tmpdg['name'].tolist()
-#         replace_with=tmpdg['Disease type'].tolist()
-#         sub_bahis_sourcedataLA['top_diagnosis'] = sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)        
-        
-#         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#         tmp=tmp.sort_values(by='species', ascending=False)
-#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-
-#                     with tabCN:
-#                         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-#                         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)] 
-
-#                         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-#                         to_replace=tmpdg['name'].tolist()
-#                         replace_with=tmpdg['Disease type'].tolist()
-#                         sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)                                        
-                        
-#                         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#                         tmp=tmp.sort_values(by='species', ascending=False)
-#                         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-
-#                         st.altair_chart(line_chart, use_container_width=True)             
-#                         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-#                         sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)] 
-                        
-#                         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-#                         to_replace=tmpdg['name'].tolist()
-#                         replace_with=tmpdg['Disease type'].tolist()
-#                         sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)  
-                        
-#                         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#                         tmp=tmp.sort_values(by='species', ascending=False)
-#                         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-
-#         mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=42)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
-    
-#     tmp_sub_data=bahis_sourcedata.loc[mask]   
-    
-#     #it no data, then error, which is not caught    
-
-#     tara= bahis_geodata[(bahis_geodata["loc_type"]==3)] 
-#     df= tara[['value', 'name']].merge(tmp_sub_data['basic_info_upazila'].drop_duplicates(), left_on=['value'], right_on=['basic_info_upazila'],  how='left', indicator=True)
-
-
-
-
-
-
-
-
-
-
 
 
 
