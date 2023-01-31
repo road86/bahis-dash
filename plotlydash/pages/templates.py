@@ -614,6 +614,83 @@ def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision,
 
 
 
+# to do: Disease grouping
+# def fetchdisgroupdata():
+#     bahis_dgdata= pd.read_csv(dgfilename)
+#     bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]  
+#     bahis_dgdata= bahis_dgdata[['name', 'Disease type']] # 'species', 'name', 'id', 'Disease type']]  
+#     bahis_dgdata= bahis_dgdata.dropna() #[bahis_dgdata['Disease type'].astype(bool)] #.dropna(subset=['Disease type'],inplace=True) #loc[bahis_dgdata['Disease type'] != '<NA>']  
+#     return bahis_dgdata
+# bahis_dgdata= fetchdisgroupdata()
+
+
+# def CN_plot(loc, subd_bahis_sourcedata, title, find):
+    
+#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
+#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
+#     subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata[title]==int(geocodehit)]
+#     else: 
+#         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+#         sub_bahis_sourcedataP=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(poultry)]
+        
+#         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+#         to_replace=tmpdg['name'].tolist()
+#         replace_with=tmpdg['Disease type'].tolist()
+#         sub_bahis_sourcedataP['top_diagnosis'] = sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
+#         #st.dataframe(sub_bahis_sourcedataP)
+        
+#         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#         tmp=tmp.sort_values(by='species', ascending=False)
+#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        
+#         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+#         sub_bahis_sourcedataLA=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(lanimal)] 
+        
+#         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+#         to_replace=tmpdg['name'].tolist()
+#         replace_with=tmpdg['Disease type'].tolist()
+#         sub_bahis_sourcedataLA['top_diagnosis'] = sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)        
+        
+#         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#         tmp=tmp.sort_values(by='species', ascending=False)
+#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+
+#                     with tabCN:
+#                         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+#                         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)] 
+
+#                         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+#                         to_replace=tmpdg['name'].tolist()
+#                         replace_with=tmpdg['Disease type'].tolist()
+#                         sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)                                        
+                        
+#                         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#                         tmp=tmp.sort_values(by='species', ascending=False)
+#                         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+
+#                         st.altair_chart(line_chart, use_container_width=True)             
+#                         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+#                         sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)] 
+                        
+#                         tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+#                         to_replace=tmpdg['name'].tolist()
+#                         replace_with=tmpdg['Disease type'].tolist()
+#                         sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)  
+                        
+#                         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+#                         tmp=tmp.sort_values(by='species', ascending=False)
+#                         tmp=tmp.rename({'species' : 'counts'}, axis=1)
+
+#         mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=42)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
+    
+#     tmp_sub_data=bahis_sourcedata.loc[mask]   
+    
+#     #it no data, then error, which is not caught    
+
+#     tara= bahis_geodata[(bahis_geodata["loc_type"]==3)] 
+#     df= tara[['value', 'name']].merge(tmp_sub_data['basic_info_upazila'].drop_duplicates(), left_on=['value'], right_on=['basic_info_upazila'],  how='left', indicator=True)
+
+
 
 
 
