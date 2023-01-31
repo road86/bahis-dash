@@ -168,7 +168,7 @@ def fIndicator(sub_bahis_sourcedata):
         )
     return figIndic
 
-ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers', 'Heat Map', 'Alerts']
+ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers']
 
 ddReport = html.Div(
     [
@@ -286,12 +286,12 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             color_continuous_scale="YlOrBr",
                             range_color=(0, reports[title].max()),
                             mapbox_style="carto-positron",
-                            zoom=6.4, center = {"lat": 23.7, "lon": 90.3},
+                            zoom=6.2, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
                             template=template_from_url(theme),
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, height=700) #, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
    
@@ -391,6 +391,20 @@ def set_Dislist(cDivision):
         ddDislist=fetchDistrictlist(cDivision)
     return ddDislist
 
+@callback(
+        Output ('cMap', 'figure'),
+        [Input ('CMap', 'clickData')]
+        )
+def update_region(geoTile):  
+    print('Herasdasde')
+    if geoTile is not None:
+        print(geoTile['points'][0])['location'],
+        print('There')
+    else:
+        print('Here')
+
+
+
 #@app.callback(
 @callback(
     Output ('CMap', 'figure'),
@@ -399,6 +413,7 @@ def set_Dislist(cDivision):
     
     #Output ('RepG2', 'figure'),
     
+    Input('CMap', 'clickData'),
     Input("cReport", 'value'),
     Input("cDate",'start_date'),
     Input("cDate",'end_date'),
@@ -408,8 +423,11 @@ def set_Dislist(cDivision):
     Input("cUpazila",'value'),
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
-def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):   
-   
+def update_whatever(geoTile, cReport, start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):   
+
+    if geoTile is not None:
+        print(geoTile['points'][0]['location'])
+    
 #    ddReplist=['Reports', 'Diseased Animals', 'Dead Animals', 'Monthly Comparison', 'Top 10 Numbers', 'Heat Map', 'Alerts']
  
     sub_bahis_sourcedata=date_subset(start_date, end_date)
@@ -573,64 +591,6 @@ def update_whatever(cReport, start_date, end_date, cDisease, cDivision, cDistric
 
 
 
-
-
-
-# def MC_plot(loc, subd_bahis_sourcedata, title, find):
-#     #st.subheader('Registered sick animals')
-#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
-#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
-#     subs_bahis_sourcedata= subd_bahis_sourcedata.loc[subd_bahis_sourcedata[title]==int(geocodehit)]
-#     if subs_bahis_sourcedata.empty:
-#         st.write('no data')
-#     else: 
-#         tmp=subs_bahis_sourcedata['patient_info_sick_number'].groupby(subd_bahis_sourcedata['basic_info_date'].dt.to_period('M')).sum()
-#         tmp=tmp.reset_index()
-#         tmp=tmp.rename(columns={'basic_info_date':'date'})
-#         tmp['date']=tmp['date'].astype(str)
-#         tmp['date'] = pd.to_datetime(tmp['date'])
-#         tots= str(int(subs_bahis_sourcedata['patient_info_sick_number'].sum()))
-#         tmpdata={'sick':tmp['patient_info_sick_number'],
-#                   'date':tmp['date']}
-#         tmpdata=pd.DataFrame(tmpdata)
-#         bar_chart= alt.Chart(tmpdata, height=460).mark_bar().encode(
-#               alt.Column('month(date):N', ),
-#               alt.X('year(date):O', title='', scale=alt.Scale(8), axis=alt.Axis(labels=False, ticks=False)),
-#               alt.Y('sick:Q', title='reports'),
-#               alt.Color('year(date):O', scale=alt.Scale(scheme='dark2'),),
-#               ).properties(title='Registered sick animals :  ' + tots)
-#         st.altair_chart(bar_chart) 
-
-# def CN_plot(loc, subd_bahis_sourcedata, title, find):
-#     subDist= bahis_geodata[(bahis_geodata["loc_type"]==loc)]     
-#     geocodehit= subDist.loc[subDist['name'].str.capitalize()==find]['value']
-#     subs_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata[title]==int(geocodehit)]
-#     if subs_bahis_sourcedata.empty:
-#         st.write('no data')
-#     else: 
-#         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-#         sub_bahis_sourcedataP=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(poultry)]
-#         tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#         tmp=tmp.sort_values(by='species', ascending=False)
-#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-#         tmp=tmp.head(10)
-#         line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
-#             x='counts:Q',
-#             y=alt.Y('top_diagnosis:O', sort='-x')
-#             ).properties(title='Poultry Related Diseases')
-#         st.altair_chart(line_chart, use_container_width=True)             
-        
-#         lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-#         sub_bahis_sourcedataLA=subs_bahis_sourcedata[subs_bahis_sourcedata['species'].isin(lanimal)] 
-#         tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-#         tmp=tmp.sort_values(by='species', ascending=False)
-#         tmp=tmp.rename({'species' : 'counts'}, axis=1)
-#         tmp=tmp.head(10)
-#         line_chart= alt.Chart(tmp, height=300).mark_bar().encode(
-#             x='counts:Q',
-#             y=alt.Y('top_diagnosis:O', sort='-x')
-#             ).properties(title='Large Animal Related Diseases')
-#         st.altair_chart(line_chart, use_container_width=True) 
 
 
 
