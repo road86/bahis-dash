@@ -3,7 +3,7 @@ import datetime as dt
 import json, os
 
 sourcepath = 'exported_data/'
-sourcefilename = os.path.join(sourcepath, 'new_bahis_bahis_patient_registrydyncsv_live_table.csv')
+sourcefilename = os.path.join(sourcepath, 'newbahis_bahis_patient_registrydyncsv_live_table.csv')
 bahis_sourcedata = pd.read_csv(sourcefilename, low_memory=False)
 
 oldsourcefilename = os.path.join(sourcepath, 'formdata_Patients_Registry.csv')
@@ -21,7 +21,7 @@ oldbahis_preped_data = oldbahis_sourcedata[['date',
                                         'dead_number']]
 
 # add speices
-anim_names=pd.read_csv(os.path.join(sourcepath, 'static_bahis_fao_species.csv'))
+anim_names=pd.read_csv(os.path.join(sourcepath, 'staticbahis_fao_species.csv'))
 anim_names2 = anim_names.set_index('code')['species_name_en'].drop_duplicates().astype(str)
 
 adict = dict(anim_names2[~anim_names2.index.duplicated(keep='first')])
@@ -46,7 +46,7 @@ oldbahis_preped_data.rename({'date': 'basic_info_date',
 
 
 
-diag_names = pd.read_csv(os.path.join(sourcepath, 'new_bahis_bahis_diagnosis_table.csv'))
+diag_names = pd.read_csv(os.path.join(sourcepath, 'newbahis_bahis_diagnosis_table.csv'))
 diag_names2 = diag_names.set_index('diagnosisname')['diagnosisid'].drop_duplicates().astype(str)
 
 ddict = dict(diag_names2[~diag_names2.index.duplicated(keep='first')])
@@ -96,10 +96,10 @@ for ulo in bahis_preped_data['basic_info_upazila'].unique():
 bahis_preped_data = bahis_preped_data.drop(index=to_remove)
 
 
-diag_names = pd.read_csv(os.path.join(sourcepath, 'new_bahis_bahis_diagnosis_table.csv'))
+diag_names = pd.read_csv(os.path.join(sourcepath, 'newbahis_bahis_diagnosis_table.csv'))
 diag_names2 = diag_names.set_index('diagnosisid')['diagnosisname'].drop_duplicates().astype(str)
 
-anim_names=pd.read_csv(os.path.join(sourcepath, 'new_bahis_bahis_species_table.csv'))
+anim_names=pd.read_csv(os.path.join(sourcepath, 'newbahis_bahis_species_table.csv'))
 anim_names2 = anim_names.set_index('speciesid')['speciesname'].drop_duplicates().astype(str)
 
 
