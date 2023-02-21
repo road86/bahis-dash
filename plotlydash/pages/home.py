@@ -15,6 +15,6 @@ dash.register_page(__name__, path='/')
 # Define the page layout
 layout = dbc.Container([
     dbc.Row([
-        html.Center(html.H1("Home: Select link on top left")),
+        html.Center(html.H1("Home: Select link on top right")),
     ])
 ])
