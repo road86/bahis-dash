@@ -6,7 +6,7 @@ Created on Wed Dec 28 15:12:34 2022
 """
 
 
-from dash import Dash, dcc, html #dash_table, dbc
+from dash import Dash, dcc, html #dash_table, dbc 
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta, date
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import ThemeChangerAIO, template_from_url
-import json, os
+import json  
 from dash.exceptions import PreventUpdate
 
 
@@ -24,23 +24,23 @@ from dash.exceptions import PreventUpdate
 ########################
 img_logo= 'assets/Logo.png'
 
-gifpath = 'logos/'
-sourcepath = 'exported_data/'
-geofilename = os.path.join(sourcepath, 'newbahis_geo_cluster.csv')   # the available geodata from the bahis project
-sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')
+gifpath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/logos/'
+sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
+sourcefilename =sourcepath + 'preped_data2.csv'   
 bahis_sd = pd.read_csv(sourcefilename)
 img_logo= 'assets/Logo.png'
 
-path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
-path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
-path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
-path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
-path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
+path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
+path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
+path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
+path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 
 
 def fetchsourcedata():
-    bahis_sd = pd.read_csv(sourcefilename)
+    bahis_sd = pd.read_csv(sourcefilename) 
     bahis_sd['basic_info_division'] = pd.to_numeric(bahis_sd['basic_info_division'])
     bahis_sd['basic_info_district'] = pd.to_numeric(bahis_sd['basic_info_district'])
     bahis_sd['basic_info_upazila'] = pd.to_numeric(bahis_sd['basic_info_upazila'])
@@ -68,7 +68,7 @@ def fetchdiseaselist():
 ddDList= fetchdiseaselist()
 ddDList.insert(0, 'Select All')
 
-def fetchDivisionlist():
+def fetchDivisionlist():   
     ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)]['name'].str.capitalize()
     ddDivlist.name='Division'
     ddDivlist=ddDivlist.sort_values()
@@ -76,14 +76,14 @@ def fetchDivisionlist():
 ddDivlist=fetchDivisionlist()
 #ddDivlist.insert(0,'Select All')
 
-def fetchDistrictlist(SelDiv):
+def fetchDistrictlist(SelDiv):   
     DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDiv) & (bahis_geodata['loc_type']==1),'value'].values[0]
     ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo]['name'].str.capitalize()
     ddDislist.name='District'
     ddDislist=ddDislist.sort_values()
     return ddDislist.tolist()
 
-def fetchUpazilalist(SelDis):
+def fetchUpazilalist(SelDis):   
     DisNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDis) & (bahis_geodata['loc_type']==2),'value'].values[0]
     ddUpalist=bahis_geodata[bahis_geodata['parent']==DisNo]['name'].str.capitalize()
     ddUpalist.name='Upazila'
@@ -106,10 +106,10 @@ def natNo():
     mask=(bahis_sourcedata['basic_info_date']> datetime.now()-timedelta(days=30)) & (bahis_sourcedata['basic_info_date'] < datetime.now())
     tmp_sub_data=bahis_sourcedata['basic_info_date'].loc[mask]
     diff=tmp_sub_data.shape[0]
-
+    
     tmp_sub_data=bahis_sourcedata['patient_info_sick_number'].loc[mask]
     diffsick=int(tmp_sub_data.sum().item())
-
+    
     tmp_sub_data=bahis_sourcedata['patient_info_dead_number'].loc[mask]
     diffdead=int(tmp_sub_data.sum().item())
     return([diff, diffsick, diffdead])
@@ -118,21 +118,21 @@ def natNo():
 
 def fIndicator():
     figIndic = go.Figure()
-
+    
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Total Reports',
         value = bahis_sourcedata.shape[0], #f"{bahis_sourcedata.shape[0]:,}"),
         delta = {'reference': diff}, #'f"{diff:,}"},
         domain = {'row': 0, 'column': 0}))
-
+    
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Sick Animals',
         value = bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
         delta= {'reference': diffsick}, #f"{diffsick:,}",
         domain = {'row': 0, 'column': 1}))
-
+    
     figIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Dead Animals',
@@ -140,11 +140,11 @@ def fIndicator():
         delta = {'reference': diffdead}, #f"{diffdead:,}",
         domain = {'row': 0, 'column': 2},
         ))
-
+    
     figIndic.update_layout(height=250,
         grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
         #?template=template_from_url(theme),
-
+    
         )
     return figIndic
 
@@ -184,9 +184,9 @@ def date_subset(sdate, edate):
 
 def disease_subset(cDisease, sub_bahis_sourcedata):
     if 'Select All' in cDisease:
-        sub_bahis_sourcedata=sub_bahis_sourcedata
+        sub_bahis_sourcedata=sub_bahis_sourcedata 
     else:
-        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)]
+        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)] 
     return sub_bahis_sourcedata
 
 #def geo_subset()
@@ -241,11 +241,11 @@ ddDisease = html.Div(
 
 
     # if 'Select All' in disease_chosen_D:
-    #     subd_bahis_sourcedata=sub_bahis_sourcedata
-    # else:
-    #     subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen_D)]
-
-
+    #     subd_bahis_sourcedata=sub_bahis_sourcedata 
+    # else:     
+    #     subd_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(disease_chosen_D)] 
+        
+        
 
 def open_data(path):
     with open(path) as f:
@@ -253,22 +253,22 @@ def open_data(path):
         return data
 
 def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme):
-    subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
+    subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
     #reports.index = reports.index.astype(int)
     reports[pname] = reports.index
     reports.index = reports.index.astype(int)
-    reports= reports.loc[reports[pname] != 'nan']
+    reports= reports.loc[reports[pname] != 'nan']    
     data = open_data(path)
 
     for i in range(reports.shape[0]):
         #reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
         reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy
-    reports[pname]=reports[pname].str.title()
-#    reports.set_index(pname)
+    reports[pname]=reports[pname].str.title()  
+#    reports.set_index(pname)                 
     for i in data['features']:
         i['id']= i['properties']['shapeName'].replace(splace,"")
-
+    
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pname, color=title,
 #                            featureidkey="Cmap",
                             color_continuous_scale="YlOrBr",
@@ -279,19 +279,19 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             template=template_from_url(theme),
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=850 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600,
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, width=850 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
-
+                      
 
 # figReport= go.Figure()
 # tmp=bahis_sourcedata['basic_info_date'].dt.date.value_counts()
 # tmp=tmp.reset_index()
 # tmp=tmp.rename(columns={'index':'date'})
-# tmp['date'] = pd.to_datetime(tmp['date'])
+# tmp['date'] = pd.to_datetime(tmp['date'])    
 # tots= str(bahis_sourcedata.shape[0])
 
 # figReport= px.bar(tmp, x='date', y='basic_info_date')
-
+    
 tabs=dbc.Card([dcc.Graph(id='RepG1'), dcc.Graph(id='RepG2')]) #figure=figReport))
 
 
@@ -318,7 +318,7 @@ row = html.Div(
                 dbc.Col(dcc.Graph(
                                 id='indicators',
                                 figure=fIndicator()
-                            ),width=8),
+                            ),width=8),  
             ], justify="center", align="center", className="mb-42"), #"h-50"),
         dbc.Row(
             [
@@ -374,7 +374,7 @@ app.layout = dbc.Container(
     Output ('cUpazila', 'options'),
     Input ('cDistrict', 'value')
     )
-def set_Upalist(cDistrict):
+def set_Upalist(cDistrict):  
     ddUpalist=None
     if cDistrict is None:
         ddUpalist=None
@@ -387,7 +387,7 @@ def set_Upalist(cDistrict):
         Output ('cDistrict', 'options'),
         Input ('cDivision', 'value')
         )
-def set_Dislist(cDivision):
+def set_Dislist(cDivision):  
     ddDislist=None
     if cDivision is None:
         raise PreventUpdate
@@ -399,7 +399,7 @@ def set_Dislist(cDivision):
     Output ('CMap', 'figure'),
     Output ('RepG1', 'figure'),
     Output ('RepG2', 'figure'),
-
+    
     Input("cDate",'start_date'),
     Input("cDate",'end_date'),
     Input("cDisease",'value'),
@@ -409,7 +409,7 @@ def set_Dislist(cDivision):
     Input(ThemeChangerAIO.ids.radio("theme"), "value"),
 )
 def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazila, theme):
-
+ 
     sub_bahis_sourcedata=date_subset(start_date, end_date)
     sub_bahis_sourcedata=disease_subset(cDisease, sub_bahis_sourcedata)
 
@@ -426,7 +426,7 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
                 labl='Incidences per division'
             else:
                 DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==cDivision) & (bahis_geodata['loc_type']==1),'value'].values[0]
-                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(DivNo)]
+                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==int(DivNo)]   
                 # path=path1
                 # loc=1
                 # title='basic_info_division'
@@ -462,14 +462,14 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
-
+                
     # loc=1
     # title='basic_info_division'
     # pname='divisionname'
     # splace=' Division'
     # variab='division'
     # labl='Incidences per division'
-
+    
     fig = plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl, theme)
 
 #def update_RepG1(cDate, cDisease, cDivision, cDistrict, cUpazila, theme):
@@ -478,11 +478,29 @@ def update_whatever(start_date, end_date, cDisease, cDivision, cDistrict, cUpazi
     tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'index':'date'})
-    tmp['date'] = pd.to_datetime(tmp['date'])
+    tmp['date'] = pd.to_datetime(tmp['date'])    
 #    tots= str(bahis_sourcedata.shape[0])
-
-    figg= px.bar(tmp, x='date', y='basic_info_date')
+    
+    figg= px.bar(tmp, x='date', y='basic_info_date')        
     return fig, figg, figg
 
 if __name__ == "__main__":
     app.run_server(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

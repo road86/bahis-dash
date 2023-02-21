@@ -8,9 +8,6 @@ streamlit = "*"
 plotly = "*"
 pandas = "*"
 altair = "*"
-dash = "*"
-dash-bootstrap-components = "*"
-dash-bootstrap-templates = "*"
 
 [dev-packages]
 
