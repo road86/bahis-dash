@@ -19,7 +19,7 @@ from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 
 
-#### hanlde with care suppresses: 
+#### handle with care suppresses: 
 # SettingWithCopyWarning:
 # A value is trying to be set on a copy of a slice from a DataFrame
 # See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
@@ -305,7 +305,8 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pname, splace, variab, labl
                             template=template_from_url(theme),
                             labels={variab:labl}
                           )
-    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, height=300) #, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    ## make scaling off
+    fig.update_layout(autosize=True, margin={"r":0,"t":0,"l":0,"b":0}, height=300, coloraxis_showscale=False) #, width=760 , height=800) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
                       
    
