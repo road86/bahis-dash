@@ -21,17 +21,21 @@ pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__) #, path='/') for entry point probably
 
-sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+sourcepath = 'exported_data/'
+#sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_data2.csv'   
 #path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
-path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
-path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
+path1= "geodata/divdata.geojson" #8 Division
+path2= "geodata/distdata.geojson" #64 District
+path3= "geodata/upadata.geojson" #495 Upazila
+# path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
+# path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
+# path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
 # path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
 # path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
 #path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
-path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
 # path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
 
 # only one path is necessary, remove rest potentially
@@ -233,16 +237,16 @@ layout =  html.Div([
 
     Input ('geoU2Slider', 'value'),
     Input ('CU2Map', 'clickData'),    
-    Input ('cU2Division', 'value'),
-    Input ('cU2District', 'value'),
-    Input('cU2Upazila','value'),
-    Input('ViewU2', 'n_clicks')
+    Input ('cU2Division', 'value'), 
+    Input ('cU2District', 'value'), 
+    Input('cU2Upazila','value'), 
+    Input('ViewU2', 'n_clicks'), prevent_initial_call=True
 )
 def update_whatever(geoU2Slider, geoTile, cU2Division, cU2District, cU2Upazila, ViewU2):  
    
     ddDislist=None
     ddUpalist=None
-    
+
     if cU2Division is None:
         vDistrict="", 
         vUpa="",

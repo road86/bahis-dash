@@ -1,6 +1,6 @@
 import pandas as pd
 import datetime as dt
-import json, os
+import os
 
 sourcepath = 'exported_data/'
 sourcefilename = os.path.join(sourcepath, 'newbahis_bahis_patient_registrydyncsv_live_table.csv')
