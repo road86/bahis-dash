@@ -328,7 +328,7 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
     tmp['counts']=tmp['basic_info_date']
 
     tmp['basic_info_date']=pd.to_datetime(tmp.index)
-    tmp=tmp['counts'].groupby(tmp['basic_info_date'].dt.to_period('W-SUN')).sum().astype(int)
+    tmp=tmp['counts'].groupby(tmp['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.to_frame()
     tmp['basic_info_date']=tmp.index
     tmp['basic_info_date']=tmp['basic_info_date'].astype('datetime64[D]')
@@ -336,14 +336,14 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
     figgR= px.bar(tmp, x='basic_info_date', y='counts') 
     figgR.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
     
-    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SUN')).sum().astype(int)
+    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
     figgSick= px.bar(tmp, x='date', y='patient_info_sick_number')  
     figgSick.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0})   
 
-    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SUN')).sum().astype(int)
+    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
