@@ -204,7 +204,7 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pnumber, pname, splace, var
                             labels={variab:labl}, 
                             hover_name=pname
                           )
-    fig.update_layout(autosize=True, coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=600) #, width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600, 
+    fig.update_layout(autosize=True, coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=550) #, width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600, 
     return fig
 
 
@@ -214,6 +214,7 @@ layout =  html.Div([
                     dbc.Row([
                         dbc.Col(ddDivision), dbc.Col(ddDistrict), dbc.Col(ddUpazila)
                         ]),
+                    dbc.Row(dcc.RangeSlider(min=1, max=104, marks={1:'1', 104:'104'}, step=1, value=[1,104], id="test")),
                     dbc.Row(dcc.Graph(id="Map")),
                     dbc.Row(dcc.Slider(min=1, max=3, step=1,
                                        marks={1:'Division', 
@@ -229,9 +230,9 @@ layout =  html.Div([
                             dcc.DatePickerRange(
                                     id='daterange',
                                     min_date_allowed=start_date,
-                                    start_date=start_date,
+                                    start_date=date(end_date.year-1, end_date.month, end_date.day),
                                     max_date_allowed=end_date,
-                                    initial_visible_month=start_date,
+                                    initial_visible_month=end_date,
                                     end_date=end_date
                                 ),
                             ]),
@@ -277,8 +278,13 @@ layout =  html.Div([
     Output ('Zoonotic', 'figure'),
 #    Output ('geoSlider', 'children'),
 
+    Input ('test', 'value'),
     Input ('geoSlider', 'value'),
-    Input ('Map', 'clickData'),    
+    Input ('Map', 'clickData'),  
+    Input ('Reports', 'clickData'),  
+    Input ('Sick', 'clickData'),  
+    Input ('Dead', 'clickData'),  
+    
     Input ('Division', 'value'),
     Input ('District', 'value'),
     Input ("Upazila",'value'),
@@ -286,8 +292,12 @@ layout =  html.Div([
     Input ("daterange",'end_date'),
     Input ("Diseaselist",'value'),
 )
-def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):  
+def update_whatever(test, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):  
    
+    print(clkRep)
+    print(clkSick)
+    print(clkDead)
+    print(test)
     sub_bahis_sourcedata=date_subset(start_date, end_date)
     sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
 
@@ -412,7 +422,7 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila, st
     tmp=tmp.head(10)
     tmp=tmp.iloc[::-1]
     fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    fpoul.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0}) 
     #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
     
     lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
@@ -430,14 +440,15 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila, st
     tmp=tmp.head(10)
     tmp=tmp.iloc[::-1]
     flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
-    flani.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
     subpl=[fpoul, flani]
     figgLiveS= make_subplots(rows=2, cols=1)
     for i, figure in enumerate(subpl):
         for trace in range(len(figure['data'])):
             figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgLiveS.update_layout(height=500, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0}) 
+    
 #    if cReport=='Zoonotic Disease Cases':   
     #subpl= make_subplots(rows=2, cols=1),
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
