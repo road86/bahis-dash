@@ -20,16 +20,18 @@ from plotly.subplots import make_subplots
 pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__) #, path='/') for entry point probably
-
-sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
+npath=''
+sourcepath = lpath+'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_quickdata.csv'   
-path1=  "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
-path2=  "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
-path3=  "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
+path1=  lpath+"geodata/divdata.geojson" #8 Division
+path2=  lpath+"geodata/distdata.geojson" #64 District
+path3=  lpath+"geodata/upadata.geojson" #495 Upazila
 
 bahis_quick = pd.read_csv(sourcefilename) 
+bahis_quick = bahis_quick.set_index('geonumber')
 # bahis_sdtmp['basic_info_date'] = pd.to_datetime(bahis_sdtmp['basic_info_date'])
 
 # def fetchdisgroupdata():
@@ -119,7 +121,6 @@ ddUpazila = html.Div(
     className="mb-4",
 )
 
-
 def open_data(path):
     with open(path) as f:
         data = json.load(f)
@@ -168,7 +169,7 @@ layout =  html.Div([
                                        marks={1:'Division', 
                                               2:'District', 
                                               3:'Upazila',}, 
-                            value=3,
+                            value=1,
                             id="qgeoSlider")
                             )
                 ], width= 4),
@@ -208,49 +209,53 @@ layout =  html.Div([
     Input ('qDistrict', 'value'),
     Input("qUpazila",'value'),
 )
-def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):  
+def update_whatever(qgeoSlider, geoTile, qDivision, qDistrict, qUpazila):  
    
     # sub_bahis_sourcedata=date_subset(start_date, end_date)
 
     ddDislist=None
     ddUpalist=None
     
-    if cU2Division is None:
+    if qDivision is None:
         vDistrict="", 
         vUpa="",
         #raise PreventUpdate
     else:
-        ddDislist=fetchDistrictlist(cU2Division)
+        ddDislist=fetchDistrictlist(qDivision)
         vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
-        if cU2District is None:
+        if qDistrict is None:
             vUpa="", 
             #raise PreventUpdate
         else:
-            ddUpalist=fetchUpazilalist(cU2District)
+            ddUpalist=fetchUpazilalist(qDistrict)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in ddUpalist] 
     
     # if geoTile is not None:
     #     print(geoTile['points'][0]['location'])
         
-    if not cU2Upazila:
-        if not cU2District:
-            if not cU2Division:
-                # bahis_quick['geonumber']=bahis_quick['geonumber'].astype('string')
-                # sub_bahis_sourcedata=bahis_quick.loc[bahis_quick['geonumber'].str.len()==2]
-                sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==1] #DivNo]   
+    tmp=bahis_quick
+    if not qUpazila:
+        if not qDistrict:
+            if not qDivision:
+                tmp['geonumber']=bahis_quick.index.astype('string')
+                map_data=tmp.loc[tmp['geonumber'].str.len()==2]
+                sub_bahis_sourcedata=bahis_quick[bahis_quick.index==1]
+                #sub_bahis_sourcedata= bahis_quick[bahis_quick.index==1] #DivNo]   
 
             else:
-                sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==cU2Division] #DivNo]   
+                sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==str(qDivision)] #DivNo]   
  
         else:
-            sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==cU2District]
+            sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==str(qDistrict)]
 
     else:
-        sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==cU2Upazila]
+        sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==str(qUpazila)]
         
-    tmp=sub_bahis_sourcedata[['rw1','rw2','rw3','rw4','rw5','rw6']]
     #### change 1 and 2 with bad database check plot map and change value reference
-    if geoSlider== 1:
+    print(qDivision)
+    print(sub_bahis_sourcedata)
+    
+    if qgeoSlider== 1:
         path=path1
         loc=1
         title='basic_info_division'
@@ -259,8 +264,10 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' Division'
         variab='division'
         labl='Incidences per division'
+        tmp['geonumber']=bahis_quick.index.astype('string')
+        map_data=tmp.loc[tmp['geonumber'].str.len()==2]
 #        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_division']).dropna().astype(int)
-    if geoSlider== 2:
+    if qgeoSlider== 2:
         path=path2
         loc=2
         title='basic_info_district'
@@ -269,8 +276,10 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' District'
         variab='district'
         labl='Incidences per district'
+        tmp['geonumber']=bahis_quick.index.astype('string')
+        map_data=tmp.loc[tmp['geonumber'].str.len()==4]
 #        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_district']).dropna().astype(int)
-    if geoSlider== 3:
+    if qgeoSlider== 3:
         path=path3
         loc=3
         title='basic_info_upazila'
@@ -279,37 +288,42 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
+        tmp['geonumber']=bahis_quick.index.astype('string')
+        map_data=tmp.loc[tmp['geonumber'].str.len()==6]
 #        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
-    
-    # subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
-    # reports = sub_bahis_sourcedata.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
-    # reports[pnumber] = reports.index
-    # reports.index = reports.index.astype(int)   # upazila name
-    # reports[pnumber] = reports[pnumber].astype(int)
-    # reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata?
 
-    data = open_data(path)
+    tmp=sub_bahis_sourcedata[['rw1','rw2','rw3','rw4','rw5','rw6']]
+    
+# def plot_map(path, loc, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
+#     subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
+#     reports = sub_bahis_sourcedata.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
+#     reports[pnumber] = reports.index
+#     reports.index = reports.index.astype(int)   # upazila name
+#     reports[pnumber] = reports[pnumber].astype(int)
+#     reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata?
+    with open(path) as f:
+        data = json.load(f)
 
     # reports[pname] = reports.index
     # for i in range(reports.shape[0]): # go through all upazila report values
     #     reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
     # reports[pname]=reports[pname].str.title()  
     
-    # reports.set_index(pnumber)                   
-    
-    Rfig = px.choropleth_mapbox(bahis_quick, geojson=data, #color=title,#locations=geovalues, color=title,
+    # reports.set_index(pnumber)                 
+
+    Rfig = px.choropleth_mapbox(map_data, geojson=data, locations=map_data.index, color='rw1',
                             featureidkey='properties.'+pnumber,
 #                            featureidkey="Cmap",
                             color_continuous_scale="YlOrBr",
-                            #range_color=(0, reports[title].max()),
+                            range_color=(0, map_data['rw1'].max()),
                             mapbox_style="carto-positron",
                             zoom=6.0, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
                             labels={variab:labl}, 
-                            #hover_name=pname
+                            hover_name='name'
                           )
     Rfig.update_layout(autosize=True, coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=600) #, width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600, 
-
+    # return fig
 
 #    Rfig = plot_map(path, loc, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
@@ -326,8 +340,17 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
              sub_bahis_sourcedata['rd3'],
              sub_bahis_sourcedata['rd2'],
              sub_bahis_sourcedata['rd1']]
-        figgR=px.bar(tmp)
-        figgR.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
+        figgR=px.bar(tmp, title='name')
+        figgR.update_layout(height=225, 
+                            # labels={
+                            #     "sepal_length": "Sepal Length (cm)",
+                            #     "sepal_width": "Sepal Width (cm)",
+                            #     "species": "Species of Iris"
+                            # },
+                            # title='name', 
+                            # coloraxis_showscale=False) 
+                            margin={"r":0,"t":0,"l":0,"b":0}, title='name', coloraxis_showscale=False) 
+        
         tmp=[sub_bahis_sourcedata['sd7'],
              sub_bahis_sourcedata['sd6'],
              sub_bahis_sourcedata['sd5'],
@@ -336,7 +359,8 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
              sub_bahis_sourcedata['sd2'],
              sub_bahis_sourcedata['sd1']]
         figgSick=px.bar(tmp)
-        figgR.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
+        figgSick.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
+        
         tmp=[sub_bahis_sourcedata['dd7'],
              sub_bahis_sourcedata['dd6'],
              sub_bahis_sourcedata['dd5'],
@@ -345,7 +369,7 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
              sub_bahis_sourcedata['dd2'],
              sub_bahis_sourcedata['dd1']]
         figgDead=px.bar(tmp)
-        figgR.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
+        figgDead.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
         
     if weekly:    
     

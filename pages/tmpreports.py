@@ -102,7 +102,8 @@ fig=px.imshow(tmpp)
 ##df.set_index('id', inplace=True, drop=False)
 
 #app = Dash(__name__)
-dash.register_page(__name__)
+
+# dash.register_page(__name__)
 
 layout = html.Div([
     dcc.Graph(figure=fig)
