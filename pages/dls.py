@@ -118,6 +118,13 @@ def date_subset(sdate, edate):
     tmask= (bahis_sdtmp['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sdtmp['basic_info_date'] <= pd.to_datetime(dates[1]))
     return bahis_sdtmp.loc[tmask]
 
+def disease_subset(cDisease, sub_bahis_sourcedata):
+    if 'All Diseases' in cDisease:
+        sub_bahis_sourcedata=sub_bahis_sourcedata 
+    else:
+        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)] 
+    return sub_bahis_sourcedata
+
 ddDivision = html.Div(
     [
         dbc.Label("Select Division"),
@@ -153,6 +160,15 @@ ddUpazila = html.Div(
     ],
     className="mb-4",
 )
+
+def fetchdiseaselist():
+    dislis= bahis_sdtmp['top_diagnosis'].unique()
+    dislis= pd.DataFrame(dislis, columns=['Disease'])
+#    dislis.sort_values(by=['Disease'])
+    ddDList= dislis['Disease'].sort_values()
+    return ddDList.tolist()
+ddDList= fetchdiseaselist()
+ddDList.insert(0, 'All Diseases')
 
 
 def open_data(path):
@@ -208,16 +224,39 @@ layout =  html.Div([
                             )
                 ], width= 4),
                 dbc.Col([
-                    dbc.Tabs([
-                        dbc.Tab([
-                            dbc.Row(dcc.Graph(id='Reports')),
-                            dbc.Row(dcc.Graph(id='Sick')),
-                            dbc.Row(dcc.Graph(id='Dead'))],
-                            label='Reports'),
-                        dbc.Tab([
-                            dbc.Row(dcc.Graph(id='Livestock')),
-                            dbc.Row(dcc.Graph(id='Zoonotic'))],
-                            label='Diseases')                        
+                    dbc.Row([
+                        dbc.Col([
+                            dcc.DatePickerRange(
+                                    id='daterange',
+                                    min_date_allowed=start_date,
+                                    start_date=start_date,
+                                    max_date_allowed=end_date,
+                                    initial_visible_month=start_date,
+                                    end_date=end_date
+                                ),
+                            ]),
+                        dbc.Col([
+                            dcc.Dropdown(
+                                ddDList,
+                                "All Diseases",
+                                id="Diseaselist",
+                                multi=True,
+                                clearable=False,
+                                ),
+                            ])                        
+                        ]),
+                    dbc.Row([
+                        dbc.Tabs([
+                            dbc.Tab([
+                                dbc.Row(dcc.Graph(id='Reports')),
+                                dbc.Row(dcc.Graph(id='Sick')),
+                                dbc.Row(dcc.Graph(id='Dead'))],
+                                label='Reports'),
+                            dbc.Tab([
+                                dbc.Row(dcc.Graph(id='Livestock')),
+                                dbc.Row(dcc.Graph(id='Zoonotic'))],
+                                label='Diseases')                        
+                            ])
                         ])
                     ], width=8)
             ])
@@ -242,11 +281,15 @@ layout =  html.Div([
     Input ('Map', 'clickData'),    
     Input ('Division', 'value'),
     Input ('District', 'value'),
-    Input("Upazila",'value'),
+    Input ("Upazila",'value'),
+    Input ("daterange",'start_date'),
+    Input ("daterange",'end_date'),
+    Input ("Diseaselist",'value'),
 )
-def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):  
+def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):  
    
     sub_bahis_sourcedata=date_subset(start_date, end_date)
+    sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
 
     ddDislist=None
     ddUpalist=None
@@ -292,7 +335,8 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' Division'
         variab='division'
         labl='Incidences per division'
-        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_division']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_division']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_division']).dropna().astype(int)
         # if geoTile is not None:
         #     print(geoTile['points'][0]['location'])
         #     cU2Division=geoTile['points'][0]['location']
@@ -307,7 +351,8 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' District'
         variab='district'
         labl='Incidences per district'
-        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_district']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_district']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_district']).dropna().astype(int)
     if geoSlider== 3:
         path=path3
         loc=3
@@ -317,9 +362,10 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
-        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_upazila']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
     
-    Rfig = plot_map(path, loc, bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+    Rfig = plot_map(path, loc, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
 
@@ -334,21 +380,21 @@ def update_whatever(geoSlider, geoTile, cU2Division, cU2District, cU2Upazila):
     tmp['basic_info_date']=tmp['basic_info_date'].astype('datetime64[D]')
             
     figgR= px.bar(tmp, x='basic_info_date', y='counts') 
-    figgR.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
     
     tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
     figgSick= px.bar(tmp, x='date', y='patient_info_sick_number')  
-    figgSick.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0})   
+    figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
 
     tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
     figgDead= px.bar(tmp, x='date', y='patient_info_dead_number')  
-    figgDead.update_layout(height=225, margin={"r":0,"t":0,"l":0,"b":0})   
+    figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
     
 ####tab2
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
