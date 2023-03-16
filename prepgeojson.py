@@ -28,7 +28,16 @@ for i in range(len(geodata)):
     #        feature['properties']['newname']=geodata['name'].iloc[1]
             feature['properties']['upazilanumber']=geodata['value'].iloc[i]
             feature['properties']['ccheck_upaname']=geodata['name'].iloc[i]
-            
+
+manual=['Bandarban Sadar', 'Bijoynagar', 'Galachipa', 'Haim Char', 'Kalukhali', 'Mehendiganj', 'Naikhongchhari', 'Paba', 'Saltha', 'Tazumuddin', 'Zianagar']
+
+for i in range(len(manual)):
+    for feature in data['features']:
+        if feature['properties']['shapeName']==manual[i]:
+            feature['properties']['upazilanumber']=int(geodata[geodata['name']==manual[i].upper()]['value'])
+            feature['properties']['ccheck_upaname']=str(geodata[geodata['name']==manual[i].upper()]['name'].values[0])
+
+
 
 json.dump(data, open("C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson", 'w') , default=str)
 
@@ -74,3 +83,8 @@ for i in range(len(geodata)):
             
 
 json.dump(data, open("C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson", 'w') , default=str)
+
+
+# for items in data['features']:
+#     if 'upazilanumber' not in items['properties']: 
+#         print(items['properties']['shapeName'])

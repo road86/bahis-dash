@@ -25,12 +25,14 @@ dash.register_page(__name__) #, path='/')
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 sourcefilename =sourcepath + 'preped_data2.csv'   
-path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
-path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
-path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
-path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
-path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
-
+# path0= "geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
+# path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
+# path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
+# path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+# path4= "geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
+path1= "geodata/divdata.geojson" #8 Division
+path2= "geodata/distdata.geojson" #64 District
+path3= "geodata/upadata.geojson" #495 Upazila
 
 def fetchsourcedata():
     bahis_sd=[]
