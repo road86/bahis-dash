@@ -293,7 +293,7 @@ layout =  html.Div([
 )
 def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):  
 #def update_whatever(test, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):  
-   
+    # print(cU2Upazila)
     # print(clkRep)
     # print(clkSick)
     # print(clkDead)
