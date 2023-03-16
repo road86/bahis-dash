@@ -10,11 +10,13 @@ Created on Tue Mar 14 18:07:34 2023
 import dash
 from dash import dcc, html, callback #, ctx #Dash, #dash_table, dbc 
 import plotly.express as px
+import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
 from dash.dependencies import Input, Output
 import json  
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 
 pd.options.mode.chained_assignment = None
@@ -67,6 +69,7 @@ def fetchUpazilalist(SelDis):
 
 start_date=min(resp_data['date']).date()
 end_date=max(resp_data['date']).date()
+start_date=date(2023, 1, 1)
 
 
 def date_subset(sdate, edate):
@@ -181,7 +184,8 @@ layout =  html.Div([
                             dcc.DatePickerRange(
                                     id='rdaterange',
                                     min_date_allowed=start_date,
-                                    start_date=date(end_date.year-1, end_date.month, end_date.day),
+                                    start_date=start_date,
+#                                    start_date=date(end_date.year-1, end_date.month, end_date.day),
                                     max_date_allowed=end_date,
                                     initial_visible_month=end_date,
                                     end_date=end_date
@@ -236,6 +240,13 @@ def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rD
     date_sub=date_subset(start_date, end_date)
     sub_data=disease_subset(diseaselist, date_sub)
 
+    tmps= pd.to_datetime(start_date)-relativedelta(years=1)   
+    tmpe= pd.to_datetime(start_date)-relativedelta(days=1)
+    sub1a_data=date_subset(tmps, tmpe)
+    sub1a_data=disease_subset(diseaselist, sub1a_data)
+
+
+
     ddDislist=None
     ddUpalist=None
     
@@ -256,14 +267,16 @@ def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rD
         if not rDistrict:
             if not rDivision:
                 sub_data=sub_data
+                sub1a_data=sub1a_data
             else:
                 sub_data= sub_data.loc[sub_data['division']==rDivision] #DivNo]   
- 
+                sub1a_data= sub1a_data.loc[sub1a_data['division']==rDivision] #DivNo]   
         else:
             sub_data= sub_data.loc[sub_data['district']==rDistrict]
-
+            sub1a_data= sub1a_data.loc[sub1a_data['district']==rDistrict]
     else:
         sub_data= sub_data.loc[sub_data['upazila']==rUpazila]
+        sub1a_data= sub1a_data.loc[sub_data['upazila']==rUpazila]
     #### change 1 and 2 with bad database check plot map and change value reference
     if rgeoSlider== 1:
         path=path1
@@ -309,9 +322,52 @@ def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rD
     tmp=tmp.to_frame()
     tmp['date']=tmp.index
     tmp['date']=tmp['date'].astype('datetime64[D]')
+
+    tmp2=sub1a_data['date'].dt.date.value_counts()
+    tmp2=tmp2.to_frame()
+    tmp2['counts']=tmp2['date']
+
+    tmp2['date']=pd.to_datetime(tmp2.index)
+    tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp2=tmp2.to_frame()
+    tmp2['date']=tmp2.index
+    tmp2['date']=tmp2['date'].astype('datetime64[D]')
+    tmp2['date']=tmp2['date']+pd.offsets.Day(365)
             
     figgR= px.bar(tmp, x='date', y='counts') 
     figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+ 
+    figgRR = px.line(tmp2, x='date', y='counts')
+    figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
+    figgRR['data'][0]['line']['width']=1
+    figgR= go.Figure(data=figgR.data + figgRR.data)
+    figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgR.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        #xref="x",
+        #yref="y",
+        text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        #arrowhead=2,
+        #arrowsize=1,
+        #arrowwidth=2,
+        #arrowcolor="#636363",
+        #ax=20,
+        #ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
+    
     
     tmp=sub_data['cases'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()

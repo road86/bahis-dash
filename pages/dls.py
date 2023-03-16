@@ -16,11 +16,13 @@ Created on Sun Jan 22 07:48:14 2023
 import dash
 from dash import dcc, html, callback, ctx #Dash, #dash_table, dbc 
 import plotly.express as px
+import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
 from dash.dependencies import Input, Output
 import json  
 from datetime import date
+from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
 #from shapely.geometry import shape, Point
 
@@ -229,10 +231,12 @@ layout =  html.Div([
                             dcc.DatePickerRange(
                                     id='daterange',
                                     min_date_allowed=start_date,
-                                    start_date=date(end_date.year-1, end_date.month, end_date.day),
+                                    start_date=date(2022, 1, 1) ,
                                     max_date_allowed=end_date,
+                                    # start_date=date(end_date.year-1, end_date.month, end_date.day),
                                     initial_visible_month=end_date,
-                                    end_date=end_date
+                                    end_date=date(2022, 12, 31)
+                                    #end_date=end_date
                                 ),
                             ]),
                         dbc.Col([
@@ -299,13 +303,17 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     # print(clkDead)
     # print(test)
     #print(ctx.triggered_id)
-    
+
     sub_bahis_sourcedata=date_subset(start_date, end_date)
     sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
+    tmps= pd.to_datetime(start_date)-relativedelta(years=1)   
+    tmpe= pd.to_datetime(end_date)-relativedelta(years=1)
+    sub1a_bahis_sourcedata=date_subset(tmps, tmpe)
+    sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
+
 
     ddDislist=None
     ddUpalist=None
-    
 
     if cU2Division is None:
         vDistrict="", 
@@ -328,15 +336,19 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         if not cU2District:
             if not cU2Division:
                 sub_bahis_sourcedata=sub_bahis_sourcedata
+                sub1a_bahis_sourcedata=sub1a_bahis_sourcedata
 
             else:
                 sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
+                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
  
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==cU2District]
+            sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_district']==cU2District]
 
     else:
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
+        sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
     #### change 1 and 2 with bad database check plot map and change value reference
     if geoSlider== 1:
         path=path1
@@ -390,24 +402,114 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     tmp=tmp.to_frame()
     tmp['basic_info_date']=tmp.index
     tmp['basic_info_date']=tmp['basic_info_date'].astype('datetime64[D]')
+
+    tmp2=sub1a_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+    tmp2=tmp2.to_frame()
+    tmp2['counts']=tmp2['basic_info_date']
+
+    tmp2['basic_info_date']=pd.to_datetime(tmp2.index)
+    tmp2=tmp2['counts'].groupby(tmp2['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp2=tmp2.to_frame()
+    tmp2['basic_info_date']=tmp2.index
+    tmp2['basic_info_date']=tmp2['basic_info_date'].astype('datetime64[D]')
+    tmp2['basic_info_date']=tmp2['basic_info_date']+pd.offsets.Day(365)
             
-    figgR= px.bar(tmp, x='basic_info_date', y='counts') 
+    figgR= px.bar(tmp, x='basic_info_date', y='counts', labels={'basic_info_date':'Date', 'counts':'No. of Reports'}) 
+    #figgR= figgR.add_trace(px.bar(tmp2, x='basic_info_date', y='counts', labels={'basic_info_date':'Date', 'counts':'No. of Reports'})) 
+    figgRR = px.line(tmp2, x='basic_info_date', y='counts')
+    
+    figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
+    figgRR['data'][0]['line']['width']=1
+    figgR= go.Figure(data=figgR.data + figgRR.data)
     figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgR.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        #xref="x",
+        #yref="y",
+        text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts().sum())),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        #arrowhead=2,
+        #arrowsize=1,
+        #arrowwidth=2,
+        #arrowcolor="#636363",
+        #ax=20,
+        #ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
     
     tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgSick= px.bar(tmp, x='date', y='patient_info_sick_number')  
+    figgSick= px.bar(tmp, x='date', y='patient_info_sick_number', labels={'date':'Date', 'patient_info_sick_number':'No. of Sick Animals'})  
     figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
-
+    figgSick.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        #xref="x",
+        #yref="y",
+        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['patient_info_sick_number'].sum()))),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        #arrowhead=2,
+        #arrowsize=1,
+        #arrowwidth=2,
+        #arrowcolor="#636363",
+        #ax=20,
+        #ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
     tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'basic_info_date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgDead= px.bar(tmp, x='date', y='patient_info_dead_number')  
+    figgDead= px.bar(tmp, x='date', y='patient_info_dead_number', labels={'date':'Date', 'patient_info_dead_number':'No. of Dead Animals'})  
     figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
-    
+    figgDead.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        #xref="x",
+        #yref="y",
+        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['patient_info_dead_number'].sum()))),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        #arrowhead=2,
+        #arrowsize=1,
+        #arrowwidth=2,
+        #arrowcolor="#636363",
+        #ax=20,
+        #ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )    
 ####tab2
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
     sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
