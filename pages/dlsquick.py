@@ -252,8 +252,8 @@ def update_whatever(qgeoSlider, geoTile, qDivision, qDistrict, qUpazila):
         sub_bahis_sourcedata= bahis_quick[bahis_quick['geonumber']==str(qUpazila)]
         
     #### change 1 and 2 with bad database check plot map and change value reference
-    print(qDivision)
-    print(sub_bahis_sourcedata)
+    # print(qDivision)
+    # print(sub_bahis_sourcedata)
     
     if qgeoSlider== 1:
         path=path1
