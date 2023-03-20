@@ -15,5 +15,5 @@ remove the `Pipfile.lock` file and run again.
 ```
 pipenv shell
 python prep_data.py
-python bahisdash.plt.py
+python index.py
 ```
