@@ -30,7 +30,7 @@ def savfile(tmp):
                 df= pd.DataFrame(columns=words)
             elif sstr[:4]!='COPY':
                 slis=re.split(r'\t+',sstr)
-                df=df.append(pd.DataFrame([slis], columns=words))
+                df=df.append(pd.DataFrame([slis] , columns=words))
         
     df.to_csv('C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/coredb_bk_230316/' + cutfilename + '.csv')
 
@@ -39,11 +39,24 @@ with open(r'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/coredb_bk_
 #with open(r'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/coredb_bk_230316/tst.sql', 'rb', 0) as file:
     s = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
     #print(s.size())
-    s.seek(0)
+#    s.seek(43592852) #for s.find(b'bahis_patient_registrydyncsv_live_skin_table') 1h 20min
+#    s.seek(55230977) #for s.find(b'bahis_patient_registrydyncsv_live_skin_table') 1h 20min
+
+# Out[31]: 43115848
+# s.seek(s.find(b'COPY core')-0)
+# s.tell()
+# Out[33]: 43116029
+# s.readline().decode('utf-8')
+# Out[34]: 'COPY core.bahis_patient_registrydyncsv_live_urine_strip_table
+
+#    s.seek(2998771) #for s.find(b'COPY core.bahis_patient_registrydyncsv_live_skin_table')
+    s.seek(2999564-1) #for s.find(b'COPY core.bahis_patient_registrydyncsv_live_table')
+# 43116250 bahis_patient_registrydyncsv_live_urine_strip_table
     s.seek(s.find(b'COPY core')-0) 
     pointer=s.tell()      
     s.seek(pointer)
     while s.tell()<1029994832+1:
+        print(s.tell())
         stop=s.find(b'\.')-0 
         if s.tell()<stop:
             line=s.readline().decode('utf-8')

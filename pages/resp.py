@@ -26,12 +26,16 @@ pd.options.mode.chained_assignment = None
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 sourcefilename =sourcepath + 'resp_data.csv'   
+reportsfilename =sourcepath + 'resp_rep_data.csv'  
 path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District
 path3= "geodata/upadata.geojson" #495 Upazila
 
 resp_data = pd.read_csv(sourcefilename) 
 resp_data['date'] = pd.to_datetime(resp_data['date'])
+
+resp_rep_data = pd.read_csv(sourcefilename) 
+resp_rep_data['date'] = pd.to_datetime(resp_rep_data['date'])
     
 def fetchgeodata():  
     geodata = pd.read_csv(geofilename)
@@ -202,9 +206,17 @@ layout =  html.Div([
                             ])                        
                         ]),
                     dbc.Row([
-                        dbc.Row(dcc.Graph(id='rReports')),
-                        dbc.Row(dcc.Graph(id='rSick')),
-                        dbc.Row(dcc.Graph(id='rDead'))
+                        dbc.Tabs([
+                            dbc.Tab([
+                                dbc.Row(dcc.Graph(id='Livestock')),
+                                dbc.Row(dcc.Graph(id='Zoonotic'))],
+                                label='Reports'),                     
+                            dbc.Tab([
+                                dbc.Row(dcc.Graph(id='rReports')),
+                                dbc.Row(dcc.Graph(id='rSick')),
+                                dbc.Row(dcc.Graph(id='rDead'))],
+                            label='Diseases')
+                            ])                                
                         ])
                         #label='rReports'),
                     ], width=8)
