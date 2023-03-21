@@ -21,9 +21,11 @@ from dateutil.relativedelta import relativedelta
 
 pd.options.mode.chained_assignment = None
 
-#dash.register_page(__name__) #, path='/') for entry point probably
+dash.register_page(__name__) #, path='/') for entry point probably
 
-sourcepath = 'exported_data/'
+lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
+npath=''
+sourcepath = lpath+'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 sourcefilename =sourcepath + 'resp_data.csv'   
 reportsfilename =sourcepath + 'resp_rep_data.csv'  
@@ -212,10 +214,10 @@ layout =  html.Div([
                                 dbc.Row(dcc.Graph(id='Zoonotic'))],
                                 label='Reports'),                     
                             dbc.Tab([
-                                dbc.Row(dcc.Graph(id='rReports')),
+ #                               dbc.Row(dcc.Graph(id='rReports')),
                                 dbc.Row(dcc.Graph(id='rSick')),
                                 dbc.Row(dcc.Graph(id='rDead'))],
-                            label='Diseases')
+                            label='Disease Cases')
                             ])                                
                         ])
                         #label='rReports'),
@@ -231,13 +233,13 @@ layout =  html.Div([
     Output ('rUpazila', 'options'),
 
     Output ('rMap', 'figure'),
-    Output ('rReports', 'figure'),
+#    Output ('rReports', 'figure'),
     Output ('rSick', 'figure'),
     Output ('rDead', 'figure'),
 
     Input ('rgeoSlider', 'value'),
     Input ('rMap', 'clickData'),  
-    Input ('rReports', 'clickData'),  
+#    Input ('rReports', 'clickData'),  
     Input ('rSick', 'clickData'),  
     Input ('rDead', 'clickData'),  
     
@@ -248,15 +250,19 @@ layout =  html.Div([
     Input ("rdaterange",'end_date'),
     Input ("rDiseaselist",'value'),
 )
-def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):      
+def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):       #clkRep, 
     date_sub=date_subset(start_date, end_date)
     sub_data=disease_subset(diseaselist, date_sub)
 
-    tmps= pd.to_datetime(start_date)-relativedelta(years=1)   
-    tmpe= pd.to_datetime(start_date)-relativedelta(days=1)
-    sub1a_data=date_subset(tmps, tmpe)
+    tmp1as= pd.to_datetime(start_date)-relativedelta(years=1)   
+    tmp1ae= pd.to_datetime(start_date)-relativedelta(days=1)
+    sub1a_data=date_subset(tmp1as, tmp1ae)
     sub1a_data=disease_subset(diseaselist, sub1a_data)
 
+    tmp2as= pd.to_datetime(start_date)-relativedelta(years=2)   
+    tmp2ae= pd.to_datetime(start_date)-relativedelta(years=1)-relativedelta(days=1)
+    sub2a_data=date_subset(tmp2as, tmp2ae)
+    sub2a_data=disease_subset(diseaselist, sub2a_data)
 
 
     ddDislist=None
@@ -325,38 +331,84 @@ def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rD
 
 ###tab1
 
-    tmp=sub_data['date'].dt.date.value_counts()
-    tmp=tmp.to_frame()
-    tmp['counts']=tmp['date']
+    # tmp=sub_data['date'].dt.date.value_counts()
+    # tmp=tmp.to_frame()
+    # tmp['counts']=tmp['date']
 
-    tmp['date']=pd.to_datetime(tmp.index)
-    tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.to_frame()
-    tmp['date']=tmp.index
-    tmp['date']=tmp['date'].astype('datetime64[D]')
+    # tmp['date']=pd.to_datetime(tmp.index)
+    # tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+    # tmp=tmp.to_frame()
+    # tmp['date']=tmp.index
+    # tmp['date']=tmp['date'].astype('datetime64[D]')
 
-    tmp2=sub1a_data['date'].dt.date.value_counts()
-    tmp2=tmp2.to_frame()
-    tmp2['counts']=tmp2['date']
+    # tmp2=sub1a_data['date'].dt.date.value_counts()
+    # tmp2=tmp2.to_frame()
+    # tmp2['counts']=tmp2['date']
 
-    tmp2['date']=pd.to_datetime(tmp2.index)
-    tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp2=tmp2.to_frame()
-    tmp2['date']=tmp2.index
-    tmp2['date']=tmp2['date'].astype('datetime64[D]')
-    tmp2['date']=tmp2['date']+pd.offsets.Day(365)
+    # tmp2['date']=pd.to_datetime(tmp2.index)
+    # tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
+    # tmp2=tmp2.to_frame()
+    # tmp2['date']=tmp2.index
+    # tmp2['date']=tmp2['date'].astype('datetime64[D]')
+    # tmp2['date']=tmp2['date']+pd.offsets.Day(365)
             
-    figgR= px.bar(tmp, x='date', y='counts') 
-    figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    # figgR= px.bar(tmp, x='date', y='counts') 
+    # figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
  
-    figgRR = px.line(tmp2, x='date', y='counts')
-    figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
-    figgRR['data'][0]['line']['width']=1
-    figgR= go.Figure(data=figgR.data + figgRR.data)
-    figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
-    figgR.add_annotation(
+    # figgRR = px.line(tmp2, x='date', y='counts')
+    # figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
+    # figgRR['data'][0]['line']['width']=1
+    # figgR= go.Figure(data=figgR.data + figgRR.data)
+    # figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    # figgR.add_annotation(
+    #     x=end_date,
+    #     y=max(tmp),
+    #     #xref="x",
+    #     #yref="y",
+    #     text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
+    #     showarrow=False,
+    #     font=dict(
+    #         family="Courier New, monospace",
+    #         size=12,
+    #         color="#ffffff"
+    #         ),
+    #     align="center",
+    #     #arrowhead=2,
+    #     #arrowsize=1,
+    #     #arrowwidth=2,
+    #     #arrowcolor="#636363",
+    #     #ax=20,
+    #     #ay=-30,
+    #     bordercolor="#c7c7c7",
+    #     borderwidth=2,
+    #     borderpad=4,
+    #     bgcolor="#ff7f0e",
+    #     opacity=0.8
+    #     )
+    
+    
+    tmp=sub_data['cases'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp=tmp.reset_index()
+    tmp=tmp.rename(columns={'date':'date'})
+    tmp['date'] = tmp['date'].astype('datetime64[D]')
+
+    tmp1a=sub1a_data['cases'].groupby(sub1a_data['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp1a=tmp1a.reset_index()
+    tmp1a=tmp1a.rename(columns={'date':'date'})
+    tmp1a['date'] = tmp1a['date'].astype('datetime64[D]')
+    tmp1a['date']=tmp1a['date']+pd.offsets.Day(365)
+    
+    figgSick= px.bar(tmp, x='date', y='cases')  
+    figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})   
+
+    figgSickk= px.line(tmp1a, x='date', y='cases')  
+    figgSickk['data'][0]['line']['color']='rgb(204, 0, 0)'
+    figgSickk['data'][0]['line']['width']=1
+    figgSick= go.Figure(data=figgSick.data + figgSickk.data)
+    figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgSick.add_annotation(
         x=end_date,
-        y=max(tmp),
+        y=max(tmp1a),
         #xref="x",
         #yref="y",
         text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
@@ -378,26 +430,55 @@ def update_whatever(rgeoSlider, geoTile, clkRep, clkSick, clkDead, rDivision, rD
         borderpad=4,
         bgcolor="#ff7f0e",
         opacity=0.8
-        )
-    
-    
-    tmp=sub_data['cases'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgSick= px.bar(tmp, x='date', y='cases')  
-    figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
+    )
 
     tmp=sub_data['deaths'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
+    
+    tmp1a=sub1a_data['deaths'].groupby(sub1a_data['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp1a=tmp1a.reset_index()
+    tmp1a=tmp1a.rename(columns={'date':'date'})
+    tmp1a['date'] = tmp1a['date'].astype('datetime64[D]')
+    tmp1a['date']=tmp1a['date']+pd.offsets.Day(365)
+    
     figgDead= px.bar(tmp, x='date', y='deaths')  
     figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
     
+    figgDeadd= px.line(tmp1a, x='date', y='deaths')  
+    figgDeadd['data'][0]['line']['color']='rgb(204, 0, 0)'
+    figgDeadd['data'][0]['line']['width']=1
+    figgDead= go.Figure(data=figgDead.data + figgDeadd.data)
+    figgDead.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgDead.add_annotation(
+        x=end_date,
+        y=max(tmp1a),
+        #xref="x",
+        #yref="y",
+        text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        #arrowhead=2,
+        #arrowsize=1,
+        #arrowwidth=2,
+        #arrowcolor="#636363",
+        #ax=20,
+        #ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+    )
 
 
-    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead
+    return vDistrict, vUpa, Rfig, figgSick, figgDead #figgR, 
 
 
 
