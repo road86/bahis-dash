@@ -1,14 +1,27 @@
 import pandas as pd
 import datetime as dt
 import os
+import json
 
 sourcepath = 'exported_data/'
 sourcefilename = os.path.join(sourcepath, 'newbahis_bahis_patient_registrydyncsv_live_table.csv')
 bahis_sourcedata = pd.read_csv(sourcefilename, low_memory=False)
 
-oldsourcefilename = os.path.join(sourcepath, 'formdata_Patients_Registry.csv')
-oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
+firstprep=True
+
+if firstprep:
+    # oldsourcefilename =sourcepath + 'staticbahis_forms_data.csv'
+    oldsourcefilename =sourcepath + 'staticbahis_forms_data202212192159.csv'
+    oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
+    tmp=oldbahis_sourcedata['datajson'].apply(json.loads)
+    oldbahis_sourcedata=pd.json_normalize(tmp)
+    oldbahis_sourcedata=oldbahis_sourcedata[oldbahis_sourcedata['date'].notna()]
+    oldbahis_sourcedata.to_csv(sourcepath + 'tmp.csv')
+else:
+    oldsourcefilename =sourcepath + 'formdata_Patients_Registry.csv'
+    oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
 ###
+
 
 
 oldbahis_preped_data = oldbahis_sourcedata[['date',
