@@ -75,12 +75,12 @@ def fetchUpazilalist(SelDis):
 
 start_date=min(resp_data['date']).date()
 end_date=max(resp_data['date']).date()
-start_date=date(2023, 1, 1)
+#start_date=date(2023, 1, 1)
 
 
 def date_subset(sdate, edate):
     dates=[sdate, edate]
-    tmask= (resp_data['date']>= pd.to_datetime(dates[0])) & (resp_data['date'] <= pd.to_datetime(dates[1]))
+    tmask = (resp_data['date']>= pd.to_datetime(dates[0])) & (resp_data['date'] <= pd.to_datetime(dates[1]))
     return resp_data.loc[tmask]
 
 def disease_subset(cDisease, dis_sub_data):
@@ -140,7 +140,9 @@ def open_data(path):
 
 def plot_map(path, loc, sub_data, title, pnumber, pname, splace, variab, labl):
     subDist=geodata[(geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
-    reports = sub_data.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
+#    reports = sub_data.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports = sub_data.groupby(['upazila'])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports= reports.rename(columns={'cases' : 'upazila'}, index={'upazila': 'Index'})
     reports[pnumber] = reports.index
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
@@ -305,7 +307,8 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
         splace=' Division'
         variab='division'
         labl='Incidences per division'
-        incsub_data = pd.to_numeric(sub_data['division']).dropna().astype(int)
+#        incsub_data = pd.to_numeric(sub_data['division']).dropna().astype(int)
+        incsub_data = sub_data
     if rgeoSlider== 2:
         path=path2
         loc=2
@@ -315,7 +318,9 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
         splace=' District'
         variab='district'
         labl='Incidences per district'
-        incsub_data = pd.to_numeric(sub_data['district']).dropna().astype(int)
+#        incsub_data = pd.to_numeric(sub_data['district']).dropna().astype(int)
+        incsub_data = sub_data
+
     if rgeoSlider== 3:
         path=path3
         loc=3
@@ -325,44 +330,55 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
-        incsub_data = pd.to_numeric(sub_data['upazila']).dropna().astype(int)
+#        incsub_data = pd.to_numeric(sub_data['upazila']).dropna().astype(int)
+        incsub_data = sub_data
     
     Rfig = plot_map(path, loc, incsub_data, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
-
-    # tmp=sub_data['date'].dt.date.value_counts()
-    # tmp=tmp.to_frame()
-    # tmp['counts']=tmp['date']
-
-    # tmp['date']=pd.to_datetime(tmp.index)
-    # tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
-    # tmp=tmp.to_frame()
-    # tmp['date']=tmp.index
-    # tmp['date']=tmp['date'].astype('datetime64[D]')
-
-    # tmp2=sub1a_data['date'].dt.date.value_counts()
-    # tmp2=tmp2.to_frame()
-    # tmp2['counts']=tmp2['date']
-
-    # tmp2['date']=pd.to_datetime(tmp2.index)
-    # tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
-    # tmp2=tmp2.to_frame()
-    # tmp2['date']=tmp2.index
-    # tmp2['date']=tmp2['date'].astype('datetime64[D]')
-    # tmp2['date']=tmp2['date']+pd.offsets.Day(365)
-            
-    # figgR= px.bar(tmp, x='date', y='counts') 
-    # figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
  
-    # figgRR = px.line(tmp2, x='date', y='counts')
-    # figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
-    # figgRR['data'][0]['line']['width']=1
-    # figgR= go.Figure(data=figgR.data + figgRR.data)
-    # figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
-    # figgR.add_annotation(
+###tab2
+    
+#    tmp = sub_data.groupby([(pd.DatetimeIndex(sub_data['date']).year), (pd.DatetimeIndex(sub_data['date']).month)])[['cases', 'deaths']].sum()
+#    dynrep = sub_data.groupby([(pd.DatetimeIndex(sub_data['date']).year), (sub_data['date'].dt.to_period('W-SAT'))])[['cases', 'deaths']].sum() #creates overlap in weeks between years
+#    dynrep = sub_data.groupby([(sub_data['date'].dt.to_period('W-SAT')), (pd.DatetimeIndex(sub_data['date']).year)])[['cases', 'deaths'] ].sum() #same
+#    dynrep = sub_data.groupby([(sub_data['date'].dt.to_period('W-SAT')), ((sub_data['date'].dt.to_period('W-SAT')).index.start_time.year)])[['cases', 'deaths'] ].sum()     # in two steps
+    dynrep = sub_data.groupby([sub_data['date'].dt.to_period('W-SAT')])[['cases', 'deaths'] ].sum()     # in two steps
+    dynrep['year']=dynrep.index.start_time.year
+    tmpp= dynrep.loc[dynrep['year']==max(dynrep['year'])]
+    
+    color=['red', 'blue', 'orange', 'green']
+    figgSick=px.bar(tmpp, x=tmpp.index.week, y='cases')    
+    figgDead=px.bar(tmpp, x=tmpp.index.week, y='deaths')    
+    i=0
+    for year in dynrep['year'].unique():  # withing the month plot each year
+        if year != max(dynrep['year']):
+            tmpp = dynrep.loc[dynrep['year']==year]
+            figgSickk = px.line(tmpp, x=tmpp.index.week, y='cases') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})  
+            figgSickk['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'  # make color
+            figgSickk['data'][0]['line']['width']=1
+            figgSick = go.Figure(data=figgSick.data + figgSickk.data)
+            
+            figgDeadd = px.line(tmpp, x=tmpp.index.week, y='deaths') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})  
+            figgDeadd['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'
+            figgDeadd['data'][0]['line']['width']=1
+            figgDead = go.Figure(data=figgDead.data + figgDeadd.data)
+            
+            i=i+1
+
+    figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})   
+              
+    figgDead.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})        
+    
+    # figgSick= px.bar(tmp, x='date', y='cases') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})  
+
+    # figgSickk= px.line(tmp1a, x='date', y='cases')  
+    # figgSick= go.Figure(data=figgSick.data + figgSickk.data)
+    
+    # figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0}) 
+    # figgSick.add_annotation(
     #     x=end_date,
-    #     y=max(tmp),
+    #     y=max('cases'),
     #     #xref="x",
     #     #yref="y",
     #     text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
@@ -385,97 +401,6 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     #     bgcolor="#ff7f0e",
     #     opacity=0.8
     #     )
-    
-    
-    tmp=sub_data['cases'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
-
-    tmp1a=sub1a_data['cases'].groupby(sub1a_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp1a=tmp1a.reset_index()
-    tmp1a=tmp1a.rename(columns={'date':'date'})
-    tmp1a['date'] = tmp1a['date'].astype('datetime64[D]')
-    tmp1a['date']=tmp1a['date']+pd.offsets.Day(365)
-    
-    figgSick= px.bar(tmp, x='date', y='cases')  
-    figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})   
-
-    figgSickk= px.line(tmp1a, x='date', y='cases')  
-    figgSickk['data'][0]['line']['color']='rgb(204, 0, 0)'
-    figgSickk['data'][0]['line']['width']=1
-    figgSick= go.Figure(data=figgSick.data + figgSickk.data)
-    figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0}) 
-    figgSick.add_annotation(
-        x=end_date,
-        y=max(tmp1a),
-        #xref="x",
-        #yref="y",
-        text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
-        showarrow=False,
-        font=dict(
-            family="Courier New, monospace",
-            size=12,
-            color="#ffffff"
-            ),
-        align="center",
-        #arrowhead=2,
-        #arrowsize=1,
-        #arrowwidth=2,
-        #arrowcolor="#636363",
-        #ax=20,
-        #ay=-30,
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8
-    )
-
-    tmp=sub_data['deaths'].groupby(sub_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
-    
-    tmp1a=sub1a_data['deaths'].groupby(sub1a_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp1a=tmp1a.reset_index()
-    tmp1a=tmp1a.rename(columns={'date':'date'})
-    tmp1a['date'] = tmp1a['date'].astype('datetime64[D]')
-    tmp1a['date']=tmp1a['date']+pd.offsets.Day(365)
-    
-    figgDead= px.bar(tmp, x='date', y='deaths')  
-    figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})   
-    
-    figgDeadd= px.line(tmp1a, x='date', y='deaths')  
-    figgDeadd['data'][0]['line']['color']='rgb(204, 0, 0)'
-    figgDeadd['data'][0]['line']['width']=1
-    figgDead= go.Figure(data=figgDead.data + figgDeadd.data)
-    figgDead.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0}) 
-    figgDead.add_annotation(
-        x=end_date,
-        y=max(tmp1a),
-        #xref="x",
-        #yref="y",
-        text="total reports " + str('{:,}'.format(sub_data['date'].dt.date.value_counts().sum())),
-        showarrow=False,
-        font=dict(
-            family="Courier New, monospace",
-            size=12,
-            color="#ffffff"
-            ),
-        align="center",
-        #arrowhead=2,
-        #arrowsize=1,
-        #arrowwidth=2,
-        #arrowcolor="#636363",
-        #ax=20,
-        #ay=-30,
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8
-    )
 
 
     return vDistrict, vUpa, Rfig, figgSick, figgDead #figgR, 
