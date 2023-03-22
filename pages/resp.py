@@ -21,7 +21,7 @@ import json
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) #, path='/') for entry point probably
+#dash.register_page(__name__) #, path='/') for entry point probably
 
 lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
 npath=''
