@@ -8,15 +8,15 @@ Created on Tue Mar 14 18:07:34 2023
 
 # Import necessary libraries 
 import dash
-from dash import dcc, html, callback #, ctx #Dash, #dash_table, dbc 
+from dash import dcc, html, callback, dash_table #, ctx #Dash, #dash_table, dbc 
 import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
 from dash.dependencies import Input, Output
 import json  
-from datetime import date
-from dateutil.relativedelta import relativedelta
+# from datetime import date
+# from dateutil.relativedelta import relativedelta
 
 
 pd.options.mode.chained_assignment = None
@@ -36,7 +36,7 @@ path3= "geodata/upadata.geojson" #495 Upazila
 resp_data = pd.read_csv(sourcefilename) 
 resp_data['date'] = pd.to_datetime(resp_data['date'])
 
-resp_rep_data = pd.read_csv(sourcefilename) 
+resp_rep_data = pd.read_csv(reportsfilename) 
 resp_rep_data['date'] = pd.to_datetime(resp_rep_data['date'])
     
 def fetchgeodata():  
@@ -75,13 +75,17 @@ def fetchUpazilalist(SelDis):
 
 start_date=min(resp_data['date']).date()
 end_date=max(resp_data['date']).date()
+start_dater=min(resp_rep_data['date']).date()
+end_dater=max(resp_rep_data['date']).date()
 #start_date=date(2023, 1, 1)
 
 
-def date_subset(sdate, edate):
+def date_subset(sdate, edate, sdater, edater):
     dates=[sdate, edate]
+    datesr=[sdater, edater]
     tmask = (resp_data['date']>= pd.to_datetime(dates[0])) & (resp_data['date'] <= pd.to_datetime(dates[1]))
-    return resp_data.loc[tmask]
+    tmaskr = (resp_rep_data['date']>= pd.to_datetime(datesr[0])) & (resp_rep_data['date'] <= pd.to_datetime(datesr[1]))
+    return resp_data.loc[tmask], resp_rep_data.loc[tmaskr]
 
 def disease_subset(cDisease, dis_sub_data):
     if 'All Diseases' in cDisease:
@@ -212,17 +216,25 @@ layout =  html.Div([
                     dbc.Row([
                         dbc.Tabs([
                             dbc.Tab([
-                                dbc.Row(dcc.Graph(id='Livestock')),
-                                dbc.Row(dcc.Graph(id='Zoonotic'))],
-                                label='Reports'),                     
+                                dbc.Row(dcc.Graph(id='figRep')),
+                                dbc.Row([ 
+                                    dbc.Col([
+                                        dcc.Graph(id='RepStat')]),
+                                    dbc.Col([
+                                        dcc.Graph(id='LabStat')]),
+                                    dbc.Col([
+                                        dcc.Graph(id='Signals')]),
+                                    ]),
+                                dbc.Row(dcc.Graph(id='figSignal')),
+                                ], label='Reports'),                     
                             dbc.Tab([
- #                               dbc.Row(dcc.Graph(id='rReports')),
                                 dbc.Row(dcc.Graph(id='rSick')),
                                 dbc.Row(dcc.Graph(id='rDead'))],
                             label='Disease Cases over Time'),
                             dbc.Tab([
- #                               dbc.Row(dcc.Graph(id='rReports')),
-                                dbc.Row(dcc.Graph(id='rRegion'))],
+                                dbc.Row(dcc.Graph(id='rRegion')),
+                                dash_table.DataTable(resp_rep_data.to_dict('records'))
+                                ],
                             label='Region List')
                             ])                                
                         ])
@@ -239,7 +251,7 @@ layout =  html.Div([
     Output ('rUpazila', 'options'),
 
     Output ('rMap', 'figure'),
-#    Output ('rReports', 'figure'),
+    Output ('figRep', 'figure'),
     Output ('rSick', 'figure'),
     Output ('rDead', 'figure'),
     Output ('rRegion', 'figure'),
@@ -258,7 +270,7 @@ layout =  html.Div([
     Input ("rDiseaselist",'value'),
 )
 def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):       #clkRep, 
-    date_sub=date_subset(start_date, end_date)
+    date_sub, data_resp=date_subset(start_date, end_date, start_dater, end_dater)
     sub_data=disease_subset(diseaselist, date_sub)
 
     # tmp1as= pd.to_datetime(start_date)-relativedelta(years=1)   
@@ -341,7 +353,26 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     Rfig = plot_map(path, loc, incsub_data, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
- 
+
+    reps = data_resp.groupby([data_resp['date'].dt.to_period('W-SAT')])[['Reported', 'Verified', 'Signal', 'LabSent', 'LabResult'] ].sum()     # in two steps
+    reps['year']=reps.index.start_time.year
+    tmprep= reps.loc[reps['year']==max(reps['year'])]
+    
+    color=['red', 'blue', 'orange', 'green']
+    figRep=px.bar(tmprep, x=tmprep.index.week, y='Reported')    
+    i=0
+    for year in reps['year'].unique():  # withing the month plot each year
+        if year != max(reps['year']):
+            tmprep = reps.loc[reps['year']==year]
+            Reportss= px.line(tmprep, x=tmprep.index.week, y='Reported') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})  
+            Reportss['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'  # make color
+            Reportss['data'][0]['line']['width']=1
+            figRep = go.Figure(data=figRep.data + Reportss.data)
+            
+            i=i+1
+
+    figRep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0}) 
+    
 ###tab2
     
 #    tmp = sub_data.groupby([(pd.DatetimeIndex(sub_data['date']).year), (pd.DatetimeIndex(sub_data['date']).month)])[['cases', 'deaths']].sum()
@@ -428,7 +459,7 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     figRegion.update_layout(autosize=True, height=600, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
     
 
-    return vDistrict, vUpa, Rfig, figgSick, figgDead, figRegion #figgR, 
+    return vDistrict, vUpa, Rfig, figRep, figgSick, figgDead, figRegion #figgR, 
 
 
 
