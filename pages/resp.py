@@ -219,7 +219,11 @@ layout =  html.Div([
  #                               dbc.Row(dcc.Graph(id='rReports')),
                                 dbc.Row(dcc.Graph(id='rSick')),
                                 dbc.Row(dcc.Graph(id='rDead'))],
-                            label='Disease Cases')
+                            label='Disease Cases over Time'),
+                            dbc.Tab([
+ #                               dbc.Row(dcc.Graph(id='rReports')),
+                                dbc.Row(dcc.Graph(id='rRegion'))],
+                            label='Region List')
                             ])                                
                         ])
                         #label='rReports'),
@@ -238,6 +242,7 @@ layout =  html.Div([
 #    Output ('rReports', 'figure'),
     Output ('rSick', 'figure'),
     Output ('rDead', 'figure'),
+    Output ('rRegion', 'figure'),
 
     Input ('rgeoSlider', 'value'),
     Input ('rMap', 'clickData'),  
@@ -256,15 +261,15 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     date_sub=date_subset(start_date, end_date)
     sub_data=disease_subset(diseaselist, date_sub)
 
-    tmp1as= pd.to_datetime(start_date)-relativedelta(years=1)   
-    tmp1ae= pd.to_datetime(start_date)-relativedelta(days=1)
-    sub1a_data=date_subset(tmp1as, tmp1ae)
-    sub1a_data=disease_subset(diseaselist, sub1a_data)
+    # tmp1as= pd.to_datetime(start_date)-relativedelta(years=1)   
+    # tmp1ae= pd.to_datetime(start_date)-relativedelta(days=1)
+    # sub1a_data=date_subset(tmp1as, tmp1ae)
+    # sub1a_data=disease_subset(diseaselist, sub1a_data)
 
-    tmp2as= pd.to_datetime(start_date)-relativedelta(years=2)   
-    tmp2ae= pd.to_datetime(start_date)-relativedelta(years=1)-relativedelta(days=1)
-    sub2a_data=date_subset(tmp2as, tmp2ae)
-    sub2a_data=disease_subset(diseaselist, sub2a_data)
+    # tmp2as= pd.to_datetime(start_date)-relativedelta(years=2)   
+    # tmp2ae= pd.to_datetime(start_date)-relativedelta(years=1)-relativedelta(days=1)
+    # sub2a_data=date_subset(tmp2as, tmp2ae)
+    # sub2a_data=disease_subset(diseaselist, sub2a_data)
 
 
     ddDislist=None
@@ -287,16 +292,16 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
         if not rDistrict:
             if not rDivision:
                 sub_data=sub_data
-                sub1a_data=sub1a_data
+                #sub1a_data=sub1a_data
             else:
                 sub_data= sub_data.loc[sub_data['division']==rDivision] #DivNo]   
-                sub1a_data= sub1a_data.loc[sub1a_data['division']==rDivision] #DivNo]   
+                #sub1a_data= sub1a_data.loc[sub1a_data['division']==rDivision] #DivNo]   
         else:
             sub_data= sub_data.loc[sub_data['district']==rDistrict]
-            sub1a_data= sub1a_data.loc[sub1a_data['district']==rDistrict]
+            #sub1a_data= sub1a_data.loc[sub1a_data['district']==rDistrict]
     else:
         sub_data= sub_data.loc[sub_data['upazila']==rUpazila]
-        sub1a_data= sub1a_data.loc[sub_data['upazila']==rUpazila]
+        #sub1a_data= sub1a_data.loc[sub_data['upazila']==rUpazila]
     #### change 1 and 2 with bad database check plot map and change value reference
     if rgeoSlider== 1:
         path=path1
@@ -401,9 +406,25 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     #     bgcolor="#ff7f0e",
     #     opacity=0.8
     #     )
+    
+    subDist=geodata[(geodata["loc_type"]==rgeoSlider)]
+    reports = sub_data[title].value_counts().to_frame()
+    reports[pname] = reports.index
+    reports= reports.loc[reports[pname] != 'nan']
 
+    data = open_data(path)
+    for i in data['features']:
+        i['id']= i['properties']['shapeName'].replace(" Division","")
+    for i in range(reports.shape[0]):
+        reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
+    reports=reports.sort_values(pname)
+    reports[pname]=reports[pname].str.capitalize()
+        
+    figRegion=px.bar(reports, x=pname, y=title, labels= {variab:labl})# ,color='basic_info_division')
+    figRegion.update_layout(autosize=True, height=500, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
+    
 
-    return vDistrict, vUpa, Rfig, figgSick, figgDead #figgR, 
+    return vDistrict, vUpa, Rfig, figgSick, figgDead, figRegion #figgR, 
 
 
 
