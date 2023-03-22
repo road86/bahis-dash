@@ -141,8 +141,8 @@ def open_data(path):
 def plot_map(path, loc, sub_data, title, pnumber, pname, splace, variab, labl):
     subDist=geodata[(geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
 #    reports = sub_data.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
-    reports = sub_data.groupby(['upazila'])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
-    reports= reports.rename(columns={'cases' : 'upazila'}, index={'upazila': 'Index'})
+    reports = sub_data.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports= reports.rename(columns={'cases' : title}, index={title: 'Index'})
     reports[pnumber] = reports.index
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
@@ -408,7 +408,11 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     #     )
     
     subDist=geodata[(geodata["loc_type"]==rgeoSlider)]
-    reports = sub_data[title].value_counts().to_frame()
+#    reports = sub_data[title].value_counts().to_frame()
+#    reports = sub_data.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports = sub_data.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports= reports.rename(columns={'cases' : title}, index={title: 'Index'})
+    reports[pnumber] = reports.index
     reports[pname] = reports.index
     reports= reports.loc[reports[pname] != 'nan']
 
@@ -421,7 +425,7 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     reports[pname]=reports[pname].str.capitalize()
         
     figRegion=px.bar(reports, x=pname, y=title, labels= {variab:labl})# ,color='basic_info_division')
-    figRegion.update_layout(autosize=True, height=500, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
+    figRegion.update_layout(autosize=True, height=600, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
     
 
     return vDistrict, vUpa, Rfig, figgSick, figgDead, figRegion #figgR, 
