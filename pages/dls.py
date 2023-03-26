@@ -30,7 +30,9 @@ pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__) #, path='/') for entry point probably
 
-sourcepath = 'exported_data/'
+lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
+npath=''
+sourcepath = lpath + 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_data2.csv'   
@@ -178,19 +180,37 @@ def open_data(path):
         data = json.load(f)             
     return data
 
-def plot_map(path, loc, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
-    subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
+def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
+  #  subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
     reports = sub_bahis_sourcedata.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
     reports[pnumber] = reports.index
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
-    reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata?
+    reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata? reports, where there are no geonumbers?
     data = open_data(path)
 
     reports[pname] = reports.index
-    for i in range(reports.shape[0]): # go through all upazila report values
-        reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
-    reports[pname]=reports[pname].str.title()  
+    tmp=subDist[['value', 'name']]
+    tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
+    tmp[pname]=tmp[pname].str.title()
+    tmp['Index']=tmp[pnumber]
+    tmp=tmp.set_index('Index')
+    tmp[title]=-1
+    
+    # works somewhat, but now preselection of district is also -1 set -1 only for selected ones.
+    
+#    for i in range(tmp.shape[0]):
+#    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
+    aaa=reports.combine_first(tmp)
+    aaa['upazilaname']=tmp['upazilaname']
+    del tmp
+    del reports
+    # aaa=aaa.drop([pname+'_y'], axis=1)
+    # aaa=aaa.rename(columns={'upazilaname'+'_x': 'upazilaname'})
+    reports=aaa
+    # for i in range(reports.shape[0]): # go through all upazila report values
+    #     reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
+    # reports[pname]=reports[pname].str.title()  
     
     reports.set_index(pnumber)                 
         
@@ -198,7 +218,7 @@ def plot_map(path, loc, sub_bahis_sourcedata, title, pnumber, pname, splace, var
                             featureidkey='properties.'+pnumber,
 #                            featureidkey="Cmap",
                             color_continuous_scale="YlOrBr",
-                            range_color=(0, reports[title].max()),
+                            range_color=(-1, reports[title].max()),
                             mapbox_style="carto-positron",
                             zoom=5.8, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
@@ -337,19 +357,20 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             if not cU2Division:
                 sub_bahis_sourcedata=sub_bahis_sourcedata
                 sub1a_bahis_sourcedata=sub1a_bahis_sourcedata
-
+                subDist=bahis_geodata
             else:
                 sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
                 sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
- 
+ ####!!!!               subDist=bahis_geodata.loc[bahis_geodata['parent']] # take all, where parent str[:2] is selection
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==cU2District]
             sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_district']==cU2District]
-
+ ####!!!!           subDist=bahis_geodata.loc[bahis_geodata['parent']] # take all, where parent str[:4] is selection
     else:
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
         sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
     #### change 1 and 2 with bad database check plot map and change value reference
+    print (geoSlider)
     if geoSlider== 1:
         path=path1
         loc=1
@@ -389,7 +410,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_upazila']).dropna().astype(int)
 #        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
     
-    Rfig = plot_map(path, loc, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+    Rfig = plot_map(path, loc, subDist, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
 
