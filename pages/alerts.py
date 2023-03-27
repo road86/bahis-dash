@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 #### make second table with non responders and color empty ones per time period set  1.5h extra
 pd.options.mode.chained_assignment = None
 
-#dash.register_page(__name__) #, path='/')
+# dash.register_page(__name__)#, path='/')
 
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project

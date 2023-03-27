@@ -16,5 +16,6 @@ remove the `Pipfile.lock` file and run again.
 pipenv shell
 python prep_data.py
 python prepgeojson.py
+python prepquickdata.py
 python index.py
 ```

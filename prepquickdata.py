@@ -9,13 +9,19 @@ Created on Tue Mar  7 13:51:59 2023
 import pandas as pd 
 from datetime import date, timedelta
 
-sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+#sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+#path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
+#path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
+#path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
+
+sourcepath = 'exported_data/'
+path1= "geodata/divdata.geojson" #8 Division
+path2= "geodata/distdata.geojson" #64 District
+path3= "geodata/upadata.geojson" #495 Upazila
+
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_data2.csv'   
-path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
-path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
-path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
 
 bahis_sdtmp = pd.read_csv(sourcefilename) 
 bahis_sdtmp['basic_info_date'] = pd.to_datetime(bahis_sdtmp['basic_info_date'])
