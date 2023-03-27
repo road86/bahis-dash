@@ -41,8 +41,8 @@ def Navbar():
                 #if page["path"].startswith("/topic")
                 ])], 
             fluid=True),
-        color='dark',
-        dark=True,
+        color='white',
+        dark=False,
         className='mb-5',
         )
     
