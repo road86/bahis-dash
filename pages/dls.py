@@ -20,7 +20,7 @@ import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
 from dash.dependencies import Input, Output
-import json  
+import json, os 
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
@@ -30,12 +30,12 @@ pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__) #, path='/') for entry point probably
 
-lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
-npath=''
-sourcepath = lpath + 'exported_data/'
-geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
-dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
-sourcefilename =sourcepath + 'preped_data2.csv'   
+#debug
+#sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+sourcepath = 'exported_data/'
+geofilename = os.path.join(sourcepath, 'newbahis_geo_cluster.csv')   # the available geodata from the bahis project
+dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info
+sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')   
 #path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District

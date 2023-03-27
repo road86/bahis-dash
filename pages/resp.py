@@ -24,9 +24,9 @@ pd.options.mode.chained_assignment = None
 
 #dash.register_page(__name__) #, path='/') for entry point probably
 
-lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
-npath=''
-sourcepath = lpath+'exported_data/'
+#debug
+#sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data'
+sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 sourcefilename =sourcepath + 'resp_data.csv'   
 reportsfilename =sourcepath + 'resp_rep_data.csv'  
