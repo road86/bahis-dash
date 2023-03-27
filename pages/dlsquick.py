@@ -21,16 +21,18 @@ pd.options.mode.chained_assignment = None
 
 #dash.register_page(__name__) #, path='/') for entry point probably
 
-npath=''
 #debug
 #sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+#path1="C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
+#path2="C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson" #64 District
+#path3="C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson" #495 Upazila
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
 sourcefilename =sourcepath + 'preped_quickdata.csv'   
-path1=  lpath+"geodata/divdata.geojson" #8 Division
-path2=  lpath+"geodata/distdata.geojson" #64 District
-path3=  lpath+"geodata/upadata.geojson" #495 Upazila
+path1=  "geodata/divdata.geojson" #8 Division
+path2=  "geodata/distdata.geojson" #64 District
+path3=  "geodata/upadata.geojson" #495 Upazila
 
 bahis_quick = pd.read_csv(sourcefilename) 
 bahis_quick = bahis_quick.set_index('geonumber')
