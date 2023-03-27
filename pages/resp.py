@@ -22,7 +22,7 @@ import datetime
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) #, path='/') for entry point probably
+#dash.register_page(__name__) #, path='/') for entry point probably
 
 lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
 npath=''
@@ -224,19 +224,19 @@ layout =  html.Div([
                                     dbc.Col([
                                         dcc.Graph(id='LabStat')]),
                                     dbc.Col([
-                                        dcc.Graph(id='figSig')]),
+                                        dcc.Graph(id='Sigs')]),
                                     ]),
-                                dbc.Row(dcc.Graph(id='figSignal')),
-                                ], label='Reports'),                     
+                                dbc.Row([dcc.Graph(id='figSignal')])
+                                ], label='Reports'),# tab_id='tabRep'),                     
                             dbc.Tab([
                                 dbc.Row(dcc.Graph(id='rSick')),
                                 dbc.Row(dcc.Graph(id='rDead'))
-                                ], label='Disease Cases over Time'),
+                                ], label='Disease Cases over Time'),# tab_id='tabDC'),
                             dbc.Tab([
                                 dbc.Row(html.Div(id='casetable')),
                                 dbc.Row(dcc.Graph(id='rRegion')),
-                                ], label='Region List')
-                            ])                                
+                                ], label='Region List'),# tab_id='tabRegion')
+                            ], id='tabs') #, active_tab='tabRep')                                
                         ])
                         #label='rReports'),
                     ], width=8)
@@ -258,6 +258,7 @@ layout =  html.Div([
     Output ('rDead', 'figure'),
     Output ('casetable', 'children'),
     Output ('rRegion', 'figure'),
+#    Output ('tabs', 'children'),
 
     Input ('rgeoSlider', 'value'),
     Input ('rMap', 'clickData'),  
@@ -271,8 +272,9 @@ layout =  html.Div([
     Input ("rdaterange",'start_date'),
     Input ("rdaterange",'end_date'),
     Input ("rDiseaselist",'value'),
+#    [Input ('tabs', 'active_tab')]
 )
-def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):       #clkRep, 
+def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):#, tabs):       #clkRep, 
     date_sub, data_resp=date_subset(start_date, end_date, start_dater, end_dater)
     sub_data=disease_subset(diseaselist, date_sub)
 
@@ -353,6 +355,19 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
 #        incsub_data = pd.to_numeric(sub_data['upazila']).dropna().astype(int)
         incsub_data = sub_data
     
+#     if tabs == "tabDC":
+# #        return tabDC_content
+#         print('19')
+
+#     elif tabs == "tabRegion":
+# #        return tabRegion_content
+#         print('20')
+    
+#     elif tabs == "tabRep":
+# #        return tabRep_content
+#         print('20')
+ #   return html.P("This shouldn't ever be displayed...")
+
     Rfig = plot_map(path, loc, incsub_data, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
@@ -481,14 +496,20 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     # records = data_resp.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
 
     #    casetable= dash_table.DataTable(resp_rep_data.to_dict('records'),
-    casetable= dash_table.DataTable(reports.to_dict('records'), 
+    casetable= dash_table.DataTable(
                                   columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
                                   style_header={
                                         'overflow': 'hidden',
                                         'maxWidth': 0,
+                                        'fontWeight': 'bold',
                                         },
+                                  style_cell={'textAlign': 'left'},
+                                  export_format='csv',
                                   style_table={'height': '300px', 'overflowY': 'auto'},
-                                  fixed_rows={'headers': True}),
+                                  style_as_list_view=True,
+                                  fixed_rows={'headers': True},
+                                  data=reports.to_dict('records'), 
+                                  ),
     
     
     subDist=geodata[(geodata["loc_type"]==rgeoSlider)]
@@ -509,11 +530,8 @@ def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict,
     reports[pname]=reports[pname].str.capitalize()
 
     figRegion=px.bar(reports, x=pname, y=title, labels= {variab:labl})# ,color='basic_info_division')
-    figRegion.update_layout(autosize=True, height=600, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
+    figRegion.update_layout(autosize=True, height=300, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
     
-
-
-
     return vDistrict, vUpa, Rfig, figRep, figSignal, figgSick, figgDead, casetable, figRegion #figgR, 
 
 

@@ -334,8 +334,12 @@ layout =  html.Div([
                                 dbc.Card(dbc.Col([dcc.Graph(id='DRindicators'),
                                                   dcc.Graph(id='DRRepG1')])
                                          )],
-                                label='Reports per Geolocation')
-                            ])
+                                label='Reports per Geolocation'),
+                            dbc.Tab([
+                                dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
+                                          )],
+                                label='Monthly Comparison')
+                            ])                            
                         ])
                     ], width=8)
             ])
@@ -356,6 +360,7 @@ layout =  html.Div([
     Output ('Zoonotic', 'figure'),
     Output ('DRRepG1', 'figure'),
     Output ('DRindicators', 'figure'),
+    Output ('figMonthly', 'figure'),
 #    Output ('geoSlider', 'children'),
 
 #    Input ('test', 'value'),
@@ -388,6 +393,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     sub1a_bahis_sourcedata=date_subset(tmps, tmpe)
     sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
 
+    monthlydatabasis=disease_subset(diseaselist, bahis_sdtmp)
 
     ddDislist=None
     ddUpalist=None
@@ -419,14 +425,17 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
                 sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
                 sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
                 subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Division))] 
+                monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_division']==cU2Division]
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==cU2District]
             sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_district']==cU2District]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2District))] 
+            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_district']==cU2District]
     else:
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
         sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
         subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Upazila))] 
+        monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_upazila']==cU2Upazila]
     #### change 1 and 2 with bad database check plot map and change value reference
     
     if geoSlider== 1:
@@ -682,7 +691,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
     figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0}) 
     
-### tab3    
+### tab3 geolocation
     #subDist=bahis_geodata[(bahis_geodata["loc_type"]==geoSlider)]
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
     reports['cases']=reports[title]
@@ -699,8 +708,20 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     
     Rfindic=fIndicator(sub_bahis_sourcedata)
     
+### tab 4 monthly currently not geo resolved and disease, because of bahis_sdtmp, either ata is time restricted or
 
-    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic  
+    monthly=monthlydatabasis['patient_info_sick_number'].groupby(monthlydatabasis['basic_info_date'].dt.to_period('M')).sum().astype(int)
+    monthly=monthly.reset_index()
+    monthly=monthly.rename(columns={'basic_info_date':'date'})
+    monthly['date']=monthly['date'].astype(str)
+    monthly['date'] = pd.to_datetime(monthly['date'])
+    monthlydata={'sick':monthly['patient_info_sick_number'],
+               'date':monthly['date']}
+    monthlydata=pd.DataFrame(monthlydata)
+
+    figMonthly= px.bar(monthlydata, x=pd.DatetimeIndex(monthlydata['date']).month, y=monthlydata['sick'], color=pd.DatetimeIndex(monthlydata['date']).year.astype(str), barmode ='group')
+
+    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly
 
 
 

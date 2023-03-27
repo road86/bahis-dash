@@ -19,7 +19,8 @@ from plotly.subplots import make_subplots
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) #, path='/') for entry point probably
+#dash.register_page(__name__) #, path='/') for entry point probably
+
 lpath='C:/Users/yoshka/Documents/GitHub/bahis-dash/'
 npath=''
 sourcepath = lpath+'exported_data/'

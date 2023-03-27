@@ -26,7 +26,7 @@ from plotly.subplots import make_subplots
 pd.options.mode.chained_assignment = None
 
 
-dash.register_page(__name__)
+#dash.register_page(__name__)
 
 # ##these for other solution
 # dash.register_page(

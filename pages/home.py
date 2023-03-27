@@ -17,18 +17,18 @@ layout = dbc.Container([
     dbc.Row([
         html.Center(html.H1("Home: This landing page")),
     ]),
-    dbc.Row([
-        html.Center(html.H1("Alerts: Reporting status")),
-    ]),
+    # dbc.Row([
+    #     html.Center(html.H1("Alerts: Reporting status")),
+    # ]),
     dbc.Row([
         html.Center(html.H1("Dls: Overview page ")),
     ]),
-    dbc.Row([
-        html.Center(html.H1("Dlsquick: Test environment with only essential values")),
-    ]),
-    dbc.Row([
-        html.Center(html.H1("Reporting: Another reporting view")),
-    ]),
+    # dbc.Row([
+    #     html.Center(html.H1("Dlsquick: Test environment with only essential values")),
+    # ]),
+    # dbc.Row([
+    #     html.Center(html.H1("Reporting: Another reporting view")),
+    # ]),
     dbc.Row([
         html.Center(html.H1("Templates: Figures for reports")),
     ]),
