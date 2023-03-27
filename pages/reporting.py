@@ -32,7 +32,7 @@ from plotly.subplots import make_subplots
 # See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) #, path='/')
+#dash.register_page(__name__) #, path='/')
 
 sourcepath = 'exported_data/'
 geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project

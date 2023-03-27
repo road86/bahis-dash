@@ -21,7 +21,7 @@ import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
 from dash.dependencies import Input, Output
 import json  
-from datetime import date
+from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
 #from shapely.geometry import shape, Point
@@ -71,7 +71,7 @@ bahis_dgdata= fetchdisgroupdata()
 
 def fetchgeodata():  
     geodata = pd.read_csv(geofilename)
-    geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)
+    geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)  #drop mouzas and unions
     return geodata
 bahis_geodata= fetchgeodata()
 
@@ -175,6 +175,55 @@ ddDList= fetchdiseaselist()
 ddDList.insert(0, 'All Diseases')
 
 
+def natNo(sub_bahis_sourcedata):
+    mask=(sub_bahis_sourcedata['basic_info_date']>= datetime.now()-timedelta(days=7)) & (sub_bahis_sourcedata['basic_info_date'] <= datetime.now())
+    ################print(mask.value_counts(True])
+    tmp_sub_data=sub_bahis_sourcedata['basic_info_date'].loc[mask]
+    diff=tmp_sub_data.shape[0]
+    
+    tmp_sub_data=sub_bahis_sourcedata['patient_info_sick_number'].loc[mask]
+    diffsick=int(tmp_sub_data.sum().item())
+    
+    tmp_sub_data=sub_bahis_sourcedata['patient_info_dead_number'].loc[mask]
+    diffdead=int(tmp_sub_data.sum().item())
+    return([diff, diffsick, diffdead])
+
+def fIndicator(sub_bahis_sourcedata):
+    
+    [diff, diffsick, diffdead]=natNo(sub_bahis_sourcedata)
+ 
+    RfigIndic = go.Figure()
+    
+    RfigIndic.add_trace(go.Indicator(
+        mode = "number+delta",
+        title = 'Total Reports',
+        value = sub_bahis_sourcedata.shape[0], #f"{bahis_sourcedata.shape[0]:,}"),
+        delta = {'reference': sub_bahis_sourcedata.shape[0]-diff}, #'f"{diff:,}"},
+        domain = {'row': 0, 'column': 0}))
+    
+    RfigIndic.add_trace(go.Indicator(
+        mode = "number+delta",
+        title = 'Sick Animals',
+        value = sub_bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
+        delta= {'reference': sub_bahis_sourcedata['patient_info_sick_number'].sum()-diffsick}, #f"{diffsick:,}",
+        domain = {'row': 0, 'column': 1}))
+    
+    RfigIndic.add_trace(go.Indicator(
+        mode = "number+delta",
+        title = 'Dead Animals',
+        value = sub_bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
+        delta = {'reference': sub_bahis_sourcedata['patient_info_dead_number'].sum()-diffdead}, #f"{diffdead:,}",
+        domain = {'row': 0, 'column': 2},
+        ))
+    
+    RfigIndic.update_layout(height=235,
+        grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
+        #?template=template_from_url(theme),
+    
+        )
+    return RfigIndic
+
+
 def open_data(path):
     with open(path) as f:
         data = json.load(f)             
@@ -202,7 +251,7 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
 #    for i in range(tmp.shape[0]):
 #    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
     aaa=reports.combine_first(tmp)
-    aaa['upazilaname']=tmp['upazilaname']
+    aaa[pname]=tmp[pname]
     del tmp
     del reports
     # aaa=aaa.drop([pname+'_y'], axis=1)
@@ -280,7 +329,12 @@ layout =  html.Div([
                             dbc.Tab([
                                 dbc.Row(dcc.Graph(id='Livestock')),
                                 dbc.Row(dcc.Graph(id='Zoonotic'))],
-                                label='Diseases')                        
+                                label='Diseases'),
+                            dbc.Tab([
+                                dbc.Card(dbc.Col([dcc.Graph(id='DRindicators'),
+                                                  dcc.Graph(id='DRRepG1')])
+                                         )],
+                                label='Reports per Geolocation')
                             ])
                         ])
                     ], width=8)
@@ -300,6 +354,8 @@ layout =  html.Div([
     Output ('Dead', 'figure'),
     Output ('Livestock', 'figure'),
     Output ('Zoonotic', 'figure'),
+    Output ('DRRepG1', 'figure'),
+    Output ('DRindicators', 'figure'),
 #    Output ('geoSlider', 'children'),
 
 #    Input ('test', 'value'),
@@ -624,9 +680,27 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     for i, figure in enumerate(subpl):
         for trace in range(len(figure['data'])):
             figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgZoon.update_layout(height=180, margin={"r":0,"t":0,"l":0,"b":0}) 
+    figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0}) 
+    
+### tab3    
+    #subDist=bahis_geodata[(bahis_geodata["loc_type"]==geoSlider)]
+    reports = sub_bahis_sourcedata[title].value_counts().to_frame()
+    reports['cases']=reports[title]
+    reports[title] = reports.index
+    reports= reports.loc[reports[title] != 'nan']
+    
+    for i in range(reports.shape[0]):
+        reports[title].iloc[i] = subDist.loc[subDist['value']==int(reports[title].iloc[i]),'name'].iloc[0]
+    reports=reports.sort_values(title)
+    reports[title]=reports[title].str.capitalize()
+    
+    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='basic_info_division')
+    Rfigg.update_layout(autosize=True, height=400, margin={"r":0,"t":0,"l":0,"b":0}) 
+    
+    Rfindic=fIndicator(sub_bahis_sourcedata)
+    
 
-    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon
+    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic  
 
 
 
