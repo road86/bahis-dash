@@ -195,7 +195,7 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
-    tmp[title]=-1
+    tmp[title]=-(reports[title].max())
     
     # works somewhat, but now preselection of district is also -1 set -1 only for selected ones.
     
@@ -217,8 +217,9 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pnumber, color=title,
                             featureidkey='properties.'+pnumber,
 #                            featureidkey="Cmap",
-                            color_continuous_scale="YlOrBr",
-                            range_color=(-1, reports[title].max()),
+                            color_continuous_scale="RdBu_r", #"YlOrBr",
+                            color_continuous_midpoint=0,
+                            range_color=(-reports[title].max(), reports[title].max()),
                             mapbox_style="carto-positron",
                             zoom=5.8, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
@@ -361,16 +362,17 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             else:
                 sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
                 sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]   
- ####!!!!               subDist=bahis_geodata.loc[bahis_geodata['parent']] # take all, where parent str[:2] is selection
+                subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Division))] 
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==cU2District]
             sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_district']==cU2District]
- ####!!!!           subDist=bahis_geodata.loc[bahis_geodata['parent']] # take all, where parent str[:4] is selection
+            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2District))] 
     else:
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
         sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
+        subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Upazila))] 
     #### change 1 and 2 with bad database check plot map and change value reference
-    print (geoSlider)
+    
     if geoSlider== 1:
         path=path1
         loc=1
