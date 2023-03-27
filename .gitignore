@@ -3,3 +3,4 @@ geodata
 logos
 .DS_Store
 plotlydash
+__pycache__
