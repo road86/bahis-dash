@@ -29,9 +29,9 @@ layout = dbc.Container([
     # dbc.Row([
     #     html.Center(html.H1("Reporting: Another reporting view")),
     # ]),
-    dbc.Row([
-        html.Center(html.H1("Templates: Figures for reports")),
-    ]),
+    # dbc.Row([
+    #     html.Center(html.H1("Templates: Figures for reports")),
+    # ]),
     # dbc.Row([
     #     dbc.Nav([
     #         dbc.NavLink(
