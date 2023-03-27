@@ -10,6 +10,7 @@ pandas = "*"
 altair = "*"
 shapely = "*"
 dash = "*"
+dash-bootstrap-components = "*"
 
 [dev-packages]
 
