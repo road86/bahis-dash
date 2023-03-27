@@ -11,6 +11,7 @@ altair = "*"
 shapely = "*"
 dash = "*"
 dash-bootstrap-components = "*"
+dash-bootstrap-templates = "*"
 
 [dev-packages]
 
