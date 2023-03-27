@@ -80,4 +80,4 @@ app.validation_layout = html.Div([
 
 # Run the app on localhost:8050
 if __name__ == '__main__':
-    app.run_server(debug=True) #Make sure this is False for server deployment
+    app.run_server(host='0.0.0.0', debug=True) #Make sure this is False for server deployment
