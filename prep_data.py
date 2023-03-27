@@ -1,7 +1,6 @@
 import pandas as pd
 import datetime as dt
-import os
-import json
+import os, json, glob
 
 sourcepath = 'exported_data/'
 sourcefilename = os.path.join(sourcepath, 'newbahis_bahis_patient_registrydyncsv_live_table.csv')
@@ -9,18 +8,22 @@ bahis_sourcedata = pd.read_csv(sourcefilename, low_memory=False)
 
 firstprep=True
 
-if firstprep:
-    # oldsourcefilename =sourcepath + 'staticbahis_forms_data.csv'
-    oldsourcefilename =sourcepath + 'staticbahis_forms_data202212192159.csv'
+patient_reg_oldsourcefilename =sourcepath + 'formdata_Patients_Registry.csv'
+if os.path.exists(patient_reg_oldsourcefilename):
+    print('Patient registry broken down files are already available')
+    oldbahis_sourcedata = pd.read_csv(patient_reg_oldsourcefilename, low_memory=False)
+else:
+    print('Breaking down files from old bahis')
+    #take the file with forms data, no matter the date. The last one would be the newest one
+    fd_file = glob.glob(sourcepath + 'static_bahis_forms_data*.csv')[-1]
+    print(fd_file)
+    oldsourcefilename = fd_file
     oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
-    tmp=oldbahis_sourcedata['datajson'].apply(json.loads)
+    tmp = oldbahis_sourcedata[oldbahis_sourcedata['form_name'] == "Patients Registry"]['datajson'].apply(json.loads)
     oldbahis_sourcedata=pd.json_normalize(tmp)
     oldbahis_sourcedata=oldbahis_sourcedata[oldbahis_sourcedata['date'].notna()]
+    oldbahis_sourcedata.to_csv(patient_reg_oldsourcefilename)
     oldbahis_sourcedata.to_csv(sourcepath + 'tmp.csv')
-else:
-    oldsourcefilename =sourcepath + 'formdata_Patients_Registry.csv'
-    oldbahis_sourcedata = pd.read_csv(oldsourcefilename, low_memory=False)
-###
 
 
 

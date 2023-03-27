@@ -9,9 +9,22 @@ import pandas as pd
 import json
 from shapely.geometry import shape, Point
 
-sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
-geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
-path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+#debug
+# sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/newbahis_geo_cluster.csv'
+# path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+# upadata = "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson"
+# path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" 
+# distdata = "c:/users/yoshka/documents/github/bahis-dash/geodata/distdata.geojson"
+# path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" 
+# divdata = "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson"
+
+geofilename = 'exported_data/newbahis_geo_cluster.csv'   # the available geodata from the bahis project
+path3= "geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
+upadata = "geodata/upadata.geojson"
+path2= "geodata/geoBoundaries-BGD-ADM2_simplified.geojson" 
+distdata = "geodata/distdata.geojson"
+path1= "geodata/geoBoundaries-BGD-ADM1_simplified.geojson" 
+divdata = "geodata/divdata.geojson"
 
 geodata = pd.read_csv(geofilename)
 geodata = geodata.drop(geodata[(geodata['loc_type']==1) | (geodata['loc_type']==2) | (geodata['loc_type']==4) | (geodata['loc_type']==5)].index)
@@ -59,9 +72,8 @@ for i in range(len(manual)):
 
 
 
-json.dump(data, open("C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/upadata.geojson", 'w') , default=str)
+json.dump(data, open(upadata, 'w') , default=str)
 
-path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" 
 
 geodata = pd.read_csv(geofilename)
 geodata = geodata.drop(geodata[(geodata['loc_type']==1) | (geodata['loc_type']==3) | (geodata['loc_type']==4) | (geodata['loc_type']==5)].index)
@@ -79,11 +91,9 @@ for i in range(len(geodata)):
             feature['properties']['districtnumber']=geodata['value'].iloc[i]
             feature['properties']['ccheck_distname']=geodata['name'].iloc[i]
             
+json.dump(data, open(distdata, 'w') , default=str)
 
-json.dump(data, open("C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/distdata.geojson", 'w') , default=str)
 
-
-path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" 
 
 geodata = pd.read_csv(geofilename)
 geodata = geodata.drop(geodata[(geodata['loc_type']==2) | (geodata['loc_type']==3) | (geodata['loc_type']==4) | (geodata['loc_type']==5)].index)
@@ -101,8 +111,7 @@ for i in range(len(geodata)):
             feature['properties']['divnumber']=geodata['value'].iloc[i]
             feature['properties']['ccheck_divname']=geodata['name'].iloc[i]
             
-
-json.dump(data, open("C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson", 'w') , default=str)
+json.dump(data, open(divdata, 'w') , default=str)
 
 
 # for items in data['features']:

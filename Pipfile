@@ -8,6 +8,7 @@ streamlit = "*"
 plotly = "*"
 pandas = "*"
 altair = "*"
+shapely = "*"
 
 [dev-packages]
 
