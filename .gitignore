@@ -4,3 +4,4 @@ logos
 .DS_Store
 plotlydash
 **/__pycache__/
+*.zip

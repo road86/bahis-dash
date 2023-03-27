@@ -5,9 +5,10 @@ Created on Tue Mar  7 13:51:59 2023
 @author: yoshka
 """
 
-# Import necessary libraries 
-import pandas as pd 
+# Import necessary libraries
+import pandas as pd
 from datetime import date, timedelta
+import glob
 
 #sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
 #path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/divdata.geojson" #8 Division
@@ -19,17 +20,17 @@ path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District
 path3= "geodata/upadata.geojson" #495 Upazila
 
-geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
+geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project
 dgfilename = sourcepath + 'Diseaselist.csv'   # disease grouping info
-sourcefilename =sourcepath + 'preped_data2.csv'   
+sourcefilename =sourcepath + 'preped_data2.csv'
 
-bahis_sdtmp = pd.read_csv(sourcefilename) 
+bahis_sdtmp = pd.read_csv(sourcefilename)
 bahis_sdtmp['basic_info_date'] = pd.to_datetime(bahis_sdtmp['basic_info_date'])
-    
+
 bahis_dgdata= pd.read_csv(dgfilename)
-bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]  
+bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]
 bahis_dgdata= bahis_dgdata[['name', 'Disease type']]
-bahis_dgdata= bahis_dgdata.dropna() 
+bahis_dgdata= bahis_dgdata.dropna()
 
 geodata = pd.read_csv(geofilename)
 bahis_geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)
@@ -105,8 +106,8 @@ result=result.sort_index()
 
  # df.loc[-1] = [2, 3, 4]  # adding a row
  # df.index = df.index + 1  # shifting index
- # df = df.sort_index() 
- 
+ # df = df.sort_index()
+
 for i in range (1,8):
     tmpdiv=weekdata[weekdata['basic_info_date']==pd.to_datetime(today-pd.Timedelta(i-1,unit='D'))]['basic_info_division'].value_counts().to_frame()
     tmpdiv.index=tmpdiv.index.astype(int)
@@ -138,7 +139,7 @@ for i in range (1,8):
     result['sd'+str(i)]=result['sd'+str(i)].fillna(result['sd'+str(i)+'_y'])
     result=result.drop(columns={'sd'+str(i)+'_x', 'sd'+str(i)+'_y'})
     result['sd'+str(i)][1]=tmpdiv['sd'+str(i)].sum()
-    
+
     tmpdiv=weekdata[weekdata['basic_info_date']==pd.to_datetime(today-pd.Timedelta(i-1,unit='D'))]['patient_info_dead_number'].groupby(weekdata['basic_info_division']).sum().to_frame()
     tmpdiv.index=tmpdiv.index.astype(int)
     tmpdiv=tmpdiv.rename(columns={'patient_info_dead_number': 'dd'+str(i)})
@@ -186,7 +187,7 @@ for i in range (1,7):
     result['rw'+str(i)]=result['rw'+str(i)].fillna(result['rw'+str(i)+'_y'])
     result=result.drop(columns={'rw'+str(i)+'_x', 'rw'+str(i)+'_y'})
     result['rw'+str(i)][1]=tmpdiv['rw'+str(i)].sum()
-    
+
     tmpdiv=sixwdata[(sixwdata['basic_info_date']<=pd.to_datetime(today-pd.Timedelta(i-1,unit='W'))) & (sixwdata['basic_info_date']>pd.to_datetime(today-pd.Timedelta(i,unit='W')))]['patient_info_sick_number'].groupby(sixwdata['basic_info_division']).sum().to_frame()
     tmpdiv.index=tmpdiv.index.astype(int)
     tmpdiv=tmpdiv.rename(columns={'patient_info_sick_number': 'sw'+str(i)})
@@ -201,7 +202,7 @@ for i in range (1,7):
     result['sw'+str(i)]=result['sw'+str(i)].fillna(result['sw'+str(i)+'_y'])
     result=result.drop(columns={'sw'+str(i)+'_x', 'sw'+str(i)+'_y'})
     result['sw'+str(i)][1]=tmpdiv['sw'+str(i)].sum()
-    
+
     tmpdiv=sixwdata[(sixwdata['basic_info_date']<=pd.to_datetime(today-pd.Timedelta(i-1,unit='W'))) & (sixwdata['basic_info_date']>pd.to_datetime(today-pd.Timedelta(i,unit='W')))]['patient_info_dead_number'].groupby(sixwdata['basic_info_division']).sum().to_frame()
     tmpdiv.index=tmpdiv.index.astype(int)
     tmpdiv=tmpdiv.rename(columns={'patient_info_dead_number': 'dw'+str(i)})
@@ -216,16 +217,6 @@ for i in range (1,7):
     result['dw'+str(i)]=result['dw'+str(i)].fillna(result['dw'+str(i)+'_y'])
     result=result.drop(columns={'dw'+str(i)+'_x', 'dw'+str(i)+'_y'})
     result['dw'+str(i)][1]=tmpdiv['dw'+str(i)].sum()
-    
+
 result.index.names=['geonumber']
 result.to_csv(sourcepath + 'preped_quickdata.csv')
-
-
-
-
-
-
-
-
-
-
