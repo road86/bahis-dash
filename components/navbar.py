@@ -25,7 +25,7 @@ def Navbar():
                 dbc.Row(
                     [
                         dbc.Col(html.Img(src=img_logo, height='30px')),
-                        dbc.Col(dbc.NavbarBrand('BAHIS Dashboard', className='ml-2')),
+                        dbc.Col(dbc.NavbarBrand('REBS Dashboard', className='ml-2')),
                         ],
                     align='center',
                     ),

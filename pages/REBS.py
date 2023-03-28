@@ -18,28 +18,39 @@ pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__) 
 
-sourcefilename='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/combo.csv'
+sourcefilename='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/combo_v2.csv'
 combo_data = pd.read_csv(sourcefilename)
 combo_data['date'] = pd.to_datetime(combo_data['date'])
+img_logo= 'assets/1129px-One-Health-Triad-en.png'  
 
-fig1=px.bar(combo_data, x='date', y='event', color='cases', color_continuous_scale='Brwnyl')
-fig2=px.bar(combo_data, x='date', y='LBMpos', color_discrete_sequence =['green'])
-fig3=px.bar(combo_data, x='date', y='signals', color_discrete_sequence =['pink'])
-fig4=px.bar(combo_data, x='date', y='INF_A')
 
-fig1.update_layout(height=150, margin=dict(t=0, b=0))
-fig2.update_layout(height=150, margin=dict(t=0, b=0))
-fig3.update_layout(height=150, margin=dict(t=0, b=0))
-fig4.update_layout(height=150, margin=dict(t=0, b=0))
+fig1=px.bar(combo_data, x='date', y='cases.y', color_discrete_sequence=['deepskyblue'] , labels={'cases.y':'Number of Reports'}) #color='cases.y', color_continuous_scale='Brwnyl'
+fig2=px.bar(combo_data, x='date', y='H5pos', color_discrete_sequence =['darkseagreen'], labels={'H5pos':'Proportion Positive'})
+fig3=px.bar(combo_data, x='date', y='signals', color_discrete_sequence =['plum'], labels={'signals':'Number of Reports'})
+fig4=px.bar(combo_data, x='date', y='INF_A', color_discrete_sequence =['mediumorchid'], labels={'INF_A':'Number of Cases', 'date':'Date'})
+
+fig1.update_layout(height=170, margin=dict(t=30, b=10), title='Avian Disease Reports', xaxis={'visible':False,'showticklabels': True}, title_font_size=15, title_font_family='Arial Black')
+fig1.add_vline(x = '2023-01-01', line_dash="dot", line_width=1)
+fig2.update_layout(height=170, margin=dict(t=50, b=10), title='Live Bird Market Samples', xaxis={'visible':False}, title_font_size=15, title_font_family='Arial Black')
+fig2.add_vline(x = '2023-01-01', line_dash="dot", line_width=1)
+fig3.update_layout(height=170, margin=dict(t=50, b=10), title='Verified SARI Reports (simulated data)', xaxis={'visible':False}, title_font_size=15, title_font_family='Arial Black')
+fig3.add_vline(x = '2023-01-01', line_dash="dot", line_width=1)
+fig4.update_layout(height=170, margin=dict(t=50, b=10), title='Confirmend Influenza A', title_font_size=15, title_font_family='Arial Black')
+fig4.add_vline(x = '2023-01-01', line_dash="dot", line_width=1)
 
 
 layout =  html.Div([
-            dbc.Col([
-                html.Div(dcc.Graph(figure=fig1)),
-                html.Div(dcc.Graph(figure=fig2)),
-                html.Div(dcc.Graph(figure=fig3)),
-                html.Div(dcc.Graph(figure=fig4))
+            dbc.Row([
+                dbc.Col([
+                    html.Div(dcc.Graph(figure=fig1)),
+                    html.Div(dcc.Graph(figure=fig2)),
+                    html.Div(dcc.Graph(figure=fig3)),
+                    html.Div(dcc.Graph(figure=fig4))
+                        ], width=6),
+                dbc.Col([
+                    html.Img(src=img_logo, height='680px')
                     ], width=4)
+                ])
             ])
 
 # # Import necessary libraries
