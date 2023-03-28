@@ -5,7 +5,7 @@ Created on Tue Mar 14 18:07:34 2023
 @author: yoshka
 """
 
-
+# second option
 # Import necessary libraries
 import dash
 from dash import dcc, html
@@ -39,313 +39,26 @@ layout =  html.Div([
                 html.Div(dcc.Graph(figure=fig2)),
                 html.Div(dcc.Graph(figure=fig3)),
                 html.Div(dcc.Graph(figure=fig4))
-                   ], width=4)
+                    ], width=4)
             ])
 
-
-#     @callback(
-#         Output ('rDistrict', 'options'),
-#         Output ('rUpazila', 'options'),
-
-#         Output ('rMap', 'figure'),
-#         Output ('figRep', 'figure'),
-#         Output ('figSignal', 'figure'),
-
-#         Output ('rSick', 'figure'),
-#         Output ('rDead', 'figure'),
-#         Output ('casetable', 'children'),
-#         Output ('rRegion', 'figure'),
-#     #    Output ('tabs', 'children'),
-
-#         Input ('rgeoSlider', 'value'),
-#         Input ('rMap', 'clickData'),
-#     #    Input ('rReports', 'clickData'),
-#         Input ('rSick', 'clickData'),
-#         Input ('rDead', 'clickData'),
-
-#         Input ('rDivision', 'value'),
-#         Input ('rDistrict', 'value'),
-#         Input ("rUpazila",'value'),
-#         Input ("rdaterange",'start_date'),
-#         Input ("rdaterange",'end_date'),
-#         Input ("rDiseaselist",'value'),
-#     #    [Input ('tabs', 'active_tab')]
-#     )
-#     def update_whatever(rgeoSlider, geoTile, clkSick, clkDead, rDivision, rDistrict, rUpazila, start_date, end_date, diseaselist):#, tabs):       #clkRep,
-#         date_sub, data_resp=date_subset(start_date, end_date, start_dater, end_dater)
-#         sub_data=disease_subset(diseaselist, date_sub)
-
-#         # tmp1as= pd.to_datetime(start_date)-relativedelta(years=1)
-#         # tmp1ae= pd.to_datetime(start_date)-relativedelta(days=1)
-#         # sub1a_data=date_subset(tmp1as, tmp1ae)
-#         # sub1a_data=disease_subset(diseaselist, sub1a_data)
-
-#         # tmp2as= pd.to_datetime(start_date)-relativedelta(years=2)
-#         # tmp2ae= pd.to_datetime(start_date)-relativedelta(years=1)-relativedelta(days=1)
-#         # sub2a_data=date_subset(tmp2as, tmp2ae)
-#         # sub2a_data=disease_subset(diseaselist, sub2a_data)
+# # Import necessary libraries
+# import dash
+# from dash import dcc, html, callback, dash_table #, ctx #Dash, #dash_table, dbc
+# import plotly.express as px
+# import plotly.graph_objects as go
+# import dash_bootstrap_components as dbc #dbc deprecationwarning
+# import pandas as pd
+# from dash.dependencies import Input, Output
+# import json, os, glob
+# import datetime
+# # from datetime import date
+# # from dateutil.relativedelta import relativedelta
 
 
-#         ddDislist=None
-#         ddUpalist=None
+# pd.options.mode.chained_assignment = None
 
-
-#         if rDivision is None:
-#             vDistrict="",
-#             vUpa="",
-#         else:
-#             ddDislist=fetchDistrictlist(rDivision)
-#             vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
-#             if rDistrict is None:
-#                 vUpa="",
-#                 #raise PreventUpdate
-#             else:
-#                 ddUpalist=fetchUpazilalist(rDistrict)
-#                 vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in ddUpalist]
-#         if not rUpazila:
-#             if not rDistrict:
-#                 if not rDivision:
-#                     sub_data=sub_data
-#                     #sub1a_data=sub1a_data
-#                 else:
-#                     sub_data= sub_data.loc[sub_data['division']==rDivision] #DivNo]
-#                     #sub1a_data= sub1a_data.loc[sub1a_data['division']==rDivision] #DivNo]
-#             else:
-#                 sub_data= sub_data.loc[sub_data['district']==rDistrict]
-#                 #sub1a_data= sub1a_data.loc[sub1a_data['district']==rDistrict]
-#         else:
-#             sub_data= sub_data.loc[sub_data['upazila']==rUpazila]
-#             #sub1a_data= sub1a_data.loc[sub_data['upazila']==rUpazila]
-#         #### change 1 and 2 with bad database check plot map and change value reference
-#         if rgeoSlider== 1:
-#             path=path1
-#             loc=1
-#             title='division'
-#             pnumber='divnumber'
-#             pname='divisionname'
-#             splace=' Division'
-#             variab='division'
-#             labl='Incidences per division'
-#     #        incsub_data = pd.to_numeric(sub_data['division']).dropna().astype(int)
-#             incsub_data = sub_data
-#         if rgeoSlider== 2:
-#             path=path2
-#             loc=2
-#             title='district'
-#             pnumber='districtnumber'
-#             pname='districtname'
-#             splace=' District'
-#             variab='district'
-#             labl='Incidences per district'
-#     #        incsub_data = pd.to_numeric(sub_data['district']).dropna().astype(int)
-#             incsub_data = sub_data
-
-#         if rgeoSlider== 3:
-#             path=path3
-#             loc=3
-#             title='upazila'
-#             pnumber='upazilanumber'
-#             pname='upazilaname'
-#             splace=' Upazila'
-#             variab='upazila'
-#             labl='Incidences per upazila'
-#     #        incsub_data = pd.to_numeric(sub_data['upazila']).dropna().astype(int)
-#             incsub_data = sub_data
-
-#     #     if tabs == "tabDC":
-#     # #        return tabDC_content
-#     #         print('19')
-
-#     #     elif tabs == "tabRegion":
-#     # #        return tabRegion_content
-#     #         print('20')
-
-#     #     elif tabs == "tabRep":
-#     # #        return tabRep_content
-#     #         print('20')
-#     #   return html.P("This shouldn't ever be displayed...")
-
-#         Rfig = plot_map(path, loc, incsub_data, title, pnumber, pname, splace, variab, labl)
-
-#     ###tab1
-
-#         reps = data_resp.groupby([data_resp['date'].dt.to_period('W-SAT')])[['Reported', 'Verified', 'Signal', 'LabSent', 'LabResult'] ].sum()     # in two steps
-#         reps['year']=reps.index.start_time.year
-#         tmprep= reps.loc[reps['year']==max(reps['year'])]
-
-#         color=['red', 'blue', 'orange', 'green', 'black', 'brown']
-#         figRep=px.bar(tmprep, x=tmprep.index.week, y='Reported')
-#         i=0
-#         for year in reps['year'].unique():
-#             if year != max(reps['year']):
-#                 tmprep = reps.loc[reps['year']==year]
-#                 Reportss= px.line(tmprep, x=tmprep.index.week, y='Reported') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})
-#                 Reportss['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'  # make color
-#                 Reportss['data'][0]['line']['width']=1
-#                 figRep = go.Figure(data=figRep.data + Reportss.data)
-#                 i=i+1
-#         figRep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-
-
-
-
-
-
-#         tmp=data_resp[pd.DatetimeIndex(data_resp['date']).year==2023]
-#         repss=tmp.groupby([tmp['date'].dt.to_period('W-SAT')])[['Reported']].sum()
-#         #color=['red', 'blue', 'orange', 'green', 'black', 'brown']
-#         figSignal=px.bar(repss, x=repss.index.week, y='Reported')
-#     #    figSig=px.bar(tmprep, x=tmprep.index.week, y='Reported')
-#         i=0
-#         for sig in tmp['Signal'].unique():
-#             repss[sig]=tmp[tmp['Signal']==sig].groupby([tmp['date'].dt.to_period('W-SAT')])[['Reported']].sum()
-#             repss=repss.fillna(0)
-#             RepSig= px.line(repss, x=repss.index.week, y=sig) #, labels={'date':'Date', 'cases':'No. of Sick Animals'})
-#             RepSig['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'  # make color
-#             RepSig['data'][0]['line']['width']=1
-#             figSignal = go.Figure(data=figSignal.data + RepSig.data)
-#             i=i+1
-#         figSignal.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-
-#     ###tab2
-
-#     #    tmp = sub_data.groupby([(pd.DatetimeIndex(sub_data['date']).year), (pd.DatetimeIndex(sub_data['date']).month)])[['cases', 'deaths']].sum()
-#     #    dynrep = sub_data.groupby([(pd.DatetimeIndex(sub_data['date']).year), (sub_data['date'].dt.to_period('W-SAT'))])[['cases', 'deaths']].sum() #creates overlap in weeks between years
-#     #    dynrep = sub_data.groupby([(sub_data['date'].dt.to_period('W-SAT')), (pd.DatetimeIndex(sub_data['date']).year)])[['cases', 'deaths'] ].sum() #same
-#     #    dynrep = sub_data.groupby([(sub_data['date'].dt.to_period('W-SAT')), ((sub_data['date'].dt.to_period('W-SAT')).index.start_time.year)])[['cases', 'deaths'] ].sum()     # in two steps
-#         dynrep = sub_data.groupby([sub_data['date'].dt.to_period('W-SAT')])[['cases', 'deaths'] ].sum()     # in two steps
-#         dynrep['year']=dynrep.index.start_time.year
-#         tmpp= dynrep.loc[dynrep['year']==max(dynrep['year'])]
-
-#         color=['red', 'blue', 'orange', 'green']
-#         figgSick=px.bar(tmpp, x=tmpp.index.week, y='cases')
-#         figgDead=px.bar(tmpp, x=tmpp.index.week, y='deaths')
-#         i=0
-#         #potentially make a specific dataframe for the plot instead
-#         for year in dynrep['year'].unique():  # withing the month plot each year
-#             if year != max(dynrep['year']):
-#                 tmpp = dynrep.loc[dynrep['year']==year]
-#                 figgSickk = px.line(tmpp, x=tmpp.index.week, y='cases') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})
-#                 figgSickk['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'  # make color
-#                 figgSickk['data'][0]['line']['width']=1
-#                 figgSick = go.Figure(data=figgSick.data + figgSickk.data) #
-
-#                 figgDeadd = px.line(tmpp, x=tmpp.index.week, y='deaths') #, labels={'date':'Date', 'cases':'No. of Sick Animals'})
-#                 figgDeadd['data'][0]['line']['color']=color[i] #'rgb(204, 0, 0)'
-#                 figgDeadd['data'][0]['line']['width']=1
-#                 figgDead = go.Figure(data=figgDead.data + figgDeadd.data)
-
-#                 i=i+1
-
-#         figgSick.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})
-#         figgDead.update_layout(height=300, margin={"r":0,"t":0,"l":0,"b":0})
-
-
-#     #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-
-#         subDist=geodata[(geodata["loc_type"]==rgeoSlider)]
-#         tmp=sub_data[pd.DatetimeIndex(sub_data['date']).year==2023]
-#         total=tmp.groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
-
-#         reports=pd.DataFrame({title.capitalize():[]})
-#         for i in range(len(total)):
-#             reports[i+1]=''
-#             reports['total']=''
-
-
-#         #summary weeks
-#         # if len(total)>2:
-#         #     for i in range(len(total)):
-#         #       reports[str('1-'+str(len(total)-1))]=''
-#         #       reports[str(len(total))]=''
-
-#         # if len(total)==2:
-#         #     reports['1']=''
-#         #     reports['2']=''
-
-#         # if len(total)==1:
-#         #     reports['1']=''
-
-#         for upano in tmp[title].unique():
-#             reports.at[upano,title.capitalize()]=str(subDist[subDist['value']==upano]['name'].reset_index(drop=True)[0]).title()
-#     #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-#             tmpp=tmp[tmp[title]==upano].groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
-#             for entry in range(len(tmpp)):
-#     #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-#                     reports.loc[upano][tmpp.index[entry].end_time.date().isocalendar()[1]]=tmpp[entry]
-
-
-#         reports['total']= reports.iloc[:,1:len(total)+1].sum(axis=1)
-#         reports[len(total)-1]=reports.iloc[:, 1:len(total)-2].sum(axis=1)
-#         reports.drop(reports.iloc[:, 1:len(total)-1], inplace=True, axis=1)
-#         reports=reports.rename(columns={len(total)-1:'week 1-'+ str(len(total)-1), len(total):'week ' + str(len(total))})
-#         reports=reports.fillna(0)
-#         # last=tmp['date'].dt.to_period('W-SAT')
-#         # lastwk=last.iloc[-1]
-#         # total=tmp.groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
-#         # total.reset_index
-
-#         # tmp[tmp['upazila']==upano].groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
-
-#         # reps= tmp.groupby([tmp['upazila']]).agg([tmp['date'].dt.to_period('W-SAT')])
-#         # reps = tmp.groupby([tmp['date'].dt.to_period('W-SAT')])[['cases'] ].sum()
-#         # records = tmp.groupby([tmp['date'].dt.to_period('W-SAT')])[['cases'] ].sum()
-#         # records = data_resp.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
-
-#         #    casetable= dash_table.DataTable(resp_rep_data.to_dict('records'),
-#         casetable= dash_table.DataTable(
-#                                     columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
-#                                     style_header={
-#                                             'overflow': 'hidden',
-#                                             'maxWidth': 0,
-#                                             'fontWeight': 'bold',
-#                                             },
-#                                     style_cell={'textAlign': 'left'},
-#                                     export_format='csv',
-#                                     style_table={'height': '300px', 'overflowY': 'auto'},
-#                                     style_as_list_view=True,
-#                                     fixed_rows={'headers': True},
-#                                     data=reports.to_dict('records'),
-#                                     ),
-
-
-#         subDist=geodata[(geodata["loc_type"]==rgeoSlider)]
-#     #    reports = sub_data[title].value_counts().to_frame()
-#     #    reports = sub_data.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
-#         reports = sub_data.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
-#         reports= reports.rename(columns={'cases' : title}, index={title: 'Index'})
-#         reports[pnumber] = reports.index
-#         reports[pname] = reports.index
-#         reports= reports.loc[reports[pname] != 'nan']
-
-#         data = open_data(path)
-#         for i in data['features']:
-#             i['id']= i['properties']['shapeName'].replace(" Division","")
-#         for i in range(reports.shape[0]):
-#             reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
-#         reports=reports.sort_values(pname)
-#         reports[pname]=reports[pname].str.capitalize()
-
-#         figRegion=px.bar(reports, x=pname, y=title, labels= {variab:labl})# ,color='basic_info_division')
-#         figRegion.update_layout(autosize=True, height=300, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-
-#         return vDistrict, vUpa, Rfig, figRep, figSignal, figgSick, figgDead, casetable, figRegion #figgR,
-# else:
-#     print('No files for respiratory dashboard')
-
-
-
-
-
-
-
-
-
-
-
-
-
-############## 1st run
+# dash.register_page(__name__) #, path='/') for entry point probably
 
 # #debug
 # #sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data'
