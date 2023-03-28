@@ -434,7 +434,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     else:
         sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
         sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
-        subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Upazila))]
+        subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(cU2Upazila))]
         monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_upazila']==cU2Upazila]
     #### change 1 and 2 with bad database check plot map and change value reference
 
@@ -700,6 +700,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
 
     for i in range(reports.shape[0]):
         reports[title].iloc[i] = subDist.loc[subDist['value']==int(reports[title].iloc[i]),'name'].iloc[0]
+
     reports=reports.sort_values(title)
     reports[title]=reports[title].str.capitalize()
 
