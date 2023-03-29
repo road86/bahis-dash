@@ -16,7 +16,7 @@ import pandas as pd
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) 
+#dash.register_page(__name__) 
 
 sourcefilename='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/combo_v2.csv'
 combo_data = pd.read_csv(sourcefilename)
