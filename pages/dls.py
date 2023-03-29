@@ -24,57 +24,66 @@ import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
-#from shapely.geometry import shape, Point
+import numpy as np
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__) #, path='/') for entry point probably
+dash.register_page(__name__)    #register page to main dash app
 
-#debug
-#sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
+#sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'    #for local debugging purposes
 sourcepath = 'exported_data/'
-geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project
-dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info
-sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')
+geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project (Masterdata)
+dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info (Masterdata)
+sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')    # main data resource of prepared data from old and new bahis
 #path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District
-# path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
-# path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
-#path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
 path3= "geodata/upadata.geojson" #495 Upazila
-# path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
-
-# only one path is necessary, remove rest potentially
-
-### consider time mask at a later stage, currently only upa selection is focus
-
-bahis_sdtmp = pd.read_csv(sourcefilename)
-bahis_sdtmp['basic_info_date'] = pd.to_datetime(bahis_sdtmp['basic_info_date'])
-
-# def fetchsourcedata():  # count reports / delete variable sdtmp
-#     bahis_sd=[]
-#     bahis_sdtmp = pd.read_csv(sourcefilename)
-#     bahis_sd = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
-# #    del bahis_sdtmp
-#     return bahis_sd
-# bahis_sourcedata= fetchsourcedata() # later numbers are accumulated for number of reports, maybe accumulate here already.
 
 
-def fetchdisgroupdata():
+def fetchsourcedata(): #fetch and prepare source data
+    bahis_data = pd.read_csv(sourcefilename)
+    bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
+    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
+#    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
+    del bahis_data['Unnamed: 0']
+    bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
+                                        'basic_info_division':'division', 
+                                        'basic_info_district':'district', 
+                                        'basic_info_upazila':'upazila',
+                                        'patient_info_species':'species_no',
+                                        'diagnosis_treatment_tentative_diagnosis':'tentative_diagnosis',
+                                        'patient_info_sick_number':'sick',
+                                        'patient_info_dead_number':'dead',
+                                        })
+    #assuming non negative values from division, district, upazila, speciesno, sick and dead
+    bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
+    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+#    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
+    bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
+    return bahis_data
+bahis_data=fetchsourcedata() 
+
+def fetchdisgroupdata(): #fetch and prepare disease groups
     bahis_dgdata= pd.read_csv(dgfilename)
-    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]
-    bahis_dgdata= bahis_dgdata[['name', 'Disease type']]
+#    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
+    bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
     bahis_dgdata= bahis_dgdata.dropna()
+#    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
     return bahis_dgdata
 bahis_dgdata= fetchdisgroupdata()
 
-def fetchgeodata():
+def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
     geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)  #drop mouzas and unions
+    geodata=geodata.drop(['id', 'longitude', 'latitude', 'updated_at'], axis=1)
+    geodata['parent']=geodata[['parent']].astype(np.uint16)   # assuming no mouza and union is taken into 
+    geodata[['value']]=geodata[['value']].astype(np.uint32)   
+    geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
     return geodata
 bahis_geodata= fetchgeodata()
 
+# cache these values
 
 def fetchDivisionlist():   #### fetched names; make detour via numbers for all div, dis and upa,
     ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] #.str.capitalize()
@@ -113,14 +122,14 @@ def fetchUpazilalist(SelDis):
 #    return ddUpalist #tolist()
 
 
-start_date=min(bahis_sdtmp['basic_info_date']).date()
-end_date=max(bahis_sdtmp['basic_info_date']).date()
+start_date=min(bahis_data['date']).date()
+end_date=max(bahis_data['date']).date()
 #start_date=date(2021, 1, 1)
 
 def date_subset(sdate, edate):
     dates=[sdate, edate]
-    tmask= (bahis_sdtmp['basic_info_date']>= pd.to_datetime(dates[0])) & (bahis_sdtmp['basic_info_date'] <= pd.to_datetime(dates[1]))
-    return bahis_sdtmp.loc[tmask]
+    tmask= (bahis_data['date']>= pd.to_datetime(dates[0])) & (bahis_data['date'] <= pd.to_datetime(dates[1]))
+    return bahis_data.loc[tmask]
 
 def disease_subset(cDisease, sub_bahis_sourcedata):
     if 'All Diseases' in cDisease:
@@ -166,7 +175,7 @@ ddUpazila = html.Div(
 )
 
 def fetchdiseaselist():
-    dislis= bahis_sdtmp['top_diagnosis'].unique()
+    dislis= bahis_data['top_diagnosis'].unique()
     dislis= pd.DataFrame(dislis, columns=['Disease'])
 #    dislis.sort_values(by=['Disease'])
     ddDList= dislis['Disease'].sort_values()
@@ -176,15 +185,15 @@ ddDList.insert(0, 'All Diseases')
 
 
 def natNo(sub_bahis_sourcedata):
-    mask=(sub_bahis_sourcedata['basic_info_date']>= datetime.now()-timedelta(days=7)) & (sub_bahis_sourcedata['basic_info_date'] <= datetime.now())
+    mask=(sub_bahis_sourcedata['date']>= datetime.now()-timedelta(days=7)) & (sub_bahis_sourcedata['date'] <= datetime.now())
     ################print(mask.value_counts(True])
-    tmp_sub_data=sub_bahis_sourcedata['basic_info_date'].loc[mask]
+    tmp_sub_data=sub_bahis_sourcedata['date'].loc[mask]
     diff=tmp_sub_data.shape[0]
 
-    tmp_sub_data=sub_bahis_sourcedata['patient_info_sick_number'].loc[mask]
+    tmp_sub_data=sub_bahis_sourcedata['sick'].loc[mask]
     diffsick=int(tmp_sub_data.sum().item())
 
-    tmp_sub_data=sub_bahis_sourcedata['patient_info_dead_number'].loc[mask]
+    tmp_sub_data=sub_bahis_sourcedata['dead'].loc[mask]
     diffdead=int(tmp_sub_data.sum().item())
     return([diff, diffsick, diffdead])
 
@@ -204,15 +213,15 @@ def fIndicator(sub_bahis_sourcedata):
     RfigIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Sick Animals',
-        value = sub_bahis_sourcedata['patient_info_sick_number'].sum(), #f"{int(bahis_sourcedata['patient_info_sick_number'].sum()):,}",
-        delta= {'reference': sub_bahis_sourcedata['patient_info_sick_number'].sum()-diffsick}, #f"{diffsick:,}",
+        value = sub_bahis_sourcedata['sick'].sum(), #f"{int(bahis_sourcedata['sick'].sum()):,}",
+        delta= {'reference': sub_bahis_sourcedata['sick'].sum()-diffsick}, #f"{diffsick:,}",
         domain = {'row': 0, 'column': 1}))
 
     RfigIndic.add_trace(go.Indicator(
         mode = "number+delta",
         title = 'Dead Animals',
-        value = sub_bahis_sourcedata['patient_info_dead_number'].sum(), #f"{int(bahis_sourcedata['patient_info_dead_number'].sum()):,}",
-        delta = {'reference': sub_bahis_sourcedata['patient_info_dead_number'].sum()-diffdead}, #f"{diffdead:,}",
+        value = sub_bahis_sourcedata['dead'].sum(), #f"{int(bahis_sourcedata['dead'].sum()):,}",
+        delta = {'reference': sub_bahis_sourcedata['dead'].sum()-diffdead}, #f"{diffdead:,}",
         domain = {'row': 0, 'column': 2},
         ))
 
@@ -393,7 +402,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     sub1a_bahis_sourcedata=date_subset(tmps, tmpe)
     sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
 
-    monthlydatabasis=disease_subset(diseaselist, bahis_sdtmp)
+    monthlydatabasis=disease_subset(diseaselist, bahis_data)
 
     ddDislist=None
     ddUpalist=None
@@ -422,33 +431,33 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
                 sub1a_bahis_sourcedata=sub1a_bahis_sourcedata
                 subDist=bahis_geodata
             else:
-                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]
-                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_division']==cU2Division] #DivNo]
+                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==cU2Division] #DivNo]
+                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
                 subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Division))]
-                monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_division']==cU2Division]
+                monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==cU2Division]
         else:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_district']==cU2District]
-            sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_district']==cU2District]
+            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==cU2District]
+            sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['district']==cU2District]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2District))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_district']==cU2District]
+            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==cU2District]
     else:
-        sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
-        sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['basic_info_upazila']==cU2Upazila]
+        sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==cU2Upazila]
+        sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['upazila']==cU2Upazila]
         subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(cU2Upazila))]
-        monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['basic_info_upazila']==cU2Upazila]
+        monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['upazila']==cU2Upazila]
     #### change 1 and 2 with bad database check plot map and change value reference
 
     if geoSlider== 1:
         path=path1
         loc=1
-        title='basic_info_division'
+        title='division'
         pnumber='divnumber'
         pname='divisionname'
         splace=' Division'
         variab='division'
         labl='Incidences per division'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_division']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_division']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['division']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
         # if geoTile is not None:
         #     print(geoTile['points'][0]['location'])
         #     cU2Division=geoTile['points'][0]['location']
@@ -457,54 +466,54 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     if geoSlider== 2:
         path=path2
         loc=2
-        title='basic_info_district'
+        title='district'
         pnumber='districtnumber'
         pname='districtname'
         splace=' District'
         variab='district'
         labl='Incidences per district'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_district']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_district']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['district']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_data['district']).dropna().astype(int)
     if geoSlider== 3:
         path=path3
         loc=3
-        title='basic_info_upazila'
+        title='upazila'
         pnumber='upazilanumber'
         pname='upazilaname'
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['basic_info_upazila']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_sdtmp['basic_info_upazila']).dropna().astype(int)
+        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
+#        bahis_sourcedata = pd.to_numeric(bahis_data['upazila']).dropna().astype(int)
 
     Rfig = plot_map(path, loc, subDist, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
 
-    tmp=sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+    tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
     tmp=tmp.to_frame()
-    tmp['counts']=tmp['basic_info_date']
+    tmp['counts']=tmp['date']
 
-    tmp['basic_info_date']=pd.to_datetime(tmp.index)
-    tmp=tmp['counts'].groupby(tmp['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp['date']=pd.to_datetime(tmp.index)
+    tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.to_frame()
-    tmp['basic_info_date']=tmp.index
-    tmp['basic_info_date']=tmp['basic_info_date'].astype('datetime64[D]')
+    tmp['date']=tmp.index
+    tmp['date']=tmp['date'].astype('datetime64[D]')
 
-    tmp2=sub1a_bahis_sourcedata['basic_info_date'].dt.date.value_counts()
+    tmp2=sub1a_bahis_sourcedata['date'].dt.date.value_counts()
     tmp2=tmp2.to_frame()
-    tmp2['counts']=tmp2['basic_info_date']
+    tmp2['counts']=tmp2['date']
 
-    tmp2['basic_info_date']=pd.to_datetime(tmp2.index)
-    tmp2=tmp2['counts'].groupby(tmp2['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp2['date']=pd.to_datetime(tmp2.index)
+    tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp2=tmp2.to_frame()
-    tmp2['basic_info_date']=tmp2.index
-    tmp2['basic_info_date']=tmp2['basic_info_date'].astype('datetime64[D]')
-    tmp2['basic_info_date']=tmp2['basic_info_date']+pd.offsets.Day(365)
+    tmp2['date']=tmp2.index
+    tmp2['date']=tmp2['date'].astype('datetime64[D]')
+    tmp2['date']=tmp2['date']+pd.offsets.Day(365)
 
-    figgR= px.bar(tmp, x='basic_info_date', y='counts', labels={'basic_info_date':'Date', 'counts':'No. of Reports'})
-    #figgR= figgR.add_trace(px.bar(tmp2, x='basic_info_date', y='counts', labels={'basic_info_date':'Date', 'counts':'No. of Reports'}))
-    figgRR = px.line(tmp2, x='basic_info_date', y='counts')
+    figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
+    #figgR= figgR.add_trace(px.bar(tmp2, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}))
+    figgRR = px.line(tmp2, x='date', y='counts')
 
     figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
     figgRR['data'][0]['line']['width']=1
@@ -515,7 +524,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         y=max(tmp),
         #xref="x",
         #yref="y",
-        text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['basic_info_date'].dt.date.value_counts().sum())),
+        text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -536,18 +545,18 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         opacity=0.8
         )
 
-    tmp=sub_bahis_sourcedata['patient_info_sick_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp=sub_bahis_sourcedata['sick'].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'basic_info_date':'date'})
+    tmp=tmp.rename(columns={'date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgSick= px.bar(tmp, x='date', y='patient_info_sick_number', labels={'date':'Date', 'patient_info_sick_number':'No. of Sick Animals'})
+    figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
     figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figgSick.add_annotation(
         x=end_date,
         y=max(tmp),
         #xref="x",
         #yref="y",
-        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['patient_info_sick_number'].sum()))),
+        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))),
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -567,18 +576,18 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         bgcolor="#ff7f0e",
         opacity=0.8
         )
-    tmp=sub_bahis_sourcedata['patient_info_dead_number'].groupby(sub_bahis_sourcedata['basic_info_date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp=sub_bahis_sourcedata['dead'].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'basic_info_date':'date'})
+    tmp=tmp.rename(columns={'date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgDead= px.bar(tmp, x='date', y='patient_info_dead_number', labels={'date':'Date', 'patient_info_dead_number':'No. of Dead Animals'})
+    figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
     figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figgDead.add_annotation(
         x=end_date,
         y=max(tmp),
         #xref="x",
         #yref="y",
-        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['patient_info_dead_number'].sum()))),
+        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))),
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -704,19 +713,19 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     reports=reports.sort_values(title)
     reports[title]=reports[title].str.capitalize()
 
-    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='basic_info_division')
+    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='division')
     Rfigg.update_layout(autosize=True, height=400, margin={"r":0,"t":0,"l":0,"b":0})
 
     Rfindic=fIndicator(sub_bahis_sourcedata)
 
-### tab 4 monthly currently not geo resolved and disease, because of bahis_sdtmp, either ata is time restricted or
+### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
-    monthly=monthlydatabasis['patient_info_sick_number'].groupby(monthlydatabasis['basic_info_date'].dt.to_period('M')).sum().astype(int)
+    monthly=monthlydatabasis['sick'].groupby(monthlydatabasis['date'].dt.to_period('M')).sum().astype(int)
     monthly=monthly.reset_index()
-    monthly=monthly.rename(columns={'basic_info_date':'date'})
+    monthly=monthly.rename(columns={'date':'date'})
     monthly['date']=monthly['date'].astype(str)
     monthly['date'] = pd.to_datetime(monthly['date'])
-    monthlydata={'sick':monthly['patient_info_sick_number'],
+    monthlydata={'sick':monthly['sick'],
                'date':monthly['date']}
     monthlydata=pd.DataFrame(monthlydata)
 
