@@ -24,110 +24,104 @@ import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
-import numpy as np
+#import numpy as np was for dataload
 
 pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__)    #register page to main dash app
 
 #sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'    #for local debugging purposes
+#path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # reminder: found shapefiles from the data.humdata.org
 sourcepath = 'exported_data/'
 geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project (Masterdata)
 dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info (Masterdata)
 sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')    # main data resource of prepared data from old and new bahis
-#path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District
 path3= "geodata/upadata.geojson" #495 Upazila
 
+# def fetchsourcedata(): #fetch and prepare source data
+#     bahis_data = pd.read_csv(sourcefilename)
+#     bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
+#     bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
+# #    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
+#     del bahis_data['Unnamed: 0']
+#     bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
+#                                         'basic_info_division':'division', 
+#                                         'basic_info_district':'district', 
+#                                         'basic_info_upazila':'upazila',
+#                                         'patient_info_species':'species_no',
+#                                         'diagnosis_treatment_tentative_diagnosis':'tentative_diagnosis',
+#                                         'patient_info_sick_number':'sick',
+#                                         'patient_info_dead_number':'dead',
+#                                         })
+#     #assuming non negative values from division, district, upazila, speciesno, sick and dead
+#     bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
+#     bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+# #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
+#     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
+#     return bahis_data
+# bahis_data=fetchsourcedata() 
 
-def fetchsourcedata(): #fetch and prepare source data
-    bahis_data = pd.read_csv(sourcefilename)
-    bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
-#    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
-    del bahis_data['Unnamed: 0']
-    bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
-                                        'basic_info_division':'division', 
-                                        'basic_info_district':'district', 
-                                        'basic_info_upazila':'upazila',
-                                        'patient_info_species':'species_no',
-                                        'diagnosis_treatment_tentative_diagnosis':'tentative_diagnosis',
-                                        'patient_info_sick_number':'sick',
-                                        'patient_info_dead_number':'dead',
-                                        })
-    #assuming non negative values from division, district, upazila, speciesno, sick and dead
-    bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
-    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
-#    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
-    bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-    return bahis_data
-bahis_data=fetchsourcedata() 
+def sne_date(bahis_data):
+    start_date=min(bahis_data['date']).date()
+    end_date=max(bahis_data['date']).date()
+    dates=[start_date, end_date]
+    return dates
 
-def fetchdisgroupdata(): #fetch and prepare disease groups
-    bahis_dgdata= pd.read_csv(dgfilename)
-#    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
-    bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
-    bahis_dgdata= bahis_dgdata.dropna()
-#    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
-    return bahis_dgdata
-bahis_dgdata= fetchdisgroupdata()
+start_date=date(2019, 1, 1)
+end_date=date(2023,3,1)
+dates=[start_date, end_date]
 
-def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
-    geodata = pd.read_csv(geofilename)
-    geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)  #drop mouzas and unions
-    geodata=geodata.drop(['id', 'longitude', 'latitude', 'updated_at'], axis=1)
-    geodata['parent']=geodata[['parent']].astype(np.uint16)   # assuming no mouza and union is taken into 
-    geodata[['value']]=geodata[['value']].astype(np.uint32)   
-    geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
-    return geodata
-bahis_geodata= fetchgeodata()
+ddDList=[]
+Divlist=[]
+# def fetchdisgroupdata(): #fetch and prepare disease groups
+#     bahis_dgdata= pd.read_csv(dgfilename)
+# #    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
+#     bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
+#     bahis_dgdata= bahis_dgdata.dropna()
+# #    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
+#     return bahis_dgdata
+# bahis_dgdata= fetchdisgroupdata()
+
+# def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
+#     geodata = pd.read_csv(geofilename)
+#     geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)  #drop mouzas and unions
+#     geodata=geodata.drop(['id', 'longitude', 'latitude', 'updated_at'], axis=1)
+#     geodata['parent']=geodata[['parent']].astype(np.uint16)   # assuming no mouza and union is taken into 
+#     geodata[['value']]=geodata[['value']].astype(np.uint32)   
+#     geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
+#     return geodata
+# bahis_geodata= fetchgeodata()
 
 # cache these values
 
-def fetchDivisionlist():   #### fetched names; make detour via numbers for all div, dis and upa,
-    ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] #.str.capitalize()
-    ddDivlist['name']=ddDivlist['name'].str.capitalize()
-    ddDivlist=ddDivlist.rename(columns={'name':'Division'})
-    ddDivlist=ddDivlist.sort_values(by=['Division'])
-    diccc=ddDivlist.to_dict('records')
-    return diccc #.tolist()
-#    return ddDivlist #.tolist()
-ddDivlist=fetchDivisionlist()
-#diccc=ddDivlist.to_dict('records')
-
-def fetchDistrictlist(SelDiv):
-#    DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDiv) & (bahis_geodata['loc_type']==1),'value'].values[0]
-    DivNo=SelDiv
-#    ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo]['name'].str.capitalize()
-    ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo][['value','name']] #.str.capitalize()
-    ddDislist['name']=ddDislist['name'].str.capitalize()
-    ddDislist=ddDislist.rename(columns={'name':'District'})
-#    ddDislist.name='District'
-    ddDislist=ddDislist.sort_values(by=['District'])
-    diccc=ddDislist.to_dict('records')
-    return diccc #.tolist()
-#    return ddDislist #.tolist()
-
-def fetchUpazilalist(SelDis):
-#    DisNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDis) & (bahis_geodata['loc_type']==2),'value'].values[0]
-    DisNo=SelDis
-    ddUpalist=bahis_geodata[bahis_geodata['parent']==DisNo][['value','name']] #.str.capitalize()
-    ddUpalist['name']=ddUpalist['name'].str.capitalize()
-    ddUpalist=ddUpalist.rename(columns={'name':'Upazila'})
-#    ddUpalist.name='Upazila'
-    ddUpalist=ddUpalist.sort_values(by=['Upazila'])
-    diccc=ddUpalist.to_dict('records')
-    return diccc #tolist()
-#    return ddUpalist #tolist()
+def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, caching possible
+    Divlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] 
+    Divlist['name']=Divlist['name'].str.capitalize()
+    Divlist=Divlist.rename(columns={'name':'Division'})
+    Divlist=Divlist.sort_values(by=['Division'])
+    return Divlist.to_dict('records')
+#Divlist=fetchDivisionlist()
 
 
-start_date=min(bahis_data['date']).date()
-end_date=max(bahis_data['date']).date()
-#start_date=date(2021, 1, 1)
+def fetchDistrictlist(SelDiv, bahis_geodata): # district list is dependent on selected division
+    Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']] 
+    Dislist['name']=Dislist['name'].str.capitalize()
+    Dislist=Dislist.rename(columns={'name':'District'})
+    Dislist=Dislist.sort_values(by=['District'])
+    return Dislist.to_dict('records')
 
-def date_subset(sdate, edate):
-    dates=[sdate, edate]
+def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on selected district
+    Upalist=bahis_geodata[bahis_geodata['parent']==SelDis][['value','name']] #.str.capitalize()
+    Upalist['name']=Upalist['name'].str.capitalize()
+    Upalist=Upalist.rename(columns={'name':'Upazila'})
+    Upalist=Upalist.sort_values(by=['Upazila'])
+    return Upalist.to_dict('records')
+
+
+def date_subset(dates, bahis_data):
+    
     tmask= (bahis_data['date']>= pd.to_datetime(dates[0])) & (bahis_data['date'] <= pd.to_datetime(dates[1]))
     return bahis_data.loc[tmask]
 
@@ -142,9 +136,7 @@ ddDivision = html.Div(
     [
         dbc.Label("Select Division"),
         dcc.Dropdown(
-            options=[{'label': i['Division'], 'value': i['value']} for i in ddDivlist],
-            #options={'label':ddDivlist['Division'], 'value':ddDivlist['value']},
-            #value=ddDivlist['Division'],
+            options=[{'label': i['Division'], 'value': i['value']} for i in Divlist],
             id="Division",
             clearable=True,
         ),
@@ -174,15 +166,12 @@ ddUpazila = html.Div(
     className="mb-4",
 )
 
-def fetchdiseaselist():
+def fetchdiseaselist(bahis_data):
     dislis= bahis_data['top_diagnosis'].unique()
     dislis= pd.DataFrame(dislis, columns=['Disease'])
-#    dislis.sort_values(by=['Disease'])
-    ddDList= dislis['Disease'].sort_values()
-    return ddDList.tolist()
-ddDList= fetchdiseaselist()
-ddDList.insert(0, 'All Diseases')
-
+    dislis= dislis['Disease'].sort_values().tolist()
+    dislis.insert(0, 'All Diseases')
+    return dislis
 
 def natNo(sub_bahis_sourcedata):
     mask=(sub_bahis_sourcedata['date']>= datetime.now()-timedelta(days=7)) & (sub_bahis_sourcedata['date'] <= datetime.now())
@@ -239,8 +228,7 @@ def open_data(path):
     return data
 
 def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
-  #  subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
-    reports = sub_bahis_sourcedata.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
+    reports = sub_bahis_sourcedata.value_counts().to_frame() 
     reports[pnumber] = reports.index
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
@@ -294,7 +282,6 @@ layout =  html.Div([
                     dbc.Row([
                         dbc.Col(ddDivision), dbc.Col(ddDistrict), dbc.Col(ddUpazila)
                         ]),
-#                    dbc.Row(dcc.RangeSlider(min=1, max=104, marks={1:'1', 104:'104'}, step=1, value=[1,104], id="test")),
                     dbc.Row(dcc.Graph(id="Map")),
                     dbc.Row(dcc.Slider(min=1, max=3, step=1,
                                        marks={1:'Division',
@@ -358,6 +345,7 @@ layout =  html.Div([
 ## shape overlay of selected geotile(s)
 
 @callback(
+    Output ('Division', 'options'),
     Output ('District', 'options'),
     Output ('Upazila', 'options'),
 
@@ -370,9 +358,10 @@ layout =  html.Div([
     Output ('DRRepG1', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('figMonthly', 'figure'),
-#    Output ('geoSlider', 'children'),
 
-#    Input ('test', 'value'),
+    Input ('cache_bahis_data', 'data'),
+    Input ('cache_bahis_dgdata', 'data'),
+    Input ('cache_bahis_geodata', 'data'),
     Input ('geoSlider', 'value'),
     Input ('Map', 'clickData'),
     Input ('Reports', 'clickData'),
@@ -386,43 +375,54 @@ layout =  html.Div([
     Input ("daterange",'end_date'),
     Input ("Diseaselist",'value'),
 )
-def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
-#def update_whatever(test, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
-    # print(cU2Upazila)
+def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
     # print(clkRep)
     # print(clkSick)
-    # print(clkDead)
-    # print(test)
-    #print(ctx.triggered_id)
-
-    sub_bahis_sourcedata=date_subset(start_date, end_date)
+    # print(ctx.triggered_id)
+    print(pd.DataFrame(cbahis_data).shape)
+    print(pd.DataFrame(cbahis_dgdata).shape)
+    print(pd.DataFrame(cbahis_geodata).shape)
+    bahis_data=pd.DataFrame(cbahis_data)
+    bahis_data['date']= pd.to_datetime(bahis_data['date'])
+    bahis_dgdata=pd.DataFrame(cbahis_dgdata)
+    bahis_geodata=pd.DataFrame(cbahis_geodata)
+    
+    dates = sne_date(bahis_data)
+    
+    ddDList= fetchdiseaselist(bahis_data)
+    ddDList.insert(0, 'All Diseases')
+    Divlist=fetchDivisionlist(bahis_geodata)
+    vDivision = [{'label': i['Division'], 'value': i['value']} for i in Divlist]
+    
+    sub_bahis_sourcedata=date_subset(dates, bahis_data)
     sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
     tmps= pd.to_datetime(start_date)-relativedelta(years=1)
     tmpe= pd.to_datetime(end_date)-relativedelta(years=1)
-    sub1a_bahis_sourcedata=date_subset(tmps, tmpe)
+    tdates=[tmps, tmpe]
+    sub1a_bahis_sourcedata=date_subset(tdates, bahis_data)
     sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
 
     monthlydatabasis=disease_subset(diseaselist, bahis_data)
 
-    ddDislist=None
-    ddUpalist=None
+    Dislist=None
+    Upalist=None
 
     if cU2Division is None:
         vDistrict="",
         vUpa="",
         #raise PreventUpdate
     else:
-        ddDislist=fetchDistrictlist(cU2Division)
-        vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
+        Dislist=fetchDistrictlist(cU2Division, bahis_geodata)
+        vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
         if cU2District is None:
             vUpa="",
             #raise PreventUpdate
         else:
-            ddUpalist=fetchUpazilalist(cU2District)
-            vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in ddUpalist]
+            Upalist=fetchUpazilalist(cU2District, bahis_geodata)
+            vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
 
-    # if geoTile is not None:
-    #     print(geoTile['points'][0]['location'])
+    if geoTile is not None:
+        print(geoTile['points'][0]['location'])
 
     if not cU2Upazila:
         if not cU2District:
@@ -461,8 +461,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         # if geoTile is not None:
         #     print(geoTile['points'][0]['location'])
         #     cU2Division=geoTile['points'][0]['location']
-        #     ddDislist=fetchDistrictlist(geoTile['points'][0]['location'])
-        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
+        #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
+        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
     if geoSlider== 2:
         path=path2
         loc=2
@@ -731,7 +731,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
 
     figMonthly= px.bar(monthlydata, x=pd.DatetimeIndex(monthlydata['date']).month, y=monthlydata['sick'], color=pd.DatetimeIndex(monthlydata['date']).year.astype(str), barmode ='group')
 
-    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly
+    return vDivision, vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly
 
 
 

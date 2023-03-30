@@ -39,7 +39,10 @@ app.layout = html.Div([
     nav,
     html.Div([]),
     html.Div(id='page-1-display-value'),
-	dash.page_container
+	dash.page_container,
+    dcc.Store(id='cache_bahis_data', storage_type = 'memory'),
+    dcc.Store(id='cache_bahis_dgdata', storage_type = 'memory'),
+    dcc.Store(id='cache_bahis_geodata', storage_type = 'memory'),
 ])
 
 
