@@ -360,7 +360,8 @@ layout =  html.Div([
 
 ## shape overlay of selected geotile(s)
 
-@callback(
+@callback(                             #splitting callbacks to prevent updates?
+                              #dash cleintsied callback with js
     Output ('Division', 'options'),
     Output ('District', 'options'),
     Output ('Upazila', 'options'),
@@ -388,13 +389,14 @@ layout =  html.Div([
     Input ('Division', 'value'),
     Input ('District', 'value'),
     Input ("Upazila",'value'),
-    Input ("daterange",'start_date'),
-    Input ("daterange",'end_date'),
+    Input ("daterange",'start_date'),  #make state to prevent upate before submitting
+    Input ("daterange",'end_date'), #make state to prevent upate before submitting
     Input ("Diseaselist",'value'),
     Input ('tabs', 'active_tab'),
     Input ('Map', 'clickData'),
 )
 #def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
+
 def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
     global firstrun, vDiv, vDis, vUpa, ddDList, path, pnumber, loc, title, incsub_bahis_sourcedata
     print(geoclick)
@@ -450,12 +452,10 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     if ctx.triggered_id=='Division':
         if not SelDiv:
             sub_bahis_sourcedata=sub_bahis_sourcedata
-#                sub1a_bahis_sourcedata=sub1a_bahis_sourcedata
             subDist=bahis_geodata        
             vDis="",
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
-#                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==SelDiv]           
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
@@ -465,7 +465,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     if ctx.triggered_id=='District':
         if not SelDis:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
-#                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==SelDiv]           
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
@@ -473,7 +472,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             vUpa="",            
         else: 
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
-#                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==SelDis]                       
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
@@ -482,20 +480,13 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     if ctx.triggered_id=='Upazila':            
         if not SelUpa:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
-#                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==SelDis]                       
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
-    #        sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['upazila']==cU2Upazila]
             subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['upazila']==SelUpa]
 
-    # tmps= pd.to_datetime(start_date)-relativedelta(years=1)
-    # tmpe= pd.to_datetime(end_date)-relativedelta(years=1)
-    # tdates=[tmps, tmpe]
-    # sub1a_bahis_sourcedata=date_subset(tdates, bahis_data)
-    # sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
 
     if ctx.triggered_id=='geoSlider':
         if geoSlider== 1:
@@ -550,30 +541,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     tmp['date']=tmp.index
     tmp['date']=tmp['date'].astype('datetime64[D]')
 
-    # tmp2=sub1a_bahis_sourcedata['date'].dt.date.value_counts()
-    # tmp2=tmp2.to_frame()
-    # tmp2['counts']=tmp2['date']
-
-    # tmp2['date']=pd.to_datetime(tmp2.index)
-    # tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
-    # tmp2=tmp2.to_frame()
-    # tmp2['date']=tmp2.index
-    # tmp2['date']=tmp2['date'].astype('datetime64[D]')
-    # tmp2['date']=tmp2['date']+pd.offsets.Day(365)
-
     figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
-    #figgR= figgR.add_trace(px.bar(tmp2, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}))
-    # figgRR = px.line(tmp2, x='date', y='counts')
-
-    # figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
-    # figgRR['data'][0]['line']['width']=1
-    # figgR= go.Figure(data=figgR.data + figgRR.data)
     figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figgR.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
         text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
         showarrow=False,
         font=dict(
@@ -599,8 +571,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figgSick.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
         text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))),
         showarrow=False,
         font=dict(
@@ -621,8 +591,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figgDead.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
         text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))),
         showarrow=False,
         font=dict(
