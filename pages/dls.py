@@ -26,6 +26,7 @@ from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
 import numpy as np 
 
+
 pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__)    #register page to main dash app
@@ -242,10 +243,9 @@ def open_data(path):
         # incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
         
 
-def plot_map(path, loc, subDist, reports, title, pnumber, pname, splace, variab, labl):
-#    reports = sub_bahis_sourcedata
+def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
+    reports = sub_bahis_sourcedata[title].value_counts().to_frame()
     reports[pnumber] = reports.index #1
-#    print (reports)
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
     reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata? reports, where there are no geonumbers?
@@ -258,6 +258,7 @@ def plot_map(path, loc, subDist, reports, title, pnumber, pname, splace, variab,
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
     tmp[title]=-(reports[title].max())
+
 
     # works somewhat, but now preselection of district is also -1 set -1 only for selected ones.
 
@@ -358,6 +359,8 @@ layout =  html.Div([
     ])
 
 
+
+
 ## shape overlay of selected geotile(s)
 
 @callback(                             #splitting callbacks to prevent updates?
@@ -371,8 +374,8 @@ layout =  html.Div([
     Output ('Reports', 'figure'),
     Output ('Sick', 'figure'),
     Output ('Dead', 'figure'),
-    Output ('Livestock', 'figure'),
-    Output ('Zoonotic', 'figure'),
+    # Output ('Livestock', 'figure'),
+    # Output ('Zoonotic', 'figure'),
     Output ('DRRepG1', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('figMonthly', 'figure'),
@@ -398,8 +401,13 @@ layout =  html.Div([
 #def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
 
 def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
-    global firstrun, vDiv, vDis, vUpa, ddDList, path, pnumber, loc, title, incsub_bahis_sourcedata
-    print(geoclick)
+    global firstrun, vDiv, vDis, vUpa, ddDList, path, variab, labl, splace, pname, pnumber, loc, title, incsub_bahis_sourcedata
+#    print(geoclick)
+
+
+    # starttime=datetime.now()
+    # endtime = datetime.now()
+    # print(endtime-starttime)    
     # print(clkRep)
     # print(clkSick)
     # print(pd.DataFrame(cbahis_data).shape)
@@ -416,6 +424,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     monthlydatabasis=sub_bahis_sourcedata
         
     if firstrun==True:  #inital settings
+
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
         ddDList= fetchdiseaselist(sub_bahis_sourcedata)
         ddDList.insert(0, 'All Diseases')
@@ -437,10 +446,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         splace=' Upazila'
         variab='upazila'
         labl='Incidences per upazila'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int).value_counts().to_frame()
-        
         firstrun=False
-        print(firstrun)
+    
         
     if ctx.triggered_id=='daterange':
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
@@ -498,7 +505,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' Division'
             variab='division'
             labl='Incidences per division'
-            incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['division']).dropna().astype(int).value_counts().to_frame()
 
     #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
             # if geoTile is not None:
@@ -515,7 +521,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' District'
             variab='district'
             labl='Incidences per district'
-            incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['district']).dropna().astype(int).value_counts().to_frame()
         if geoSlider== 3:
             path=path3
             loc=3
@@ -525,12 +530,13 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' Upazila'
             variab='upazila'
             labl='Incidences per upazila'
-            incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int).value_counts().to_frame()
+    
+    Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
-    Rfig = plot_map(path, loc, subDist, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
 ###tab1
-    
+
+        
     tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
     tmp=tmp.to_frame()
     tmp['counts']=tmp['date']
@@ -605,111 +611,99 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         bgcolor="#ff7f0e",
         opacity=0.8
         )
-
     
 ####tab2
+    
 
-    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+    ##preprocess groupdata ?
+    
+    # poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+    # sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
-    sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
-
-    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
-
-    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
-
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
-    sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
-
-    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
-    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
-    subpl=[fpoul, flani]
-    figgLiveS= make_subplots(rows=2, cols=1)
-    for i, figure in enumerate(subpl):
-        for trace in range(len(figure['data'])):
-            figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
-
-#    if cReport=='Zoonotic Disease Cases':
-    #subpl= make_subplots(rows=2, cols=1),
-    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
-
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
-    tmpdg=tmpdg['name'].tolist()
-    sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
-
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
     # to_replace=tmpdg['name'].tolist()
     # replace_with=tmpdg['Disease type'].tolist()
     # sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataP=sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases']
+    # sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
+    # tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    # tmp=tmp.sort_values(by='species', ascending=False)
+    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    # tmp=tmp.head(10)
+    # tmp=tmp.iloc[::-1]
+    # fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+    # fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
 
-    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+    # lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+    # sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-#        tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
-
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
     # to_replace=tmpdg['name'].tolist()
     # replace_with=tmpdg['Disease type'].tolist()
     # sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataLA=sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases']
+    # sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
-    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
-    subpl=[fpoul, flani]
-    figgZoon= make_subplots(rows=2, cols=1)
-    for i, figure in enumerate(subpl):
-        for trace in range(len(figure['data'])):
-            figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
+    # tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    # tmp=tmp.sort_values(by='species', ascending=False)
+    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    # tmp=tmp.head(10)
+    # tmp=tmp.iloc[::-1]
+    # flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
+    # flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # subpl=[fpoul, flani]
+    # figgLiveS= make_subplots(rows=2, cols=1)
+    # for i, figure in enumerate(subpl):
+    #     for trace in range(len(figure['data'])):
+    #         figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
+    # figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
+
+    # poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+    # sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    # tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
+    # tmpdg=tmpdg['name'].tolist()
+    # sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
 
+    # tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    # tmp=tmp.sort_values(by='species', ascending=False)
+    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    # tmp=tmp.head(10)
+    # tmp=tmp.iloc[::-1]
+    # fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+    # fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    # lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+    # sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+
+    # sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
+
+    # tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    # tmp=tmp.sort_values(by='species', ascending=False)
+    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    # tmp=tmp.head(10)
+    # tmp=tmp.iloc[::-1]
+    # flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
+    # flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # subpl=[fpoul, flani]
+    # figgZoon= make_subplots(rows=2, cols=1)
+    # for i, figure in enumerate(subpl):
+    #     for trace in range(len(figure['data'])):
+    #         figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
+    # figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
+
+
+    
 ### tab3 geolocation
 
-    reports=incsub_bahis_sourcedata
+    reports=sub_bahis_sourcedata[title].value_counts().to_frame()
 
     reports['cases']=reports[title]
     reports[title] = reports.index
     reports= reports.loc[reports[title] != 'nan']
-
+          
     for i in range(reports.shape[0]):
         reports[title].iloc[i] = subDist.loc[subDist['value']==int(reports[title].iloc[i]),'name'].iloc[0]
 
@@ -722,9 +716,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     Rfindic=fIndicator(sub_bahis_sourcedata)
 
 
+
 ### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
 
+    
     monthly=monthlydatabasis['sick'].groupby(monthlydatabasis['date'].dt.to_period('M')).sum().astype(int)
     monthly=monthly.reset_index()
     monthly=monthly.rename(columns={'date':'date'})
@@ -735,9 +731,10 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     monthlydata=pd.DataFrame(monthlydata)
 
     figMonthly= px.bar(monthlydata, x=pd.DatetimeIndex(monthlydata['date']).month, y=monthlydata['sick'], color=pd.DatetimeIndex(monthlydata['date']).year.astype(str), barmode ='group')
+    
 
-
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly
+#    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfigg, Rfindic, figMonthly
 
 
 
