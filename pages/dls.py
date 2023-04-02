@@ -66,6 +66,9 @@ def fetchsourcedata(): #fetch and prepare source data
     bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
     return bahis_data
 bahis_data=fetchsourcedata() 
+sub_bahis_sourcedata=bahis_data
+monthlydatabasis=sub_bahis_sourcedata
+
 
 def sne_date(bahis_data):
     start_date=min(bahis_data['date']).date()
@@ -97,6 +100,8 @@ def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
     return geodata
 bahis_geodata= fetchgeodata()
+subDist=bahis_geodata
+
 
 #cache these values
 
@@ -259,9 +264,6 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     tmp=tmp.set_index('Index')
     tmp[title]=-(reports[title].max())
 
-
-    # works somewhat, but now preselection of district is also -1 set -1 only for selected ones.
-
 #    for i in range(tmp.shape[0]):
 #    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
     aaa=reports.combine_first(tmp)
@@ -287,7 +289,7 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
                             zoom=5.8, center = {"lat": 23.7, "lon": 90.3},
                             opacity=0.5,
                             labels={variab:labl},
-#                            hover_name=pname
+                            hover_name=pname
                           )
     fig.update_layout(autosize=True, coloraxis_showscale=False, margin={"r":0,"t":0,"l":0,"b":0}, height=550) #, width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600,
     return fig
@@ -401,7 +403,7 @@ layout =  html.Div([
 #def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
 
 def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
-    global firstrun, vDiv, vDis, vUpa, ddDList, path, variab, labl, splace, pname, pnumber, loc, title, incsub_bahis_sourcedata
+    global firstrun, vDiv, vDis, vUpa, ddDList, path, variab, labl, splace, pname, pnumber, loc, title, incsub_bahis_sourcedata, sub_bahis_sourcedata, monthlydatabasis, subDist
 #    print(geoclick)
 
 
@@ -419,9 +421,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     # bahis_geodata=pd.DataFrame(cbahis_geodata)
 
     dates = sne_date(bahis_data)
-    subDist=bahis_geodata
-    sub_bahis_sourcedata=bahis_data
-    monthlydatabasis=sub_bahis_sourcedata
+    #sub_bahis_sourcedata=bahis_data
+    #monthlydatabasis=sub_bahis_sourcedata
         
     if firstrun==True:  #inital settings
 
@@ -447,6 +448,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         variab='upazila'
         labl='Incidences per upazila'
         firstrun=False
+        subDist=subDist[subDist['loc_type']==loc]
     
         
     if ctx.triggered_id=='daterange':
@@ -458,7 +460,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     
     if ctx.triggered_id=='Division':
         if not SelDiv:
-            sub_bahis_sourcedata=sub_bahis_sourcedata
+#            sub_bahis_sourcedata=sub_bahis_sourcedata
+            sub_bahis_sourcedata=bahis_data
             subDist=bahis_geodata        
             vDis="",
         else:
@@ -468,10 +471,13 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
+            
+    ##### deleeting selected ones does not recover from main information so 
 
     if ctx.triggered_id=='District':
         if not SelDis:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
+#            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==SelDiv]           
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
@@ -486,7 +492,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             
     if ctx.triggered_id=='Upazila':            
         if not SelUpa:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
+#            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
             monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==SelDis]                       
         else:
@@ -498,13 +505,14 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     if ctx.triggered_id=='geoSlider':
         if geoSlider== 1:
             path=path1
-            loc=1
+            loc=geoSlider
             title='division'
             pnumber='divnumber'
             pname='divisionname'
             splace=' Division'
             variab='division'
             labl='Incidences per division'
+            subDist=subDist[subDist['loc_type']==geoSlider]
 
     #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
             # if geoTile is not None:
@@ -514,22 +522,24 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
         if geoSlider== 2:
             path=path2
-            loc=2
+            loc=geoSlider
             title='district'
             pnumber='districtnumber'
             pname='districtname'
             splace=' District'
             variab='district'
             labl='Incidences per district'
+            subDist=subDist[subDist['loc_type']==geoSlider]
         if geoSlider== 3:
             path=path3
-            loc=3
+            loc=geoSlider
             title='upazila'
             pnumber='upazilanumber'
             pname='upazilaname'
             splace=' Upazila'
             variab='upazila'
             labl='Incidences per upazila'
+            subDist=subDist[subDist['loc_type']==geoSlider]
     
     Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
@@ -709,6 +719,18 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
 
     reports=reports.sort_values(title)
     reports[title]=reports[title].str.capitalize()
+    
+    tmp=subDist[['value', 'name']]
+    tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
+    tmp[pname]=tmp[pname].str.title()
+    tmp['Index']=tmp[pnumber]
+    tmp=tmp.set_index('Index')
+#    tmp[title]=-1
+    aaa=reports.combine_first(tmp)
+    aaa[pname]=tmp[pname]
+    print (aaa[aaa.isna().any(axis=1)])
+    del tmp
+    
 
     Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='division')
     Rfigg.update_layout(autosize=True, height=400, margin={"r":0,"t":0,"l":0,"b":0})
@@ -719,19 +741,16 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
 
 ### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
-
-    
-    monthly=monthlydatabasis['sick'].groupby(monthlydatabasis['date'].dt.to_period('M')).sum().astype(int)
+    monthly=sub_bahis_sourcedata.groupby([sub_bahis_sourcedata['date'].dt.year.rename('year'), sub_bahis_sourcedata['date'].dt.month.rename('month')])['date'].agg({'count'})
+    monthly=monthly.rename({'count':'reports'}, axis=1)
     monthly=monthly.reset_index()
-    monthly=monthly.rename(columns={'date':'date'})
-    monthly['date']=monthly['date'].astype(str)
-    monthly['date'] = pd.to_datetime(monthly['date'])
-    monthlydata={'sick':monthly['sick'],
-               'date':monthly['date']}
-    monthlydata=pd.DataFrame(monthlydata)
-
-    figMonthly= px.bar(monthlydata, x=pd.DatetimeIndex(monthlydata['date']).month, y=monthlydata['sick'], color=pd.DatetimeIndex(monthlydata['date']).year.astype(str), barmode ='group')
-    
+    monthly['year']=monthly['year'].astype(str)
+#   monthlys=sub_bahis_sourcedata.groupby([sub_bahis_sourcedata['date'].dt.year.rename('year'), sub_bahis_sourcedata['date'].dt.month.rename('month')])[['sick', 'dead']].agg({'sum'}) #sum of sick and dead grouped
+    figMonthly = px.bar(data_frame=monthly,
+                        x='month',
+                        y='reports',
+                        color='year',
+                        barmode='group')
 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
     return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfigg, Rfindic, figMonthly
