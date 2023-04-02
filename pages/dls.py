@@ -353,6 +353,10 @@ layout =  html.Div([
                                          )],
                                 label='Reports per Geolocation', tab_id='GeoRepTab'),
                             dbc.Tab([
+                                dbc.Row([html.Label("All Reports of current year"),
+                                                      html.Div(id='GeoDynTable')])],
+                                label='Reportdynamics per Geolocation', tab_id='GeoDynTab'),
+                            dbc.Tab([
                                 dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
                                           )],
                                 label='Monthly Comparison', tab_id='MonthCompTab')
@@ -383,6 +387,7 @@ layout =  html.Div([
     Output ('DRindicators', 'figure'),
     Output ('DRRepG1', 'figure'),
     Output ('AlertTable', 'children'),
+    Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
 
     # Input ('cache_bahis_data', 'data'),
@@ -744,9 +749,114 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
                                 fixed_rows={'headers': True},
                                 data=alerts.to_dict('records'),
                                 ),
+#### tab 4 geodyn tab per current year
 
 
-### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
+    wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
+    wkRep=wkRep[['date', 'division', 'district', 'upazila']]
+    totalweeks=wkRep.groupby([wkRep['date'].dt.to_period('W-SAT')])['division'].sum() # works but stupid
+
+    reports=pd.DataFrame({title.capitalize():[]})
+    for i in range(len(totalweeks)):
+            reports[i+1]=''
+    reports['total']=''
+    ## DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+    
+    for geono in wkRep[title].unique():
+        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title()
+#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+        tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
+#        tmpp.reset_index()
+        for entry in range(len(tmpp)):
+#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+            reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
+                
+      
+    reports['total']= reports.iloc[:,1:len(totalweeks)+1].sum(axis=1)
+    reports[len(totalweeks)-1]=reports.iloc[:, 1:len(totalweeks)-2].sum(axis=1)
+    reports.drop(reports.iloc[:, 1:len(totalweeks)-1], inplace=True, axis=1)
+    reports=reports.rename(columns={len(totalweeks)-1:'week 1-'+ str(len(totalweeks)-1), len(totalweeks):'week ' + str(len(totalweeks))})
+    reports=reports.fillna(0)
+
+#     for geono in wkRep[title].unique():
+        
+#         reports.at[upano,title.capitalize()]=str(subDist[subDist['value']==upano]['name'].reset_index(drop=True)[0]).title()
+# #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+#         tmpp=tmp[tmp[title]==upano].groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
+#         for entry in range(len(tmpp)):
+# #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+#                 reports.loc[upano][tmpp.index[entry].end_time.date().isocalendar()[1]]=tmpp[entry]
+
+    
+#     total=wkRep.groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts()
+   
+#     reports=pd.DataFrame({title.capitalize():[]})
+#     for i in range(len(total)):
+#       reports[i+1]=''
+#     reports['total']=''
+    
+    
+#     #summary weeks
+#     # if len(total)>2:
+#     #     for i in range(len(total)):
+#     #       reports[str('1-'+str(len(total)-1))]=''
+#     #       reports[str(len(total))]=''
+          
+#     # if len(total)==2:
+#     #     reports['1']=''
+#     #     reports['2']=''
+        
+#     # if len(total)==1:
+#     #     reports['1']=''
+ 
+                
+      
+#     reports['total']= reports.iloc[:,1:len(total)+1].sum(axis=1)
+#     reports[len(total)-1]=reports.iloc[:, 1:len(total)-2].sum(axis=1)
+#     reports.drop(reports.iloc[:, 1:len(total)-1], inplace=True, axis=1)
+#     reports=reports.rename(columns={len(total)-1:'week 1-'+ str(len(total)-1), len(total):'week ' + str(len(total))})
+#     reports=reports.fillna(0)
+#     # last=tmp['date'].dt.to_period('W-SAT')
+#     # lastwk=last.iloc[-1]
+#     # total=tmp.groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
+#     # total.reset_index
+    
+#     # tmp[tmp['upazila']==upano].groupby([tmp['date'].dt.to_period('W-SAT')])['cases'].sum()
+    
+#     # reps= tmp.groupby([tmp['upazila']]).agg([tmp['date'].dt.to_period('W-SAT')])
+#     # reps = tmp.groupby([tmp['date'].dt.to_period('W-SAT')])[['cases'] ].sum()     
+#     # records = tmp.groupby([tmp['date'].dt.to_period('W-SAT')])[['cases'] ].sum() 
+#     # records = data_resp.groupby([title])['cases'].sum().to_frame()#(results in 492 values, what about the rest, plot the rest where there is nothing)
+
+#     #    casetable= dash_table.DataTable(resp_rep_data.to_dict('records'),
+#     casetable= dash_table.DataTable(reports.to_dict('records'), 
+#                                   columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
+#                                   style_header={
+#                                         'overflow': 'hidden',
+#                                         'maxWidth': 0,
+#                                         },
+#                                   style_table={'height': '300px', 'overflowY': 'auto'},
+#                                   fixed_rows={'headers': True}),
+
+
+
+    GeoDynTable = dash_table.DataTable(
+                                columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
+                                style_header={
+                                        'overflow': 'hidden',
+                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '600px', 'overflowY': 'auto'},
+                                style_as_list_view=True,
+                                fixed_rows={'headers': True},
+                                data=reports.to_dict('records'),
+                                ),
+
+
+### tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
     monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
     monthly=monthly.rename({'count':'reports'}, axis=1)
@@ -761,7 +871,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figMonthly.update_xaxes(dtick="M1", tickformat="%B")
 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfindic, Rfigg, AlertTable, figMonthly
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
 
 
 
