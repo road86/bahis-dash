@@ -14,7 +14,7 @@ Created on Sun Jan 22 07:48:14 2023
 
 # Import necessary libraries
 import dash
-from dash import dcc, html, callback, ctx #Dash, #dash_table, dbc
+from dash import dcc, html, callback, ctx, dash_table #Dash, #dash_table, dbc
 import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
@@ -223,7 +223,7 @@ def fIndicator(sub_bahis_sourcedata):
         domain = {'row': 0, 'column': 2},
         ))
 
-    RfigIndic.update_layout(height=235,
+    RfigIndic.update_layout(height=100,
         grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
         #?template=template_from_url(theme),
 
@@ -346,8 +346,10 @@ layout =  html.Div([
                                 dbc.Row(dcc.Graph(id='Zoonotic'))],
                                 label='Diseases', tab_id='DiseaseTab'),
                             dbc.Tab([
-                                dbc.Card(dbc.Col([dcc.Graph(id='DRindicators'),
-                                                  dcc.Graph(id='DRRepG1')])
+                                dbc.Card(dbc.Col([dbc.Row(dcc.Graph(id='DRindicators')),
+                                                  dbc.Row(dcc.Graph(id='DRRepG1')),
+                                                  dbc.Row([html.Label("Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"),
+                                                      html.Div(id='AlertTable')])])
                                          )],
                                 label='Reports per Geolocation', tab_id='GeoRepTab'),
                             dbc.Tab([
@@ -378,8 +380,9 @@ layout =  html.Div([
     Output ('Dead', 'figure'),
     # Output ('Livestock', 'figure'),
     # Output ('Zoonotic', 'figure'),
-    Output ('DRRepG1', 'figure'),
     Output ('DRindicators', 'figure'),
+    Output ('DRRepG1', 'figure'),
+    Output ('AlertTable', 'children'),
     Output ('figMonthly', 'figure'),
 
     # Input ('cache_bahis_data', 'data'),
@@ -420,12 +423,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     # bahis_dgdata=pd.DataFrame(cbahis_dgdata)
     # bahis_geodata=pd.DataFrame(cbahis_geodata)
 
-    dates = sne_date(bahis_data)
+    dates = [start_date, end_date]
     #sub_bahis_sourcedata=bahis_data
-    #monthlydatabasis=sub_bahis_sourcedata
         
     if firstrun==True:  #inital settings
-
+#        dates = sne_date(bahis_data)
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
         ddDList= fetchdiseaselist(sub_bahis_sourcedata)
         ddDList.insert(0, 'All Diseases')
@@ -456,50 +458,39 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         
     if ctx.triggered_id=='Diseaselist':
         sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
-        monthlydatabasis=disease_subset(diseaselist, bahis_data)
     
     if ctx.triggered_id=='Division':
         if not SelDiv:
-#            sub_bahis_sourcedata=sub_bahis_sourcedata
             sub_bahis_sourcedata=bahis_data
             subDist=bahis_geodata        
             vDis="",
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==SelDiv]           
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
             
-    ##### deleeting selected ones does not recover from main information so 
-
     if ctx.triggered_id=='District':
         if not SelDis:
-#            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==SelDiv]           
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",            
         else: 
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==SelDis]                       
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
             
     if ctx.triggered_id=='Upazila':            
         if not SelUpa:
-#            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==SelDis]                       
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
             subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['upazila']==SelUpa]
 
 
     if ctx.triggered_id=='geoSlider':
@@ -725,35 +716,52 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
-#    tmp[title]=-1
     aaa=reports.combine_first(tmp)
-    aaa[pname]=tmp[pname]
-    print (aaa[aaa.isna().any(axis=1)])
+    aaa[pname]=tmp[pname]    
+    alerts=aaa[aaa.isna().any(axis=1)]
+    alerts= alerts[[pname, pnumber]]
     del tmp
+    del aaa
     
 
-    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='division')
-    Rfigg.update_layout(autosize=True, height=400, margin={"r":0,"t":0,"l":0,"b":0})
-
     Rfindic=fIndicator(sub_bahis_sourcedata)
+    Rfindic.update_layout(height=100, margin={"r":0,"t":4,"l":0,"b":0})
 
+    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
+    Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
+
+    AlertTable= dash_table.DataTable(
+                                #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
+                                style_header={
+                                        'overflow': 'hidden',
+                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '150px', 'overflowY': 'auto'},
+                                style_as_list_view=True,
+                                fixed_rows={'headers': True},
+                                data=alerts.to_dict('records'),
+                                ),
 
 
 ### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
-    monthly=sub_bahis_sourcedata.groupby([sub_bahis_sourcedata['date'].dt.year.rename('year'), sub_bahis_sourcedata['date'].dt.month.rename('month')])['date'].agg({'count'})
+    monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
     monthly=monthly.rename({'count':'reports'}, axis=1)
     monthly=monthly.reset_index()
     monthly['year']=monthly['year'].astype(str)
-#   monthlys=sub_bahis_sourcedata.groupby([sub_bahis_sourcedata['date'].dt.year.rename('year'), sub_bahis_sourcedata['date'].dt.month.rename('month')])[['sick', 'dead']].agg({'sum'}) #sum of sick and dead grouped
     figMonthly = px.bar(data_frame=monthly,
                         x='month',
                         y='reports',
+                        labels={'month':'Month','reports':'Reports'},
                         color='year',
                         barmode='group')
+    figMonthly.update_xaxes(dtick="M1", tickformat="%B")
 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfigg, Rfindic, figMonthly
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfindic, Rfigg, AlertTable, figMonthly
 
 
 
