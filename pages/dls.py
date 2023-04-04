@@ -776,10 +776,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
 
     wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
     wkRep=wkRep[['date', 'division', 'district', 'upazila']]
-    totalweeks=wkRep.groupby([wkRep['date'].dt.to_period('W-SAT')])['division'].sum() # works but stupid
+#    totalweeks=wkRep.groupby([wkRep['date'].dt.to_period('W-SAT')])['division'].sum() # works but stupid
+    totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique()) # bet
 
     reports=pd.DataFrame({title.capitalize():[]})
-    for i in range(len(totalweeks)):
+    for i in range(0,totalweeks):
             reports[i+1]=''
     reports['total']=''
     ## DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
@@ -794,10 +795,10 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
                 
       
-    reports['total']= reports.iloc[:,1:len(totalweeks)+1].sum(axis=1)
-    reports[len(totalweeks)-1]=reports.iloc[:, 1:len(totalweeks)-2].sum(axis=1)
-    reports.drop(reports.iloc[:, 1:len(totalweeks)-1], inplace=True, axis=1)
-    reports=reports.rename(columns={len(totalweeks)-1:'week 1-'+ str(len(totalweeks)-1), len(totalweeks):'week ' + str(len(totalweeks))})
+    reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
+    reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
+    reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
+    reports=reports.rename(columns={totalweeks-1:'week 1-'+ str(totalweeks-1), totalweeks:'week ' + str(totalweeks)})
     reports=reports.fillna(0)
 
 
