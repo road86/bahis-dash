@@ -90,8 +90,12 @@ def fetchdisgroupdata(): #fetch and prepare disease groups
     bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
     bahis_dgdata= bahis_dgdata.dropna()
 #    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
+    bahis_dgdata = bahis_dgdata.drop_duplicates(subset='name', keep="first")
     return bahis_dgdata
 bahis_dgdata= fetchdisgroupdata()
+to_replace=bahis_dgdata['name'].tolist()
+replace_with=bahis_dgdata['Disease type'].tolist()
+
 
 def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
@@ -639,9 +643,9 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
     sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    # to_replace=tmpdg['name'].tolist()
+    # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
     sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
@@ -657,9 +661,9 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
     sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    # to_replace=tmpdg['name'].tolist()
+    # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
     sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
@@ -680,8 +684,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
     sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    tmpdg=bahis_dgdata[bahis_dgdata['Disease type']=='Zoonotic diseases']
     tmpdg=tmpdg['name'].tolist()
     sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
@@ -776,14 +780,12 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
 
     wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
     wkRep=wkRep[['date', 'division', 'district', 'upazila']]
-#    totalweeks=wkRep.groupby([wkRep['date'].dt.to_period('W-SAT')])['division'].sum() # works but stupid
-    totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique()) # bet
+    totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique())
 
     reports=pd.DataFrame({title.capitalize():[]})
     for i in range(0,totalweeks):
             reports[i+1]=''
     reports['total']=''
-    ## DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
     
     for geono in wkRep[title].unique():
         reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title()
@@ -793,8 +795,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         for entry in range(len(tmpp)):
 #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
             reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
-                
-      
+    ###  speed suggestion: not groupby weeks, but calculate all except last week and sum over it.            
+        
     reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
     reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
     reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
