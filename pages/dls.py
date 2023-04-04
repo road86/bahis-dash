@@ -27,6 +27,8 @@ from plotly.subplots import make_subplots
 import numpy as np 
 
 
+starttime_start=datetime.now()
+
 pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__)    #register page to main dash app
@@ -366,7 +368,8 @@ layout =  html.Div([
             ])
     ])
 
-
+endtime_start = datetime.now()
+print('initialize : ' + str(endtime_start-starttime_start))
 
 
 ## shape overlay of selected geotile(s)
@@ -411,6 +414,9 @@ layout =  html.Div([
 #def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
 
 def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
+
+    starttime_general=datetime.now()
+
     global firstrun, vDiv, vDis, vUpa, ddDList, path, variab, labl, splace, pname, pnumber, loc, title, incsub_bahis_sourcedata, sub_bahis_sourcedata, monthlydatabasis, subDist
 #    print(geoclick)
 
@@ -539,9 +545,12 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     
     Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
+    endtime_general = datetime.now()
+    print('general callback : ' + str(endtime_general-starttime_general))
 
 ###tab1
 
+    starttime_tab1=datetime.now()
         
     tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
     tmp=tmp.to_frame()
@@ -617,92 +626,100 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         bgcolor="#ff7f0e",
         opacity=0.8
         )
-    
+ 
+    endtime_tab1 = datetime.now()
+    print('tab1 : ' + str(endtime_tab1-starttime_tab1))    
+
 ####tab2
     
+    starttime_tab2=datetime.now()
 
-    ##preprocess groupdata ?
+    #preprocess groupdata ?
     
-    # poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    # sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    # sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
+    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    to_replace=tmpdg['name'].tolist()
+    replace_with=tmpdg['Disease type'].tolist()
+    sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
+    sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-    # tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    # tmp=tmp.sort_values(by='species', ascending=False)
-    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    # tmp=tmp.head(10)
-    # tmp=tmp.iloc[::-1]
-    # fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    # fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    # #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
+    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp=tmp.sort_values(by='species', ascending=False)
+    tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    tmp=tmp.head(10)
+    tmp=tmp.iloc[::-1]
+    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
 
-    # lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    # sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    # sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
+    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    to_replace=tmpdg['name'].tolist()
+    replace_with=tmpdg['Disease type'].tolist()
+    sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
+    sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-    # tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    # tmp=tmp.sort_values(by='species', ascending=False)
-    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    # tmp=tmp.head(10)
-    # tmp=tmp.iloc[::-1]
-    # flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
-    # flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    # subpl=[fpoul, flani]
-    # figgLiveS= make_subplots(rows=2, cols=1)
-    # for i, figure in enumerate(subpl):
-    #     for trace in range(len(figure['data'])):
-    #         figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
-    # figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
+    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp=tmp.sort_values(by='species', ascending=False)
+    tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    tmp=tmp.head(10)
+    tmp=tmp.iloc[::-1]
+    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
+    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    subpl=[fpoul, flani]
+    figgLiveS= make_subplots(rows=2, cols=1)
+    for i, figure in enumerate(subpl):
+        for trace in range(len(figure['data'])):
+            figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
+    figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
 
-    # poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    # sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    # tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
-    # tmpdg=tmpdg['name'].tolist()
-    # sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
+    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
+    tmpdg=tmpdg['name'].tolist()
+    sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
 
-    # tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    # tmp=tmp.sort_values(by='species', ascending=False)
-    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    # tmp=tmp.head(10)
-    # tmp=tmp.iloc[::-1]
-    # fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    # fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp=tmp.sort_values(by='species', ascending=False)
+    tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    tmp=tmp.head(10)
+    tmp=tmp.iloc[::-1]
+    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-    # lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    # sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-    # sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
+    sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
 
-    # tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    # tmp=tmp.sort_values(by='species', ascending=False)
-    # tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    # tmp=tmp.head(10)
-    # tmp=tmp.iloc[::-1]
-    # flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
-    # flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    # subpl=[fpoul, flani]
-    # figgZoon= make_subplots(rows=2, cols=1)
-    # for i, figure in enumerate(subpl):
-    #     for trace in range(len(figure['data'])):
-    #         figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    # figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
+    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp=tmp.sort_values(by='species', ascending=False)
+    tmp=tmp.rename({'species' : 'counts'}, axis=1)
+    tmp=tmp.head(10)
+    tmp=tmp.iloc[::-1]
+    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
+    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    subpl=[fpoul, flani]
+    figgZoon= make_subplots(rows=2, cols=1)
+    for i, figure in enumerate(subpl):
+        for trace in range(len(figure['data'])):
+            figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
+    figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
 
+    endtime_tab2 = datetime.now()
+    print('tab2 : ' + str(endtime_tab2-starttime_tab2))   
 
     
 ### tab3 geolocation
+
+    starttime_tab3=datetime.now()
 
     reports=sub_bahis_sourcedata[title].value_counts().to_frame()
 
@@ -749,8 +766,13 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
                                 fixed_rows={'headers': True},
                                 data=alerts.to_dict('records'),
                                 ),
+
+    endtime_tab3 = datetime.now()
+    print('tab3 : ' + str(endtime_tab3-starttime_tab3))
+
 #### tab 4 geodyn tab per current year
 
+    starttime_tab4=datetime.now()
 
     wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
     wkRep=wkRep[['date', 'division', 'district', 'upazila']]
@@ -794,8 +816,12 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
                                 data=reports.to_dict('records'),
                                 ),
 
+    endtime_tab4 = datetime.now()
+    print('tab4 : ' + str(endtime_tab4-starttime_tab4))    
 
 ### tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
+
+    starttime_tab5=datetime.now()
 
     monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
     monthly=monthly.rename({'count':'reports'}, axis=1)
@@ -808,6 +834,9 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
                         color='year',
                         barmode='group')
     figMonthly.update_xaxes(dtick="M1", tickformat="%B")
+
+    endtime_tab5 = datetime.now()
+    print('tab5 : ' + str(endtime_tab5-starttime_tab5))    
 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
     return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
