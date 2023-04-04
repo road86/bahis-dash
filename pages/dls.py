@@ -389,11 +389,13 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('Reports', 'figure'),
     Output ('Sick', 'figure'),
     Output ('Dead', 'figure'),
-    # Output ('Livestock', 'figure'),
-    # Output ('Zoonotic', 'figure'),
+    
+    Output ('Livestock', 'figure'),
+    Output ('Zoonotic', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('DRRepG1', 'figure'),
     Output ('AlertTable', 'children'),
+    
     Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
 
@@ -411,6 +413,7 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Input ("Upazila",'value'),
     Input ("daterange",'start_date'),  #make state to prevent upate before submitting
     Input ("daterange",'end_date'), #make state to prevent upate before submitting
+    
     Input ("Diseaselist",'value'),
     Input ('tabs', 'active_tab'),
     Input ('Map', 'clickData'),
@@ -548,10 +551,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             subDist=subDist[subDist['loc_type']==geoSlider]
     
     Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
-
     endtime_general = datetime.now()
     print('general callback : ' + str(endtime_general-starttime_general))
-
 ###tab1
 
     starttime_tab1=datetime.now()
@@ -596,7 +597,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figgSick.add_annotation(
         x=end_date,
         y=max(tmp),
-        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))),
+        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -616,7 +617,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figgDead.add_annotation(
         x=end_date,
         y=max(tmp),
-        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))),
+        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -647,9 +648,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     # to_replace=tmpdg['name'].tolist()
     # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
+ 
+    
+    poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
     tmp=tmp.rename({'species' : 'counts'}, axis=1)
     tmp=tmp.head(10)
@@ -665,9 +668,9 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     # to_replace=tmpdg['name'].tolist()
     # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
+    LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
     tmp=tmp.rename({'species' : 'counts'}, axis=1)
     tmp=tmp.head(10)
@@ -788,7 +791,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     reports['total']=''
     
     for geono in wkRep[title].unique():
-        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title()
+#        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title() # either all reports and all geodata or both only selected
+        reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
 #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
         tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
 #        tmpp.reset_index()
@@ -841,8 +845,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     endtime_tab5 = datetime.now()
     print('tab5 : ' + str(endtime_tab5-starttime_tab5))    
 
-#    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly#
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick,figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly 
+#    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
 
 
 
