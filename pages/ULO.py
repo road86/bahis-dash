@@ -218,49 +218,49 @@ def selectULO(SelDiv, SelDis, SelUpa):
                 bgcolor="#ff7f0e",
                 opacity=0.8
                 )
-        tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-        tmp=tmp.reset_index()
-        tmp=tmp.rename(columns={'date':'date'})
-        tmp['date'] = tmp['date'].astype('datetime64[D]')
-        figULOSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
-        figULOSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figULOSick.add_annotation(
-            x=end_date,
-            y=max(tmp),
-            text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
-            showarrow=False,
-            font=dict(
-                family="Courier New, monospace",
-                size=12,
-                color="#ffffff"
-                ),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8
-            )
-    
-        figULODead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
-        figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figULODead.add_annotation(
-            x=end_date,
-            y=max(tmp),
-            text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
-            showarrow=False,
-            font=dict(
-                family="Courier New, monospace",
-                size=12,
-                color="#ffffff"
-                ),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8
-            )
+            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)
+            tmp=tmp.reset_index()
+            tmp=tmp.rename(columns={'date':'date'})
+            tmp['date'] = tmp['date'].astype('datetime64[D]')
+            figULOSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
+            figULOSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+            figULOSick.add_annotation(
+                x=end_date,
+                y=max(tmp),
+                text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
+                showarrow=False,
+                font=dict(
+                    family="Courier New, monospace",
+                    size=12,
+                    color="#ffffff"
+                    ),
+                align="center",
+                bordercolor="#c7c7c7",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#ff7f0e",
+                opacity=0.8
+                )
+        
+            figULODead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
+            figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+            figULODead.add_annotation(
+                x=end_date,
+                y=max(tmp),
+                text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
+                showarrow=False,
+                font=dict(
+                    family="Courier New, monospace",
+                    size=12,
+                    color="#ffffff"
+                    ),
+                align="center",
+                bordercolor="#c7c7c7",
+                borderwidth=2,
+                borderpad=4,
+                bgcolor="#ff7f0e",
+                opacity=0.8
+                )
  
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
