@@ -22,6 +22,7 @@ import pandas as pd
 from dash.dependencies import Input, Output
 import os, glob
 from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
 import numpy as np 
 
 
@@ -35,6 +36,7 @@ sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')
 geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]
 
 firstrun=True
+vDiv=""
 vDis=[]
 vUpa=[]
 
@@ -74,6 +76,17 @@ def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on se
 
 
 layout =  html.Div([
+            dbc.Row(dbc.Card([
+                    dbc.Label("Data ranging back to:"),
+                    dcc.Slider(min=1, max=4, step=1,
+                               marks={1: 'Jan 2022',
+                                      2: 'Jan 2023',
+                                      3: '6 weeks',
+                                      4: '1week'},
+                               value=3,
+                               id="datatimeslider")
+                              ])
+                    ),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -122,6 +135,9 @@ layout =  html.Div([
 
 @callback(                             #splitting callbacks to prevent updates?
                               #dash cleintsied callback with js
+    Output ('DLO_Division', 'value'),
+    Output ('DLO_District', 'value'),
+    Output ('DLO_Upazila', 'value'),
     Output ('DLO_District', 'options'),
     Output ('DLO_Upazila', 'options'),
     Output ('DLO_Reports', 'figure'),
@@ -129,14 +145,15 @@ layout =  html.Div([
     Output ('DLO_Dead', 'figure'),
 
 
+    Input ('datatimeslider', 'value'),
     Input ('DLO_Division', 'value'),
     Input ('DLO_District', 'value'),
     Input ("DLO_Upazila",'value'),
 
 )
 
-def selectDLO(SelDiv, SelDis, SelUpa):
-    global bahis_geodata, vDis, vUpa, firstrun, bahis_data
+def selectDLO(SelData, SelDiv, SelDis, SelUpa):
+    global bahis_geodata, vDiv, vDis, vUpa, firstrun, bahis_data
 
     starttime_tab1=datetime.now()
     
@@ -147,16 +164,25 @@ def selectDLO(SelDiv, SelDis, SelUpa):
     figDLODead={}    
     # tmp = pd.DataFrame(columns=['date','counts'])
     
+    if ctx.triggered_id=='datatimeslider':   
+        firstrun=True
+       
+    
     if firstrun==True:
+        SelDiv=""
+        SelDis=""
         vDis=[]
         vUpa=[]
+        
         firstrun=False
     
     if ctx.triggered_id=='DLO_Division':
         if not SelDiv:      
             vDis="",
+            SelDis=""
         else:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
+            vDiv=SelDiv
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
             
@@ -164,7 +190,8 @@ def selectDLO(SelDiv, SelDis, SelUpa):
         if not SelDis:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-            vUpa="",            
+            vUpa="",
+            SelUpa=""            
         else: 
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
@@ -173,6 +200,14 @@ def selectDLO(SelDiv, SelDis, SelUpa):
             bahis_data= bahis_data.loc[bahis_data['basic_info_district']==SelDis]
             bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
             bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
+            if SelData == 1:
+                bahis_data=bahis_data[bahis_data['basic_info_date'].dt.date>= date(2022,1,1)]
+            if SelData == 2:
+                bahis_data=bahis_data[bahis_data['basic_info_date'].dt.date>= date(2023,1,1)]
+            if SelData == 3:
+                bahis_data=bahis_data[bahis_data['basic_info_date'].dt.date >= max(bahis_data['basic_info_date']).date()-relativedelta(weeks=6)] 
+            if SelData == 4:
+                bahis_data=bahis_data[bahis_data['basic_info_date'].dt.date >= max(bahis_data['basic_info_date']).date()-relativedelta(weeks=1)]
             del bahis_data['Unnamed: 0']
             bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
                                                 'basic_info_division':'division', 
@@ -184,10 +219,10 @@ def selectDLO(SelDiv, SelDis, SelUpa):
                                                 'patient_info_dead_number':'dead',
                                                 })
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
-            bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+            bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
             bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
-            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelDis))]
+#            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelDis))]
             print(bahis_data.shape)
             print(bahis_geodata.shape)
             
@@ -340,13 +375,14 @@ def selectDLO(SelDiv, SelDis, SelUpa):
                 )
 
         else:
+            print(SelUpa)
             bahis_upadata = bahis_data
             bahis_upadata= bahis_data.loc[bahis_upadata['upazila']==SelUpa]
             bahis_upageodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
             print(bahis_upadata.shape)
             print(bahis_upageodata.shape)
             
-            tmp=bahis_upadata['date'].dt.date.value_counts()
+            tmp=bahis_upadata['date'].value_counts()
             tmp=tmp.to_frame()
             tmp['counts']=tmp['date']
             tmp['date']=pd.to_datetime(tmp.index)
@@ -360,7 +396,7 @@ def selectDLO(SelDiv, SelDis, SelUpa):
             figDLORep.add_annotation(
                 x=end_date,
                 y=max(tmp),
-                text="total reports " + str('{:,}'.format(bahis_data['date'].dt.date.value_counts().sum())),
+                text="total reports " + str('{:,}'.format(bahis_upadata['date'].dt.date.value_counts().sum())),
                 showarrow=False,
                 font=dict(
                     family="Courier New, monospace",
@@ -384,7 +420,7 @@ def selectDLO(SelDiv, SelDis, SelUpa):
             figDLOSick.add_annotation(
                 x=end_date,
                 y=max(tmp),
-                text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
+                text="total sick " + str('{:,}'.format(int(bahis_upadata['sick'].sum()))), ###realy outlyer
                 showarrow=False,
                 font=dict(
                     family="Courier New, monospace",
@@ -404,7 +440,7 @@ def selectDLO(SelDiv, SelDis, SelUpa):
             figDLODead.add_annotation(
                 x=end_date,
                 y=max(tmp),
-                text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
+                text="total dead " + str('{:,}'.format(int(bahis_upadata['dead'].sum()))), ###really
                 showarrow=False,
                 font=dict(
                     family="Courier New, monospace",
@@ -422,4 +458,4 @@ def selectDLO(SelDiv, SelDis, SelUpa):
     endtime_tab1 = datetime.now()
     print('DLO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return vDis, vUpa, figDLORep, figDLOSick, figDLODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, figDLORep, figDLOSick, figDLODead

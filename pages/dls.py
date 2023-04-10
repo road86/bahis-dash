@@ -62,7 +62,7 @@ def fetchsourcedata(): #fetch and prepare source data
                                         })
     #assuming non negative values from division, district, upazila, speciesno, sick and dead
     bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
-    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32) #converting into uint makes odd values)
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
     bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]

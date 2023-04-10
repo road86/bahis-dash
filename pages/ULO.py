@@ -118,6 +118,9 @@ layout =  html.Div([
 
 @callback(                             #splitting callbacks to prevent updates?
                               #dash cleintsied callback with js
+    Output ('ULO_Division', 'value'),
+    Output ('ULO_District', 'value'),
+    Output ('ULO_Upazila', 'value'),
     Output ('ULO_District', 'options'),
     Output ('ULO_Upazila', 'options'),
     Output ('ULO_Reports', 'figure'),
@@ -144,6 +147,7 @@ def selectULO(SelDiv, SelDis, SelUpa):
     # tmp = pd.DataFrame(columns=['date','counts'])
     
     if firstrun==True:
+        SelDiv=""
         vDis=[]
         vUpa=[]
         firstrun=False
@@ -151,6 +155,7 @@ def selectULO(SelDiv, SelDis, SelUpa):
     if ctx.triggered_id=='ULO_Division':
         if not SelDiv:      
             vDis="",
+            SelDis=""
         else:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
@@ -160,7 +165,8 @@ def selectULO(SelDiv, SelDis, SelUpa):
         if not SelDis:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-            vUpa="",            
+            vUpa="", 
+            SelUpa=""
         else: 
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
@@ -182,10 +188,10 @@ def selectULO(SelDiv, SelDis, SelUpa):
                                                 'patient_info_dead_number':'dead',
                                                 })
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
-            bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+            bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
             bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
-            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
+#            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
             print(bahis_data.shape)
             print(bahis_geodata.shape)
             
@@ -218,7 +224,8 @@ def selectULO(SelDiv, SelDis, SelUpa):
                 bgcolor="#ff7f0e",
                 opacity=0.8
                 )
-            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)
+            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
+            
             tmp=tmp.reset_index()
             tmp=tmp.rename(columns={'date':'date'})
             tmp['date'] = tmp['date'].astype('datetime64[D]')
@@ -241,7 +248,7 @@ def selectULO(SelDiv, SelDis, SelUpa):
                 bgcolor="#ff7f0e",
                 opacity=0.8
                 )
-        
+            
             figULODead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
             figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
             figULODead.add_annotation(
@@ -265,4 +272,4 @@ def selectULO(SelDiv, SelDis, SelUpa):
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return vDis, vUpa, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, figULORep, figULOSick, figULODead
