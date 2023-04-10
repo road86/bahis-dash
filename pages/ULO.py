@@ -173,6 +173,7 @@ def selectULO(SelDiv, SelDis, SelUpa):
             
     if ctx.triggered_id=='ULO_Upazila':            
         if SelUpa:
+            print(SelUpa)
             bahis_data = pd.read_csv(sourcefilename)
             bahis_data= bahis_data.loc[bahis_data['basic_info_upazila']==SelUpa]
             bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
@@ -190,21 +191,26 @@ def selectULO(SelDiv, SelDis, SelUpa):
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
             bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-            bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
+            bahis_data=bahis_data[bahis_data['date'].dt.date>= end_date-relativedelta(days=30)] #datetime(2019, 7, 1)]
+#            bahis_data=bahis_data[bahis_data['date'].dt.date>= max(bahis_data['date']).date()-relativedelta(days=30)] #datetime(2019, 7, 1)]
 #            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
             print(bahis_data.shape)
             print(bahis_geodata.shape)
             
-            tmp=bahis_data['date'].dt.date.value_counts()
+#            tmp=bahis_data['date'].dt.date.value_counts()
+            tmp=bahis_data['date'].value_counts()
             tmp=tmp.to_frame()
             tmp['counts']=tmp['date']
             tmp['date']=pd.to_datetime(tmp.index)
-            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+            tmp=tmp['counts'].groupby(tmp['date']).sum().astype(int)
+            tmp=tmp.resample('D').sum().fillna(0)
+#            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
             tmp=tmp.to_frame()
             tmp['date']=tmp.index
             tmp['date']=tmp['date'].astype('datetime64[D]')
             
-            figULORep= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
+            print(tmp)
+            figULORep= px.line(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}, markers=True)
             figULORep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
             figULORep.add_annotation(
                 x=end_date,
@@ -224,7 +230,10 @@ def selectULO(SelDiv, SelDis, SelUpa):
                 bgcolor="#ff7f0e",
                 opacity=0.8
                 )
-            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
+
+#            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
+            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date']).sum().astype(int)  
+            tmp=tmp.resample('D').sum().fillna(0)
             
             tmp=tmp.reset_index()
             tmp=tmp.rename(columns={'date':'date'})
@@ -248,6 +257,7 @@ def selectULO(SelDiv, SelDis, SelUpa):
                 bgcolor="#ff7f0e",
                 opacity=0.8
                 )
+            figULOSick.update_yaxes(rangemode="tozero")
             
             figULODead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
             figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
