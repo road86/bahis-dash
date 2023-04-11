@@ -325,7 +325,7 @@ layout =  html.Div([
                                     start_date=date(2022, 1, 1) ,
                                     max_date_allowed=end_date,
                                     # start_date=date(end_date.year-1, end_date.month, end_date.day),
-                                    initial_visible_month=end_date,
+                                    # initial_visible_month=end_date,
                                     end_date=date(2022, 12, 31)
                                     #end_date=end_date
                                 ),
@@ -521,7 +521,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' Division'
             variab='division'
             labl='Incidences per division'
-            subDist=subDist[subDist['loc_type']==geoSlider]
+            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
     #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
             # if geoTile is not None:
@@ -538,7 +538,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' District'
             variab='district'
             labl='Incidences per district'
-            subDist=subDist[subDist['loc_type']==geoSlider]
+            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
         if geoSlider== 3:
             path=path3
             loc=geoSlider
@@ -548,7 +549,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             splace=' Upazila'
             variab='upazila'
             labl='Incidences per upazila'
-            subDist=subDist[subDist['loc_type']==geoSlider]
+            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
     
     Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
@@ -718,7 +719,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     for i, figure in enumerate(subpl):
         for trace in range(len(figure['data'])):
             figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
+    figgZoon.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
 
     endtime_tab2 = datetime.now()
     print('tab2 : ' + str(endtime_tab2-starttime_tab2))   
