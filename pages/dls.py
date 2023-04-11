@@ -254,7 +254,7 @@ def open_data(path):
         # incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
         
 
-def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
+def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
     reports[pnumber] = reports.index #1
     reports.index = reports.index.astype(int)   # upazila name
@@ -263,7 +263,7 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     data = open_data(path) #1
 
     reports[pname] = reports.index
-    tmp=subDist[['value', 'name']]
+    tmp=subDistM[['value', 'name']]
     tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
@@ -280,7 +280,7 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     # aaa=aaa.rename(columns={'upazilaname'+'_x': 'upazilaname'})
     reports=aaa
     for i in range(reports.shape[0]): # go through all upazila report values
-        reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
+        reports[pname].iloc[i] = subDistM[subDistM['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
     reports[pname]=reports[pname].str.title()
 
     reports.set_index(pnumber) #1
@@ -394,6 +394,7 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('Zoonotic', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('DRRepG1', 'figure'),
+    
     Output ('AlertTable', 'children'),
     
     Output ('GeoDynTable', 'children'),
@@ -483,8 +484,9 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
             subDist=bahis_geodata        
             vDis="",
         else:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==SelDiv] #DivNo]
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
+            #subDist=subDist[subDist['loc_type']==3]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
@@ -493,12 +495,14 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         if not SelDis:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
+            #subDist=subDist[subDist['loc_type']==3]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",            
         else: 
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
+            #subDist=subDist[subDist['loc_type']==4]
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
             
@@ -506,52 +510,56 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         if not SelUpa:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
+            #subDist=subDist[subDist['loc_type']==4]
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
             subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
 
 
-    if ctx.triggered_id=='geoSlider':
-        if geoSlider== 1:
-            path=path1
-            loc=geoSlider
-            title='division'
-            pnumber='divnumber'
-            pname='divisionname'
-            splace=' Division'
-            variab='division'
-            labl='Incidences per division'
-            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+#    if ctx.triggered_id=='geoSlider':
+    if geoSlider== 1:
+        path=path1
+        loc=geoSlider
+        title='division'
+        pnumber='divnumber'
+        pname='divisionname'
+        splace=' Division'
+        variab='division'
+        labl='Incidences per division'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-    #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
-            # if geoTile is not None:
-            #     print(geoTile['points'][0]['location'])
-            #     cU2Division=geoTile['points'][0]['location']
-            #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
-            #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-        if geoSlider== 2:
-            path=path2
-            loc=geoSlider
-            title='district'
-            pnumber='districtnumber'
-            pname='districtname'
-            splace=' District'
-            variab='district'
-            labl='Incidences per district'
-            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+#        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
+        # if geoTile is not None:
+        #     print(geoTile['points'][0]['location'])
+        #     cU2Division=geoTile['points'][0]['location']
+        #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
+        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+    if geoSlider== 2:
+        path=path2
+        loc=geoSlider
+        title='district'
+        pnumber='districtnumber'
+        pname='districtname'
+        splace=' District'
+        variab='district'
+        labl='Incidences per district'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-        if geoSlider== 3:
-            path=path3
-            loc=geoSlider
-            title='upazila'
-            pnumber='upazilanumber'
-            pname='upazilaname'
-            splace=' Upazila'
-            variab='upazila'
-            labl='Incidences per upazila'
-            subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
-    
-    Rfig = plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+    if geoSlider== 3:
+        path=path3
+        loc=geoSlider
+        title='upazila'
+        pnumber='upazilanumber'
+        pname='upazilaname'
+        splace=' Upazila'
+        variab='upazila'
+        labl='Incidences per upazila'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
     print('general callback : ' + str(endtime_general-starttime_general))
 ###tab1
@@ -736,12 +744,12 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     reports= reports.loc[reports[title] != 'nan']
           
     for i in range(reports.shape[0]):
-        reports[title].iloc[i] = subDist.loc[subDist['value']==int(reports[title].iloc[i]),'name'].iloc[0]
+        reports[title].iloc[i] = subDistM.loc[subDistM['value']==int(reports[title].iloc[i]),'name'].iloc[0]
 
     reports=reports.sort_values(title)
     reports[title]=reports[title].str.capitalize()
     
-    tmp=subDist[['value', 'name']]
+    tmp=subDistM[['value', 'name']]
     tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
@@ -760,6 +768,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
     Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
 
+    print(len(alerts))
     AlertTable= dash_table.DataTable(
                                 #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
                                 style_header={
@@ -769,7 +778,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
                                         },
                                 style_cell={'textAlign': 'left'},
                                 export_format='csv',
-                                style_table={'height': '150px', 'overflowY': 'auto'},
+                                style_table={'height': '220px', 'overflowY': 'auto'},
                                 style_as_list_view=True,
                                 fixed_rows={'headers': True},
                                 data=alerts.to_dict('records'),
