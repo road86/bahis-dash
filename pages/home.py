@@ -86,7 +86,7 @@ layout = dbc.Container([
         dbc.Col([
             dbc.Card([
                 dbc.Row([
-                    dbc.Button("DLO", href="/dlo", size="lg")
+                    dbc.Button("DLO", href="/dls", size="lg")
                     ])
                 ])
             ]),

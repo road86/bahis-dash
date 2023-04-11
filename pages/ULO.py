@@ -33,6 +33,7 @@ geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]
 firstrun=True
 vDis=[]
 vUpa=[]
+dislis=[]
 
 def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
@@ -68,47 +69,141 @@ def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on se
     Upalist=Upalist.sort_values(by=['Upazila'])
     return Upalist.to_dict('records')
 
+def updateFig(bahis_data):
+    tmp=bahis_data['date'].value_counts()
+    tmp=tmp.to_frame()
+    tmp['counts']=tmp['date']
+    tmp['date']=pd.to_datetime(tmp.index)
+    tmp=tmp['counts'].groupby(tmp['date']).sum().astype(int)
+    tmp=tmp.resample('D').sum().fillna(0)
+#            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp=tmp.to_frame()
+    tmp['date']=tmp.index
+    tmp['date']=tmp['date'].astype('datetime64[D]')
+    figULORep={}
+    figULORep= px.line(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}, markers=True)
+    figULORep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+    figULORep.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        text="total reports " + str('{:,}'.format(bahis_data['date'].dt.date.value_counts().sum())),
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
+
+#            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
+    tmp=bahis_data[['sick','dead']].groupby(bahis_data['date']).sum().astype(int)  
+    tmp=tmp.resample('D').sum().fillna(0)
+    
+    tmp=tmp.reset_index()
+    tmp=tmp.rename(columns={'date':'date'})
+    tmp['date'] = tmp['date'].astype('datetime64[D]')
+    figULOSick={}
+    figULOSick= px.line(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'}, markers=True)
+    figULOSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+    figULOSick.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
+    figULOSick.update_yaxes(rangemode="tozero")
+    
+    figULODead={}
+    figULODead= px.line(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'}, markers=True)
+    figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+    figULODead.add_annotation(
+        x=end_date,
+        y=max(tmp),
+        text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
+        showarrow=False,
+        font=dict(
+            family="Courier New, monospace",
+            size=12,
+            color="#ffffff"
+            ),
+        align="center",
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ff7f0e",
+        opacity=0.8
+        )
+    return figULORep, figULOSick, figULODead
+
 
 layout =  html.Div([
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
-                        dbc.Label("Select Division"),
+                        #dbc.Label("Select Division"),
                         dcc.Dropdown(
                             options=[{'label': i['Division'], 'value': i['value']} for i in Divlist],
                             id="ULO_Division",
+                            placeholder="Select Division",
                             clearable=True,
                         ), 
                     ])
                 ]),
                 dbc.Col([
                     dbc.Card([
-                        dbc.Label("Select District"),
+                        #dbc.Label("Select District"),
                         dcc.Dropdown(
                             id="ULO_District",
+                            placeholder="Select District",
                             clearable=True,
                         ),
                     ])
                 ]),
                 dbc.Col([
                     dbc.Card([
-                        dbc.Label("Select Upazila"),
+                        #dbc.Label("Select Upazila"),
                         dcc.Dropdown(
                             id="ULO_Upazila",
+                            placeholder="Select Upazila",                            
                             clearable=True,
                         )
                     ])
                 ])
             ]),
-        dbc.Row([
-            (dcc.Graph(id='ULO_Reports')),
-            ]),
-        dbc.Row([
-            (dcc.Graph(id='ULO_Sick')),
-            ]),
-        dbc.Row([
-            (dcc.Graph(id='ULO_Dead')),
-            ])
+            dbc.Row([ 
+                dcc.Dropdown(
+                    id="ULO_dislis",
+                    placeholder="Select Disease",
+                    clearable=True,
+                )
+                ]),
+            dbc.Row([
+                (dcc.Graph(id='ULO_Reports')),
+                ]),
+            dbc.Row([
+                (dcc.Graph(id='ULO_Sick')),
+                ]),
+            dbc.Row([
+                (dcc.Graph(id='ULO_Dead')),
+                ])
             
 ])
                         
@@ -123,6 +218,7 @@ layout =  html.Div([
     Output ('ULO_Upazila', 'value'),
     Output ('ULO_District', 'options'),
     Output ('ULO_Upazila', 'options'),
+    Output ('ULO_dislis', 'options'),
     Output ('ULO_Reports', 'figure'),
     Output ('ULO_Sick', 'figure'),
     Output ('ULO_Dead', 'figure'),
@@ -131,11 +227,12 @@ layout =  html.Div([
     Input ('ULO_Division', 'value'),
     Input ('ULO_District', 'value'),
     Input ("ULO_Upazila",'value'),
+    Input ("ULO_dislis",'value'),
 
 )
 
-def selectULO(SelDiv, SelDis, SelUpa):
-    global bahis_geodata, vDis, vUpa, firstrun
+def selectULO(SelDiv, SelDis, SelUpa, SelDiseases):
+    global bahis_data, bahis_geodata, vDis, vUpa, dislis, firstrun, end_date
 
     starttime_tab1=datetime.now()
     
@@ -148,14 +245,25 @@ def selectULO(SelDiv, SelDis, SelUpa):
     
     if firstrun==True:
         SelDiv=""
+        SelDiseases=""
         vDis=[]
         vUpa=[]
+        dislis=[]
         firstrun=False
     
+    if ctx.triggered_id=='ULO_dislis':
+        if 'All Diseases' in SelDiseases:
+            bahis_subdata=bahis_data
+        else:
+            bahis_subdata=bahis_data[bahis_data['top_diagnosis']== SelDiseases]
+        figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
+            
     if ctx.triggered_id=='ULO_Division':
         if not SelDiv:      
-            vDis="",
+            vDis=[]
             SelDis=""
+            vUpa=[]
+            dislis=[]
         else:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
@@ -173,7 +281,6 @@ def selectULO(SelDiv, SelDis, SelUpa):
             
     if ctx.triggered_id=='ULO_Upazila':            
         if SelUpa:
-            print(SelUpa)
             bahis_data = pd.read_csv(sourcefilename)
             bahis_data= bahis_data.loc[bahis_data['basic_info_upazila']==SelUpa]
             bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
@@ -184,102 +291,30 @@ def selectULO(SelDiv, SelDis, SelUpa):
                                                 'basic_info_district':'district', 
                                                 'basic_info_upazila':'upazila',
                                                 'patient_info_species':'species_no',
-                                                'diagnosis_treatment_tentative_diagnosis':'tentative_diagnosis',
+                                                'diagnosis_treatment_top_diagnosis':'top_diagnosis',
                                                 'patient_info_sick_number':'sick',
                                                 'patient_info_dead_number':'dead',
                                                 })
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
             bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-            bahis_data=bahis_data[bahis_data['date'].dt.date>= end_date-relativedelta(days=30)] #datetime(2019, 7, 1)]
+            bahis_data=bahis_data[bahis_data['date'].dt.date>= end_date-relativedelta(months=12)] #datetime(2019, 7, 1)]
 #            bahis_data=bahis_data[bahis_data['date'].dt.date>= max(bahis_data['date']).date()-relativedelta(days=30)] #datetime(2019, 7, 1)]
 #            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
+            dislis= bahis_data['top_diagnosis'].unique()
+            dislis= pd.DataFrame(dislis, columns=['Disease'])
+            dislis= dislis['Disease'].sort_values().tolist()
+            dislis.insert(0, 'All Diseases')
+            
             print(bahis_data.shape)
             print(bahis_geodata.shape)
             
+            figULORep, figULOSick, figULODead = updateFig(bahis_data)
+            
 #            tmp=bahis_data['date'].dt.date.value_counts()
-            tmp=bahis_data['date'].value_counts()
-            tmp=tmp.to_frame()
-            tmp['counts']=tmp['date']
-            tmp['date']=pd.to_datetime(tmp.index)
-            tmp=tmp['counts'].groupby(tmp['date']).sum().astype(int)
-            tmp=tmp.resample('D').sum().fillna(0)
-#            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
-            tmp=tmp.to_frame()
-            tmp['date']=tmp.index
-            tmp['date']=tmp['date'].astype('datetime64[D]')
-            
-            print(tmp)
-            figULORep= px.line(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}, markers=True)
-            figULORep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-            figULORep.add_annotation(
-                x=end_date,
-                y=max(tmp),
-                text="total reports " + str('{:,}'.format(bahis_data['date'].dt.date.value_counts().sum())),
-                showarrow=False,
-                font=dict(
-                    family="Courier New, monospace",
-                    size=12,
-                    color="#ffffff"
-                    ),
-                align="center",
-        
-                bordercolor="#c7c7c7",
-                borderwidth=2,
-                borderpad=4,
-                bgcolor="#ff7f0e",
-                opacity=0.8
-                )
 
-#            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
-            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date']).sum().astype(int)  
-            tmp=tmp.resample('D').sum().fillna(0)
-            
-            tmp=tmp.reset_index()
-            tmp=tmp.rename(columns={'date':'date'})
-            tmp['date'] = tmp['date'].astype('datetime64[D]')
-            figULOSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
-            figULOSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-            figULOSick.add_annotation(
-                x=end_date,
-                y=max(tmp),
-                text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
-                showarrow=False,
-                font=dict(
-                    family="Courier New, monospace",
-                    size=12,
-                    color="#ffffff"
-                    ),
-                align="center",
-                bordercolor="#c7c7c7",
-                borderwidth=2,
-                borderpad=4,
-                bgcolor="#ff7f0e",
-                opacity=0.8
-                )
-            figULOSick.update_yaxes(rangemode="tozero")
-            
-            figULODead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
-            figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-            figULODead.add_annotation(
-                x=end_date,
-                y=max(tmp),
-                text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
-                showarrow=False,
-                font=dict(
-                    family="Courier New, monospace",
-                    size=12,
-                    color="#ffffff"
-                    ),
-                align="center",
-                bordercolor="#c7c7c7",
-                borderwidth=2,
-                borderpad=4,
-                bgcolor="#ff7f0e",
-                opacity=0.8
-                )
  
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return SelDiv, SelDis, SelUpa, vDis, vUpa, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, figULORep, figULOSick, figULODead
