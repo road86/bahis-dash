@@ -365,7 +365,13 @@ layout =  html.Div([
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
                                           )],
-                                label='Monthly Comparison', tab_id='MonthCompTab')
+                                label='Monthly Comparison', tab_id='MonthCompTab'),
+                            dbc.Tab([
+                                dbc.Card(
+                                    dbc.Row([html.Label("Export Data", id='ExportLabel'),
+                                             html.Div(id='ExportTab')])
+                                    )],
+                                label='Export Data', tab_id='ExportTab')
                             ], id='tabs')
                         ])
                     ], width=8)
@@ -399,6 +405,8 @@ print('initialize : ' + str(endtime_start-starttime_start))
     
     Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
+    Output ('ExportLabel', 'children'),
+    Output ('ExportTab', 'children'),
 
     # Input ('cache_bahis_data', 'data'),
     # Input ('cache_bahis_dgdata', 'data'),
@@ -468,7 +476,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         pname='upazilaname'
         splace=' Upazila'
         variab='upazila'
-        labl='Incidences per upazila'
+        labl='Reports per upazila'
         firstrun=False
         subDist=subDist[subDist['loc_type']==loc]
     
@@ -526,7 +534,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         pname='divisionname'
         splace=' Division'
         variab='division'
-        labl='Incidences per division'
+        labl='Reports per division'
         subDistM=subDist[subDist['loc_type']==geoSlider]
         #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -544,7 +552,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         pname='districtname'
         splace=' District'
         variab='district'
-        labl='Incidences per district'
+        labl='Reports per district'
         subDistM=subDist[subDist['loc_type']==geoSlider]
         #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -556,7 +564,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         pname='upazilaname'
         splace=' Upazila'
         variab='upazila'
-        labl='Incidences per upazila'
+        labl='Reports per upazila'
         subDistM=subDist[subDist['loc_type']==geoSlider]
         #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -770,7 +778,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
     
     NRlabel= 'Non-Reporting Regions: ' + str(len(alerts)) + ' (Please handle with care as geoshape files and geolocations have issues)'
-    print(len(alerts))
     AlertTable= dash_table.DataTable(
                                 #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
                                 style_header={
@@ -855,9 +862,33 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     figMonthly.update_xaxes(dtick="M1", tickformat="%B")
 
     endtime_tab5 = datetime.now()
-    print('tab5 : ' + str(endtime_tab5-starttime_tab5))    
+    print('tab5 : ' + str(endtime_tab5-starttime_tab5))   
+    
+### tab 6 export tab
 
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly 
+    starttime_tab6=datetime.now()
+    
+    ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
+    ExportTab= dash_table.DataTable(
+                                style_header={
+#                                        'overflow': 'hidden',
+#                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '600px', 'overflowY': 'auto'},
+#                                style_as_list_view=True,
+#                                fixed_rows={'headers': True},
+                                data=sub_bahis_sourcedata.to_dict('records'),
+                                columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
+                                ),
+
+    endtime_tab6 = datetime.now()
+    print('tab6 : ' + str(endtime_tab6-starttime_tab6))   
+    
+
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly, ExportLabel, ExportTab 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
 
 
