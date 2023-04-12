@@ -354,7 +354,7 @@ layout =  html.Div([
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dbc.Row(dcc.Graph(id='DRindicators')),
                                                   dbc.Row(dcc.Graph(id='DRRepG1')),
-                                                  dbc.Row([html.Label("Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"),
+                                                  dbc.Row([html.Label("Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)", id='NRlabel'),
                                                       html.Div(id='AlertTable')])])
                                          )],
                                 label='Reports per Geolocation', tab_id='GeoRepTab'),
@@ -394,7 +394,7 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('Zoonotic', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('DRRepG1', 'figure'),
-    
+    Output ('NRlabel', 'children'),
     Output ('AlertTable', 'children'),
     
     Output ('GeoDynTable', 'children'),
@@ -445,6 +445,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     dates = [start_date, end_date]
     #sub_bahis_sourcedata=bahis_data
         
+    NRlabel= 'Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)'
     if firstrun==True:  #inital settings
 #        dates = sne_date(bahis_data)
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
@@ -767,7 +768,8 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
 
     Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
     Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
-
+    
+    NRlabel= 'Non-Reporting Regions: ' + str(len(alerts)) + ' (Please handle with care as geoshape files and geolocations have issues)'
     print(len(alerts))
     AlertTable= dash_table.DataTable(
                                 #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
@@ -855,7 +857,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     endtime_tab5 = datetime.now()
     print('tab5 : ' + str(endtime_tab5-starttime_tab5))    
 
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly 
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly 
 #    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
 
 
