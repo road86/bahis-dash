@@ -34,6 +34,11 @@ firstrun=True
 vDis=[]
 vUpa=[]
 dislis=[]
+maxdates=[]
+startDate=None
+endDate=None
+Diseases=None
+
 
 def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
@@ -69,23 +74,56 @@ def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on se
     Upalist=Upalist.sort_values(by=['Upazila'])
     return Upalist.to_dict('records')
 
+def resetvalues():
+    # firstrun=True
+    # UpaSelected=False
+    figULORep={}    
+    figULOSick={}    
+    figULODead={}  
+    # UpaSelected=True
+    minSelDate=""
+    maxSelDate=""
+    startDate=None
+    endDate=None
+    disabSelDate=True
+    Diseases=None
+    dislis=[]
+    return figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis
+
+
 def updateFig(bahis_data):
-    tmp=bahis_data['date'].value_counts()
-    tmp=tmp.to_frame()
-    tmp['counts']=tmp['date']
-    tmp['date']=pd.to_datetime(tmp.index)
-    tmp=tmp['counts'].groupby(tmp['date']).sum().astype(int)
-    tmp=tmp.resample('D').sum().fillna(0)
-#            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.to_frame()
-    tmp['date']=tmp.index
-    tmp['date']=tmp['date'].astype('datetime64[D]')
+    tmpR=bahis_data['date'].value_counts()
+    tmpR=tmpR.to_frame()
+    tmpR['counts']=tmpR['date']
+    tmpR['date']=pd.to_datetime(tmpR.index)
+    timediff=maxdates[1]- maxdates[0] 
+
+    if timediff <= timedelta(days=30):
+        tmpR=tmpR['counts'].groupby(tmpR['date']).sum().astype(int)
+        tmpR=tmpR.resample('D').sum().fillna(0)
+        tmpSD=bahis_data[['sick','dead']].groupby(bahis_data['date']).sum().astype(int)  
+        tmpSD=tmpSD.resample('D').sum().fillna(0)
+    elif timediff > timedelta(days=30):
+        tmpR=tmpR['counts'].groupby(tmpR['date'].dt.to_period('W-SAT')).sum().astype(int)
+        tmpSD=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
+        
+    tmpR=tmpR.to_frame()
+    tmpR['date']=tmpR.index
+    tmpR['date']=tmpR['date'].astype('datetime64[D]')
+   
+    tmpSD=tmpSD.reset_index()
+    tmpSD=tmpSD.rename(columns={'date':'date'})
+    tmpSD['date'] = tmpSD['date'].astype('datetime64[D]')
+        
     figULORep={}
-    figULORep= px.line(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}, markers=True)
+    if timediff <= timedelta(days=30):
+        figULORep= px.line(tmpR, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}, markers=True)
+    elif timediff > timedelta(days=30): 
+        figULORep= px.bar(tmpR, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
     figULORep.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figULORep.add_annotation(
-        x=end_date,
-        y=max(tmp),
+        x=maxdates[1],
+        y=max(tmpR),
         text="total reports " + str('{:,}'.format(bahis_data['date'].dt.date.value_counts().sum())),
         showarrow=False,
         font=dict(
@@ -101,20 +139,16 @@ def updateFig(bahis_data):
         bgcolor="#ff7f0e",
         opacity=0.8
         )
-
-#            tmp=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)  
-    tmp=bahis_data[['sick','dead']].groupby(bahis_data['date']).sum().astype(int)  
-    tmp=tmp.resample('D').sum().fillna(0)
     
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
     figULOSick={}
-    figULOSick= px.line(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'}, markers=True)
+    if timediff <= timedelta(days=30):
+        figULOSick= px.line(tmpSD, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'}, markers=True)
+    elif timediff > timedelta(days=30): 
+        figULOSick= px.bar(tmpSD, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
     figULOSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figULOSick.add_annotation(
-        x=end_date,
-        y=max(tmp),
+        x=maxdates[1],
+        y=max(tmpSD),
         text="total sick " + str('{:,}'.format(int(bahis_data['sick'].sum()))), ###realy outlyer
         showarrow=False,
         font=dict(
@@ -132,11 +166,14 @@ def updateFig(bahis_data):
     figULOSick.update_yaxes(rangemode="tozero")
     
     figULODead={}
-    figULODead= px.line(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'}, markers=True)
+    if timediff <= timedelta(days=30):
+        figULODead= px.line(tmpSD, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'}, markers=True)
+    elif timediff > timedelta(days=30): 
+        figULODead= px.bar(tmpSD, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
     figULODead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figULODead.add_annotation(
-        x=end_date,
-        y=max(tmp),
+        x=maxdates[1],
+        y=max(tmpSD),
         text="total dead " + str('{:,}'.format(int(bahis_data['dead'].sum()))), ###really
         showarrow=False,
         font=dict(
@@ -158,7 +195,6 @@ layout =  html.Div([
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
-                        #dbc.Label("Select Division"),
                         dcc.Dropdown(
                             options=[{'label': i['Division'], 'value': i['value']} for i in Divlist],
                             id="ULO_Division",
@@ -169,7 +205,6 @@ layout =  html.Div([
                 ]),
                 dbc.Col([
                     dbc.Card([
-                        #dbc.Label("Select District"),
                         dcc.Dropdown(
                             id="ULO_District",
                             placeholder="Select District",
@@ -179,7 +214,6 @@ layout =  html.Div([
                 ]),
                 dbc.Col([
                     dbc.Card([
-                        #dbc.Label("Select Upazila"),
                         dcc.Dropdown(
                             id="ULO_Upazila",
                             placeholder="Select Upazila",                            
@@ -188,12 +222,23 @@ layout =  html.Div([
                     ])
                 ])
             ]),
-            dbc.Row([ 
-                dcc.Dropdown(
-                    id="ULO_dislis",
-                    placeholder="Select Disease",
-                    clearable=True,
-                )
+            dbc.Row([
+                dbc.Col([
+                    dcc.Dropdown(
+                        id="ULO_dislis",
+                        placeholder="Select Disease",
+                        multi=True,
+                        clearable=True,
+                        )
+                    ]),
+                dbc.Col([
+                    dcc.DatePickerRange(
+                        id='ULO_SelDate',
+                        display_format='D MMM, YYYY',
+                        updatemode="bothdates",
+                        clearable=True
+                    ),
+                    ])
                 ]),
             dbc.Row([
                 (dcc.Graph(id='ULO_Reports')),
@@ -219,6 +264,12 @@ layout =  html.Div([
     Output ('ULO_District', 'options'),
     Output ('ULO_Upazila', 'options'),
     Output ('ULO_dislis', 'options'),
+    Output ('ULO_dislis', 'value'),
+    Output ('ULO_SelDate', 'min_date_allowed'),
+    Output ('ULO_SelDate', 'max_date_allowed'),
+    Output ('ULO_SelDate', 'start_date'),
+    Output ('ULO_SelDate', 'end_date'),
+    Output ('ULO_SelDate', 'disabled'),    
     Output ('ULO_Reports', 'figure'),
     Output ('ULO_Sick', 'figure'),
     Output ('ULO_Dead', 'figure'),
@@ -226,37 +277,67 @@ layout =  html.Div([
 
     Input ('ULO_Division', 'value'),
     Input ('ULO_District', 'value'),
-    Input ("ULO_Upazila",'value'),
-    Input ("ULO_dislis",'value'),
+    Input ('ULO_Upazila','value'),
+    Input ('ULO_dislis','value'),
+    Input ('ULO_SelDate', 'start_date'),
+    Input ('ULO_SelDate', 'end_date')
 
 )
 
-def selectULO(SelDiv, SelDis, SelUpa, SelDiseases):
-    global bahis_data, bahis_geodata, vDis, vUpa, dislis, firstrun, end_date
+def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
+    global bahis_data, bahis_subdata, bahis_geodata, vDis, vUpa, dislis, Diseases, firstrun, maxdates,  startDate, endDate, disabSelDate, UpaSelected #, end_date
 
     starttime_tab1=datetime.now()
-    
-    end_date=date(2023,3,1)
-    # bahis_data=pd.DataFrame(columns=['date'])
+        
+    minSelDate=""
+    maxSelDate=""
     figULORep={}    
     figULOSick={}    
     figULODead={}    
-    # tmp = pd.DataFrame(columns=['date','counts'])
     
     if firstrun==True:
+        disabSelDate=True
         SelDiv=""
         SelDiseases=""
         vDis=[]
         vUpa=[]
         dislis=[]
         firstrun=False
+        UpaSelected=False
+        
     
-    if ctx.triggered_id=='ULO_dislis':
-        if 'All Diseases' in SelDiseases:
-            bahis_subdata=bahis_data
+    if ctx.triggered_id=='ULO_dislis' or ctx.triggered_id=='ULO_SelDate':
+        if edate is not None:
+            startDate=sdate
+            endDate=edate
+            bahis_subdata=bahis_data[(bahis_data['date']>= sdate) & (bahis_data['date']<= edate)]
+            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+            minSelDate=maxdates[0]
+            maxSelDate=maxdates[1]
+            maxdates=[pd.Timestamp(sdate),pd.Timestamp(edate)] 
+
+            if len(SelDiseases) != 0:
+                if 'All Diseases' in SelDiseases:
+                    bahis_subdata=bahis_subdata
+                else:
+                    bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
+            
+            figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
         else:
-            bahis_subdata=bahis_data[bahis_data['top_diagnosis']== SelDiseases]
-        figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
+            startDate=None
+            endDate=None
+            bahis_subdata=bahis_data
+            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+            minSelDate=maxdates[0]
+            maxSelDate=maxdates[1]
+
+            if len(SelDiseases) != 0: 
+                if 'All Diseases' in SelDiseases:
+                    bahis_subdata=bahis_subdata
+                else:
+                    bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
+            figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
+        Diseases=SelDiseases
             
     if ctx.triggered_id=='ULO_Division':
         if not SelDiv:      
@@ -264,13 +345,16 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases):
             SelDis=""
             vUpa=[]
             dislis=[]
+            figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
         else:
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
+            figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
             
     if ctx.triggered_id=='ULO_District':
         if not SelDis:
+            figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="", 
@@ -281,10 +365,16 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases):
             
     if ctx.triggered_id=='ULO_Upazila':            
         if SelUpa:
+            UpaSelected=True
+            minSelDate=""
+            maxSelDate=""
+            disabSelDate=True
+            SelDiseases=""
+            dislis=[]
             bahis_data = pd.read_csv(sourcefilename)
             bahis_data= bahis_data.loc[bahis_data['basic_info_upazila']==SelUpa]
             bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-            bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
+            bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
             del bahis_data['Unnamed: 0']
             bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
                                                 'basic_info_division':'division', 
@@ -298,23 +388,25 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases):
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
             bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-            bahis_data=bahis_data[bahis_data['date'].dt.date>= end_date-relativedelta(months=12)] #datetime(2019, 7, 1)]
-#            bahis_data=bahis_data[bahis_data['date'].dt.date>= max(bahis_data['date']).date()-relativedelta(days=30)] #datetime(2019, 7, 1)]
-#            bahis_geodata=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
+            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+            bahis_data=bahis_data[bahis_data['date'].dt.date>= maxdates[1]-relativedelta(months=12)] #datetime(2019, 7, 1)]
+            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+            disabSelDate=False
+            minSelDate=maxdates[0]
+            maxSelDate=maxdates[1]
+
             dislis= bahis_data['top_diagnosis'].unique()
             dislis= pd.DataFrame(dislis, columns=['Disease'])
             dislis= dislis['Disease'].sort_values().tolist()
             dislis.insert(0, 'All Diseases')
             
-            print(bahis_data.shape)
-            print(bahis_geodata.shape)
             
             figULORep, figULOSick, figULODead = updateFig(bahis_data)
-            
-#            tmp=bahis_data['date'].dt.date.value_counts()
+        else:
+            figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
 
- 
+             
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead
