@@ -316,7 +316,8 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             maxSelDate=maxdates[1]
             maxdates=[pd.Timestamp(sdate),pd.Timestamp(edate)] 
 
-            if len(SelDiseases) != 0:
+#            if len(SelDiseases) != 0:
+            if SelDiseases:
                 if 'All Diseases' in SelDiseases:
                     bahis_subdata=bahis_subdata
                 else:
@@ -331,7 +332,8 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             minSelDate=maxdates[0]
             maxSelDate=maxdates[1]
 
-            if len(SelDiseases) != 0: 
+#            if len(SelDiseases) != 0:
+            if SelDiseases:
                 if 'All Diseases' in SelDiseases:
                     bahis_subdata=bahis_subdata
                 else:
