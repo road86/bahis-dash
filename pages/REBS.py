@@ -10,18 +10,18 @@ Created on Tue Mar 14 18:07:34 2023
 import dash
 from dash import dcc, html
 import plotly.express as px
-import dash_bootstrap_components as dbc 
+import dash_bootstrap_components as dbc
 import pandas as pd
 
 
 pd.options.mode.chained_assignment = None
 
-#dash.register_page(__name__) 
+#dash.register_page(__name__)
 
-sourcefilename='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/combo_v2.csv'
+sourcefilename='exported_data/combo_v2.csv'
 combo_data = pd.read_csv(sourcefilename)
 combo_data['date'] = pd.to_datetime(combo_data['date'])
-img_logo= 'assets/1129px-One-Health-Triad-en.png'  
+img_logo= 'assets/1129px-One-Health-Triad-en.png'
 
 
 fig1=px.bar(combo_data, x='date', y='cases.y', color_discrete_sequence=['deepskyblue'] , labels={'cases.y':'Number of Reports'}) #color='cases.y', color_continuous_scale='Brwnyl'
