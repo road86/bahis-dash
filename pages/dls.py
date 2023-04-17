@@ -14,7 +14,7 @@ Created on Sun Jan 22 07:48:14 2023
 
 # Import necessary libraries
 import dash
-from dash import dcc, html, callback, ctx #Dash, #dash_table, dbc
+from dash import dcc, html, callback, ctx, dash_table #Dash, #dash_table, dbc
 import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
@@ -24,22 +24,26 @@ import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
-import numpy as np
+import numpy as np 
+
+
+starttime_start=datetime.now()
 
 pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__)    #register page to main dash app
 
 #sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'    #for local debugging purposes
+#path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # reminder: found shapefiles from the data.humdata.org
 sourcepath = 'exported_data/'
 geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project (Masterdata)
 dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info (Masterdata)
 sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')    # main data resource of prepared data from old and new bahis
-#path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
 path1= "geodata/divdata.geojson" #8 Division
 path2= "geodata/distdata.geojson" #64 District
 path3= "geodata/upadata.geojson" #495 Upazila
 
+firstrun=True
 
 def fetchsourcedata(): #fetch and prepare source data
     bahis_data = pd.read_csv(sourcefilename)
@@ -58,20 +62,40 @@ def fetchsourcedata(): #fetch and prepare source data
                                         })
     #assuming non negative values from division, district, upazila, speciesno, sick and dead
     bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
-    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.uint32)
+    bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32) #converting into uint makes odd values)
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
+    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
     return bahis_data
 bahis_data=fetchsourcedata() 
+sub_bahis_sourcedata=bahis_data
+monthlydatabasis=sub_bahis_sourcedata
 
+
+def sne_date(bahis_data):
+    start_date=min(bahis_data['date']).date()
+    end_date=max(bahis_data['date']).date()
+    dates=[start_date, end_date]
+    return dates
+
+start_date=date(2019, 1, 1)
+end_date=date(2023,3,1)
+dates=[start_date, end_date]
+
+ddDList=[]
+Divlist=[]
 def fetchdisgroupdata(): #fetch and prepare disease groups
     bahis_dgdata= pd.read_csv(dgfilename)
 #    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
     bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
     bahis_dgdata= bahis_dgdata.dropna()
 #    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
+    bahis_dgdata = bahis_dgdata.drop_duplicates(subset='name', keep="first")
     return bahis_dgdata
 bahis_dgdata= fetchdisgroupdata()
+to_replace=bahis_dgdata['name'].tolist()
+replace_with=bahis_dgdata['Disease type'].tolist()
+
 
 def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
@@ -82,52 +106,37 @@ def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
     return geodata
 bahis_geodata= fetchgeodata()
-
-# cache these values
-
-def fetchDivisionlist():   #### fetched names; make detour via numbers for all div, dis and upa,
-    ddDivlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] #.str.capitalize()
-    ddDivlist['name']=ddDivlist['name'].str.capitalize()
-    ddDivlist=ddDivlist.rename(columns={'name':'Division'})
-    ddDivlist=ddDivlist.sort_values(by=['Division'])
-    diccc=ddDivlist.to_dict('records')
-    return diccc #.tolist()
-#    return ddDivlist #.tolist()
-ddDivlist=fetchDivisionlist()
-#diccc=ddDivlist.to_dict('records')
-
-def fetchDistrictlist(SelDiv):
-#    DivNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDiv) & (bahis_geodata['loc_type']==1),'value'].values[0]
-    DivNo=SelDiv
-#    ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo]['name'].str.capitalize()
-    ddDislist=bahis_geodata[bahis_geodata['parent']==DivNo][['value','name']] #.str.capitalize()
-    ddDislist['name']=ddDislist['name'].str.capitalize()
-    ddDislist=ddDislist.rename(columns={'name':'District'})
-#    ddDislist.name='District'
-    ddDislist=ddDislist.sort_values(by=['District'])
-    diccc=ddDislist.to_dict('records')
-    return diccc #.tolist()
-#    return ddDislist #.tolist()
-
-def fetchUpazilalist(SelDis):
-#    DisNo= bahis_geodata.loc[(bahis_geodata['name'].str.capitalize()==SelDis) & (bahis_geodata['loc_type']==2),'value'].values[0]
-    DisNo=SelDis
-    ddUpalist=bahis_geodata[bahis_geodata['parent']==DisNo][['value','name']] #.str.capitalize()
-    ddUpalist['name']=ddUpalist['name'].str.capitalize()
-    ddUpalist=ddUpalist.rename(columns={'name':'Upazila'})
-#    ddUpalist.name='Upazila'
-    ddUpalist=ddUpalist.sort_values(by=['Upazila'])
-    diccc=ddUpalist.to_dict('records')
-    return diccc #tolist()
-#    return ddUpalist #tolist()
+subDist=bahis_geodata
 
 
-start_date=min(bahis_data['date']).date()
-end_date=max(bahis_data['date']).date()
-#start_date=date(2021, 1, 1)
+#cache these values
 
-def date_subset(sdate, edate):
-    dates=[sdate, edate]
+def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, caching possible
+    Divlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] 
+    Divlist['name']=Divlist['name'].str.capitalize()
+    Divlist=Divlist.rename(columns={'name':'Division'})
+    Divlist=Divlist.sort_values(by=['Division'])
+    return Divlist.to_dict('records')
+#Divlist=fetchDivisionlist()
+
+
+def fetchDistrictlist(SelDiv, bahis_geodata): # district list is dependent on selected division
+    Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']] 
+    Dislist['name']=Dislist['name'].str.capitalize()
+    Dislist=Dislist.rename(columns={'name':'District'})
+    Dislist=Dislist.sort_values(by=['District'])
+    return Dislist.to_dict('records')
+
+def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on selected district
+    Upalist=bahis_geodata[bahis_geodata['parent']==SelDis][['value','name']] #.str.capitalize()
+    Upalist['name']=Upalist['name'].str.capitalize()
+    Upalist=Upalist.rename(columns={'name':'Upazila'})
+    Upalist=Upalist.sort_values(by=['Upazila'])
+    return Upalist.to_dict('records')
+
+
+def date_subset(dates, bahis_data):
+    
     tmask= (bahis_data['date']>= pd.to_datetime(dates[0])) & (bahis_data['date'] <= pd.to_datetime(dates[1]))
     return bahis_data.loc[tmask]
 
@@ -142,9 +151,7 @@ ddDivision = html.Div(
     [
         dbc.Label("Select Division"),
         dcc.Dropdown(
-            options=[{'label': i['Division'], 'value': i['value']} for i in ddDivlist],
-            #options={'label':ddDivlist['Division'], 'value':ddDivlist['value']},
-            #value=ddDivlist['Division'],
+            options=[{'label': i['Division'], 'value': i['value']} for i in Divlist],
             id="Division",
             clearable=True,
         ),
@@ -174,15 +181,12 @@ ddUpazila = html.Div(
     className="mb-4",
 )
 
-def fetchdiseaselist():
+def fetchdiseaselist(bahis_data):
     dislis= bahis_data['top_diagnosis'].unique()
     dislis= pd.DataFrame(dislis, columns=['Disease'])
-#    dislis.sort_values(by=['Disease'])
-    ddDList= dislis['Disease'].sort_values()
-    return ddDList.tolist()
-ddDList= fetchdiseaselist()
-ddDList.insert(0, 'All Diseases')
-
+    dislis= dislis['Disease'].sort_values().tolist()
+    dislis.insert(0, 'All Diseases')
+    return dislis
 
 def natNo(sub_bahis_sourcedata):
     mask=(sub_bahis_sourcedata['date']>= datetime.now()-timedelta(days=7)) & (sub_bahis_sourcedata['date'] <= datetime.now())
@@ -225,7 +229,7 @@ def fIndicator(sub_bahis_sourcedata):
         domain = {'row': 0, 'column': 2},
         ))
 
-    RfigIndic.update_layout(height=235,
+    RfigIndic.update_layout(height=100,
         grid = {'rows': 1, 'columns': 3},# 'pattern': "independent"},
         #?template=template_from_url(theme),
 
@@ -238,24 +242,33 @@ def open_data(path):
         data = json.load(f)
     return data
 
-def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
-  #  subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]  # select (here) upazila level (results in 545 values -> comes from Dhaka and Chittagon and islands in the SW)
-    reports = sub_bahis_sourcedata.value_counts().to_frame() #(results in 492 values, what about the rest, plot the rest where there is nothing)
-    reports[pnumber] = reports.index
+
+        # path=path3
+        # loc=3
+        # title='upazila'
+        # pnumber='upazilanumber'
+        # pname='upazilaname'
+        # splace=' Upazila'
+        # variab='upazila'
+        # labl='Incidences per upazila'
+        # incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
+        
+
+def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
+    reports = sub_bahis_sourcedata[title].value_counts().to_frame()
+    reports[pnumber] = reports.index #1
     reports.index = reports.index.astype(int)   # upazila name
     reports[pnumber] = reports[pnumber].astype(int)
     reports= reports.loc[reports[pnumber] != 'nan']    # unknown reason for now. does this have to be beore reports in sub_bahis_sourcedata? reports, where there are no geonumbers?
-    data = open_data(path)
+    data = open_data(path) #1
 
     reports[pname] = reports.index
-    tmp=subDist[['value', 'name']]
+    tmp=subDistM[['value', 'name']]
     tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
     tmp[title]=-(reports[title].max())
-
-    # works somewhat, but now preselection of district is also -1 set -1 only for selected ones.
 
 #    for i in range(tmp.shape[0]):
 #    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
@@ -266,11 +279,11 @@ def plot_map(path, loc, subDist, sub_bahis_sourcedata, title, pnumber, pname, sp
     # aaa=aaa.drop([pname+'_y'], axis=1)
     # aaa=aaa.rename(columns={'upazilaname'+'_x': 'upazilaname'})
     reports=aaa
-    # for i in range(reports.shape[0]): # go through all upazila report values
-    #     reports[pname].iloc[i] = subDist[subDist['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
-    # reports[pname]=reports[pname].str.title()
+    for i in range(reports.shape[0]): # go through all upazila report values
+        reports[pname].iloc[i] = subDistM[subDistM['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
+    reports[pname]=reports[pname].str.title()
 
-    reports.set_index(pnumber)
+    reports.set_index(pnumber) #1
 
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pnumber, color=title,
                             featureidkey='properties.'+pnumber,
@@ -294,7 +307,6 @@ layout =  html.Div([
                     dbc.Row([
                         dbc.Col(ddDivision), dbc.Col(ddDistrict), dbc.Col(ddUpazila)
                         ]),
-#                    dbc.Row(dcc.RangeSlider(min=1, max=104, marks={1:'1', 104:'104'}, step=1, value=[1,104], id="test")),
                     dbc.Row(dcc.Graph(id="Map")),
                     dbc.Row(dcc.Slider(min=1, max=3, step=1,
                                        marks={1:'Division',
@@ -313,7 +325,7 @@ layout =  html.Div([
                                     start_date=date(2022, 1, 1) ,
                                     max_date_allowed=end_date,
                                     # start_date=date(end_date.year-1, end_date.month, end_date.day),
-                                    initial_visible_month=end_date,
+                                    # initial_visible_month=end_date,
                                     end_date=date(2022, 12, 31)
                                     #end_date=end_date
                                 ),
@@ -334,45 +346,71 @@ layout =  html.Div([
                                 dbc.Row(dcc.Graph(id='Reports')),
                                 dbc.Row(dcc.Graph(id='Sick')),
                                 dbc.Row(dcc.Graph(id='Dead'))],
-                                label='Reports'),
+                                label='Reports', tab_id='ReportsTab'),
                             dbc.Tab([
                                 dbc.Row(dcc.Graph(id='Livestock')),
                                 dbc.Row(dcc.Graph(id='Zoonotic'))],
-                                label='Diseases'),
+                                label='Diseases', tab_id='DiseaseTab'),
                             dbc.Tab([
-                                dbc.Card(dbc.Col([dcc.Graph(id='DRindicators'),
-                                                  dcc.Graph(id='DRRepG1')])
+                                dbc.Card(dbc.Col([dbc.Row(dcc.Graph(id='DRindicators')),
+                                                  dbc.Row(dcc.Graph(id='DRRepG1')),
+                                                  dbc.Row([html.Label("Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)", id='NRlabel'),
+                                                      html.Div(id='AlertTable')])])
                                          )],
-                                label='Reports per Geolocation'),
+                                label='Reports per Geolocation', tab_id='GeoRepTab'),
+                            dbc.Tab([
+                                dbc.Row([html.Label("All Reports of current year"),
+                                                      html.Div(id='GeoDynTable')])],
+                                label='Reportdynamics per Geolocation', tab_id='GeoDynTab'),
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
                                           )],
-                                label='Monthly Comparison')
-                            ])
+                                label='Monthly Comparison', tab_id='MonthCompTab'),
+                            dbc.Tab([
+                                dbc.Card(
+                                    dbc.Row([html.Label("Export Data", id='ExportLabel'),
+                                             html.Div(id='ExportTab')])
+                                    )],
+                                label='Export Data', tab_id='ExportTab')
+                            ], id='tabs')
                         ])
                     ], width=8)
             ])
     ])
 
+endtime_start = datetime.now()
+print('initialize : ' + str(endtime_start-starttime_start))
+
 
 ## shape overlay of selected geotile(s)
 
-@callback(
+@callback(                             #splitting callbacks to prevent updates?
+                              #dash cleintsied callback with js
+    Output ('Division', 'options'),
     Output ('District', 'options'),
     Output ('Upazila', 'options'),
+    Output ('Diseaselist', 'options'),
 
     Output ('Map', 'figure'),
     Output ('Reports', 'figure'),
     Output ('Sick', 'figure'),
     Output ('Dead', 'figure'),
+    
     Output ('Livestock', 'figure'),
     Output ('Zoonotic', 'figure'),
-    Output ('DRRepG1', 'figure'),
     Output ('DRindicators', 'figure'),
+    Output ('DRRepG1', 'figure'),
+    Output ('NRlabel', 'children'),
+    Output ('AlertTable', 'children'),
+    
+    Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
-#    Output ('geoSlider', 'children'),
+    Output ('ExportLabel', 'children'),
+    Output ('ExportTab', 'children'),
 
-#    Input ('test', 'value'),
+    # Input ('cache_bahis_data', 'data'),
+    # Input ('cache_bahis_dgdata', 'data'),
+    # Input ('cache_bahis_geodata', 'data'),
     Input ('geoSlider', 'value'),
     Input ('Map', 'clickData'),
     Input ('Reports', 'clickData'),
@@ -382,99 +420,55 @@ layout =  html.Div([
     Input ('Division', 'value'),
     Input ('District', 'value'),
     Input ("Upazila",'value'),
-    Input ("daterange",'start_date'),
-    Input ("daterange",'end_date'),
+    Input ("daterange",'start_date'),  #make state to prevent upate before submitting
+    Input ("daterange",'end_date'), #make state to prevent upate before submitting
+    
     Input ("Diseaselist",'value'),
+    Input ('tabs', 'active_tab'),
+    Input ('Map', 'clickData'),
 )
-def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
-#def update_whatever(test, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
-    # print(cU2Upazila)
+#def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
+
+def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
+
+    starttime_general=datetime.now()
+
+    global firstrun, vDiv, vDis, vUpa, ddDList, path, variab, labl, splace, pname, pnumber, loc, title, incsub_bahis_sourcedata, sub_bahis_sourcedata, monthlydatabasis, subDist
+#    print(geoclick)
+
+
+    # starttime=datetime.now()
+    # endtime = datetime.now()
+    # print(endtime-starttime)    
     # print(clkRep)
     # print(clkSick)
-    # print(clkDead)
-    # print(test)
-    #print(ctx.triggered_id)
+    # print(pd.DataFrame(cbahis_data).shape)
+    # print(pd.DataFrame(cbahis_dgdata).shape)
+    # print(pd.DataFrame(cbahis_geodata).shape)
+    # bahis_data=pd.DataFrame(cbahis_data)
+    # bahis_data['date']= pd.to_datetime(bahis_data['date'])
+    # bahis_dgdata=pd.DataFrame(cbahis_dgdata)
+    # bahis_geodata=pd.DataFrame(cbahis_geodata)
 
-    sub_bahis_sourcedata=date_subset(start_date, end_date)
-    sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
-    tmps= pd.to_datetime(start_date)-relativedelta(years=1)
-    tmpe= pd.to_datetime(end_date)-relativedelta(years=1)
-    sub1a_bahis_sourcedata=date_subset(tmps, tmpe)
-    sub1a_bahis_sourcedata=disease_subset(diseaselist, sub1a_bahis_sourcedata)
-
-    monthlydatabasis=disease_subset(diseaselist, bahis_data)
-
-    ddDislist=None
-    ddUpalist=None
-
-    if cU2Division is None:
-        vDistrict="",
-        vUpa="",
-        #raise PreventUpdate
-    else:
-        ddDislist=fetchDistrictlist(cU2Division)
-        vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
-        if cU2District is None:
-            vUpa="",
-            #raise PreventUpdate
-        else:
-            ddUpalist=fetchUpazilalist(cU2District)
-            vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in ddUpalist]
-
-    # if geoTile is not None:
-    #     print(geoTile['points'][0]['location'])
-
-    if not cU2Upazila:
-        if not cU2District:
-            if not cU2Division:
-                sub_bahis_sourcedata=sub_bahis_sourcedata
-                sub1a_bahis_sourcedata=sub1a_bahis_sourcedata
-                subDist=bahis_geodata
-            else:
-                sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['division']==cU2Division] #DivNo]
-                sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['division']==cU2Division] #DivNo]
-                subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2Division))]
-                monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['division']==cU2Division]
-        else:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==cU2District]
-            sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['district']==cU2District]
-            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(cU2District))]
-            monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['district']==cU2District]
-    else:
-        sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==cU2Upazila]
-        sub1a_bahis_sourcedata= sub1a_bahis_sourcedata.loc[sub1a_bahis_sourcedata['upazila']==cU2Upazila]
-        subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(cU2Upazila))]
-        monthlydatabasis=monthlydatabasis.loc[monthlydatabasis['upazila']==cU2Upazila]
-    #### change 1 and 2 with bad database check plot map and change value reference
-
-    if geoSlider== 1:
-        path=path1
-        loc=1
-        title='division'
-        pnumber='divnumber'
-        pname='divisionname'
-        splace=' Division'
-        variab='division'
-        labl='Incidences per division'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['division']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
-        # if geoTile is not None:
-        #     print(geoTile['points'][0]['location'])
-        #     cU2Division=geoTile['points'][0]['location']
-        #     ddDislist=fetchDistrictlist(geoTile['points'][0]['location'])
-        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in ddDislist]
-    if geoSlider== 2:
-        path=path2
-        loc=2
-        title='district'
-        pnumber='districtnumber'
-        pname='districtname'
-        splace=' District'
-        variab='district'
-        labl='Incidences per district'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['district']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_data['district']).dropna().astype(int)
-    if geoSlider== 3:
+    dates = [start_date, end_date]
+    #sub_bahis_sourcedata=bahis_data
+        
+    NRlabel= 'Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)'
+    if firstrun==True:  #inital settings
+#        dates = sne_date(bahis_data)
+        sub_bahis_sourcedata=date_subset(dates, bahis_data)
+        ddDList= fetchdiseaselist(sub_bahis_sourcedata)
+        ddDList.insert(0, 'All Diseases')
+        Divlist=fetchDivisionlist(bahis_geodata)
+        vDiv = [{'label': i['Division'], 'value': i['value']} for i in Divlist]
+        vDis=[]
+        vUpa=[]
+        # figgLiveS=lambda:None
+        # figgZoon=[] 
+        # Rfigg=[] 
+        # Rfindic=[]
+        # figMonthly=[]
+        
         path=path3
         loc=3
         title='upazila'
@@ -482,14 +476,105 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         pname='upazilaname'
         splace=' Upazila'
         variab='upazila'
-        labl='Incidences per upazila'
-        incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
-#        bahis_sourcedata = pd.to_numeric(bahis_data['upazila']).dropna().astype(int)
+        labl='Reports per upazila'
+        firstrun=False
+        subDist=subDist[subDist['loc_type']==loc]
+    
+        
+    if ctx.triggered_id=='daterange':
+        sub_bahis_sourcedata=date_subset(dates, bahis_data)
+        
+    if ctx.triggered_id=='Diseaselist':
+        sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
+    
+    if ctx.triggered_id=='Division':
+        if not SelDiv:
+            sub_bahis_sourcedata=bahis_data
+            subDist=bahis_geodata        
+            vDis="",
+        else:
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
+            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
+            #subDist=subDist[subDist['loc_type']==3]
+            Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
+            vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+            vUpa="",
+            
+    if ctx.triggered_id=='District':
+        if not SelDis:
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
+            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
+            #subDist=subDist[subDist['loc_type']==3]
+            Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
+            vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+            vUpa="",            
+        else: 
+            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
+            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
+            #subDist=subDist[subDist['loc_type']==4]
+            Upalist=fetchUpazilalist(SelDis, bahis_geodata)
+            vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
+            
+    if ctx.triggered_id=='Upazila':            
+        if not SelUpa:
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
+            subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
+            #subDist=subDist[subDist['loc_type']==4]
+        else:
+            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
+            subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
 
-    Rfig = plot_map(path, loc, subDist, incsub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
 
+#    if ctx.triggered_id=='geoSlider':
+    if geoSlider== 1:
+        path=path1
+        loc=geoSlider
+        title='division'
+        pnumber='divnumber'
+        pname='divisionname'
+        splace=' Division'
+        variab='division'
+        labl='Reports per division'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+#        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
+        # if geoTile is not None:
+        #     print(geoTile['points'][0]['location'])
+        #     cU2Division=geoTile['points'][0]['location']
+        #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
+        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+    if geoSlider== 2:
+        path=path2
+        loc=geoSlider
+        title='district'
+        pnumber='districtnumber'
+        pname='districtname'
+        splace=' District'
+        variab='district'
+        labl='Reports per district'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+    if geoSlider== 3:
+        path=path3
+        loc=geoSlider
+        title='upazila'
+        pnumber='upazilanumber'
+        pname='upazilaname'
+        splace=' Upazila'
+        variab='upazila'
+        labl='Reports per upazila'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+        #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+    endtime_general = datetime.now()
+    print('general callback : ' + str(endtime_general-starttime_general))
 ###tab1
 
+    starttime_tab1=datetime.now()
+        
     tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
     tmp=tmp.to_frame()
     tmp['counts']=tmp['date']
@@ -500,30 +585,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     tmp['date']=tmp.index
     tmp['date']=tmp['date'].astype('datetime64[D]')
 
-    tmp2=sub1a_bahis_sourcedata['date'].dt.date.value_counts()
-    tmp2=tmp2.to_frame()
-    tmp2['counts']=tmp2['date']
-
-    tmp2['date']=pd.to_datetime(tmp2.index)
-    tmp2=tmp2['counts'].groupby(tmp2['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp2=tmp2.to_frame()
-    tmp2['date']=tmp2.index
-    tmp2['date']=tmp2['date'].astype('datetime64[D]')
-    tmp2['date']=tmp2['date']+pd.offsets.Day(365)
-
     figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
-    #figgR= figgR.add_trace(px.bar(tmp2, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'}))
-    figgRR = px.line(tmp2, x='date', y='counts')
-
-    figgRR['data'][0]['line']['color']='rgb(204, 0, 0)'
-    figgRR['data'][0]['line']['width']=1
-    figgR= go.Figure(data=figgR.data + figgRR.data)
     figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figgR.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
         text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
         showarrow=False,
         font=dict(
@@ -532,12 +598,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             color="#ffffff"
             ),
         align="center",
-        #arrowhead=2,
-        #arrowsize=1,
-        #arrowwidth=2,
-        #arrowcolor="#636363",
-        #ax=20,
-        #ay=-30,
+
         bordercolor="#c7c7c7",
         borderwidth=2,
         borderpad=4,
@@ -545,7 +606,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
         opacity=0.8
         )
 
-    tmp=sub_bahis_sourcedata['sick'].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
+    tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
     tmp=tmp.reset_index()
     tmp=tmp.rename(columns={'date':'date'})
     tmp['date'] = tmp['date'].astype('datetime64[D]')
@@ -554,9 +615,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     figgSick.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
-        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))),
+        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -564,30 +623,19 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             color="#ffffff"
             ),
         align="center",
-        #arrowhead=2,
-        #arrowsize=1,
-        #arrowwidth=2,
-        #arrowcolor="#636363",
-        #ax=20,
-        #ay=-30,
         bordercolor="#c7c7c7",
         borderwidth=2,
         borderpad=4,
         bgcolor="#ff7f0e",
         opacity=0.8
         )
-    tmp=sub_bahis_sourcedata['dead'].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
+
     figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
     figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
     figgDead.add_annotation(
         x=end_date,
         y=max(tmp),
-        #xref="x",
-        #yref="y",
-        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))),
+        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
         showarrow=False,
         font=dict(
             family="Courier New, monospace",
@@ -595,29 +643,34 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             color="#ffffff"
             ),
         align="center",
-        #arrowhead=2,
-        #arrowsize=1,
-        #arrowwidth=2,
-        #arrowcolor="#636363",
-        #ax=20,
-        #ay=-30,
         bordercolor="#c7c7c7",
         borderwidth=2,
         borderpad=4,
         bgcolor="#ff7f0e",
         opacity=0.8
         )
+ 
+    endtime_tab1 = datetime.now()
+    print('tab1 : ' + str(endtime_tab1-starttime_tab1))    
+
 ####tab2
+    
+    starttime_tab2=datetime.now()
+
+    #preprocess groupdata ?
+    
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
     sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    # to_replace=tmpdg['name'].tolist()
+    # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataP=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
+ 
+    
+    poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
     tmp=tmp.rename({'species' : 'counts'}, axis=1)
     tmp=tmp.head(10)
@@ -629,20 +682,19 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
     sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    to_replace=tmpdg['name'].tolist()
-    replace_with=tmpdg['Disease type'].tolist()
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    # to_replace=tmpdg['name'].tolist()
+    # replace_with=tmpdg['Disease type'].tolist()
     sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    sub_bahis_sourcedataLA=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
+    LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+    tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
     tmp=tmp.rename({'species' : 'counts'}, axis=1)
     tmp=tmp.head(10)
     tmp=tmp.iloc[::-1]
     flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
     flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
     subpl=[fpoul, flani]
     figgLiveS= make_subplots(rows=2, cols=1)
     for i, figure in enumerate(subpl):
@@ -650,20 +702,14 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
             figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
     figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
 
-#    if cReport=='Zoonotic Disease Cases':
-    #subpl= make_subplots(rows=2, cols=1),
     poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
     sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    tmpdg=tmpdg[tmpdg['Disease type']=='Zoonotic diseases']
+    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+    tmpdg=bahis_dgdata[bahis_dgdata['Disease type']=='Zoonotic diseases']
     tmpdg=tmpdg['name'].tolist()
     sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    # sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataP=sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases']
 
     tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
@@ -672,18 +718,11 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     tmp=tmp.iloc[::-1]
     fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
     fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
 
     lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
     sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-#        tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
     sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
-
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    # sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    # sub_bahis_sourcedataLA=sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases']
 
     tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
     tmp=tmp.sort_values(by='species', ascending=False)
@@ -692,327 +731,167 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, c
     tmp=tmp.iloc[::-1]
     flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
     flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #subpl.add_traces(flani, row=1, col=1)#, row=2, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
     subpl=[fpoul, flani]
     figgZoon= make_subplots(rows=2, cols=1)
     for i, figure in enumerate(subpl):
         for trace in range(len(figure['data'])):
             figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgZoon.update_layout(height=100, margin={"r":0,"t":0,"l":0,"b":0})
+    figgZoon.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
 
+    endtime_tab2 = datetime.now()
+    print('tab2 : ' + str(endtime_tab2-starttime_tab2))   
+
+    
 ### tab3 geolocation
-    #subDist=bahis_geodata[(bahis_geodata["loc_type"]==geoSlider)]
-    reports = sub_bahis_sourcedata[title].value_counts().to_frame()
+
+    starttime_tab3=datetime.now()
+
+    reports=sub_bahis_sourcedata[title].value_counts().to_frame()
+
     reports['cases']=reports[title]
     reports[title] = reports.index
     reports= reports.loc[reports[title] != 'nan']
-
+          
     for i in range(reports.shape[0]):
-        reports[title].iloc[i] = subDist.loc[subDist['value']==int(reports[title].iloc[i]),'name'].iloc[0]
+        reports[title].iloc[i] = subDistM.loc[subDistM['value']==int(reports[title].iloc[i]),'name'].iloc[0]
 
     reports=reports.sort_values(title)
     reports[title]=reports[title].str.capitalize()
-
-    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl})# ,color='division')
-    Rfigg.update_layout(autosize=True, height=400, margin={"r":0,"t":0,"l":0,"b":0})
+    
+    tmp=subDistM[['value', 'name']]
+    tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
+    tmp[pname]=tmp[pname].str.title()
+    tmp['Index']=tmp[pnumber]
+    tmp=tmp.set_index('Index')
+    aaa=reports.combine_first(tmp)
+    aaa[pname]=tmp[pname]    
+    alerts=aaa[aaa.isna().any(axis=1)]
+    alerts= alerts[[pname, pnumber]]
+    del tmp
+    del aaa
+    
 
     Rfindic=fIndicator(sub_bahis_sourcedata)
+    Rfindic.update_layout(height=100, margin={"r":0,"t":4,"l":0,"b":0})
 
-### tab 4 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
+    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
+    Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
+    
+    NRlabel= 'Non-Reporting Regions: ' + str(len(alerts)) + ' (Please handle with care as geoshape files and geolocations have issues)'
+    AlertTable= dash_table.DataTable(
+                                #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
+                                style_header={
+                                        'overflow': 'hidden',
+                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '220px', 'overflowY': 'auto'},
+                                style_as_list_view=True,
+                                fixed_rows={'headers': True},
+                                data=alerts.to_dict('records'),
+                                ),
 
-    monthly=monthlydatabasis['sick'].groupby(monthlydatabasis['date'].dt.to_period('M')).sum().astype(int)
+    endtime_tab3 = datetime.now()
+    print('tab3 : ' + str(endtime_tab3-starttime_tab3))
+
+#### tab 4 geodyn tab per current year
+
+    starttime_tab4=datetime.now()
+
+    wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
+    wkRep=wkRep[['date', 'division', 'district', 'upazila']]
+    totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique())
+
+    reports=pd.DataFrame({title.capitalize():[]})
+    for i in range(0,totalweeks):
+            reports[i+1]=''
+    reports['total']=''
+    
+    for geono in wkRep[title].unique():
+#        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title() # either all reports and all geodata or both only selected
+        reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
+#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+        tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
+#        tmpp.reset_index()
+        for entry in range(len(tmpp)):
+#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+            reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
+    ###  speed suggestion: not groupby weeks, but calculate all except last week and sum over it.            
+        
+    reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
+    reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
+    reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
+    reports=reports.rename(columns={totalweeks-1:'week 1-'+ str(totalweeks-1), totalweeks:'week ' + str(totalweeks)})
+    reports=reports.fillna(0)
+
+
+    GeoDynTable = dash_table.DataTable(
+                                columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
+                                style_header={
+                                        'overflow': 'hidden',
+                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '600px', 'overflowY': 'auto'},
+                                style_as_list_view=True,
+                                fixed_rows={'headers': True},
+                                data=reports.to_dict('records'),
+                                ),
+
+    endtime_tab4 = datetime.now()
+    print('tab4 : ' + str(endtime_tab4-starttime_tab4))    
+
+### tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
+
+    starttime_tab5=datetime.now()
+
+    monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
+    monthly=monthly.rename({'count':'reports'}, axis=1)
     monthly=monthly.reset_index()
-    monthly=monthly.rename(columns={'date':'date'})
-    monthly['date']=monthly['date'].astype(str)
-    monthly['date'] = pd.to_datetime(monthly['date'])
-    monthlydata={'sick':monthly['sick'],
-               'date':monthly['date']}
-    monthlydata=pd.DataFrame(monthlydata)
+    monthly['year']=monthly['year'].astype(str)
+    figMonthly = px.bar(data_frame=monthly,
+                        x='month',
+                        y='reports',
+                        labels={'month':'Month','reports':'Reports'},
+                        color='year',
+                        barmode='group')
+    figMonthly.update_xaxes(dtick="M1", tickformat="%B")
 
-    figMonthly= px.bar(monthlydata, x=pd.DatetimeIndex(monthlydata['date']).month, y=monthlydata['sick'], color=pd.DatetimeIndex(monthlydata['date']).year.astype(str), barmode ='group')
+    endtime_tab5 = datetime.now()
+    print('tab5 : ' + str(endtime_tab5-starttime_tab5))   
+    
+### tab 6 export tab
 
-    return vDistrict, vUpa, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfigg, Rfindic, figMonthly
+    starttime_tab6=datetime.now()
+    
+    ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
+    ExportTab= dash_table.DataTable(
+                                style_header={
+#                                        'overflow': 'hidden',
+#                                        'maxWidth': 0,
+                                        'fontWeight': 'bold',
+                                        },
+                                style_cell={'textAlign': 'left'},
+                                export_format='csv',
+                                style_table={'height': '600px', 'overflowY': 'auto'},
+#                                style_as_list_view=True,
+#                                fixed_rows={'headers': True},
+                                data=sub_bahis_sourcedata.to_dict('records'),
+                                columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
+                                ),
 
+    endtime_tab6 = datetime.now()
+    print('tab6 : ' + str(endtime_tab6-starttime_tab6))   
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# from datetime import timedelta
-# import plotly.graph_objs as go
-# import numpy as np
-# from dash import dcc, html
-# import dash
-# import pandas as pd
-
-
-# dash.register_page(__name__)
-
-# def holidays():
-#     #year = dt.now().year
-
-#     d1 = pd.to_datetime('01.01.2022') #dt.date(2022, 8, 1)
-#     d2 = pd.to_datetime('01.01.2023') #dt.date(2023, 7, 15)
-
-#     delta = d2 - d1
-
-#     dates_in_year = [d1 + timedelta(i) for i in range(delta.days+1)] #gives me a list with datetimes for each day a year
-#     weekdays_in_year = [i.weekday() for i in dates_in_year] #gives [0,1,2,3,4,5,6,0,1,2,3,4,5,6,…] (ticktext in xaxis dict translates this to weekdays
-#     weeknumber_of_dates = [i.strftime("%Gww%V")[2:] for i in dates_in_year] #gives [1,1,1,1,1,1,1,2,2,2,2,2,2,2,…] name is self-explanatory
-#     z = np.random.randint(2, size=(len(dates_in_year)))
-#     text = [str(i) for i in dates_in_year] #gives something like list of strings like ‘2018-01-25’ for each date. Used in data trace to make good hovertext.
-#     #4cc417 green #347c17 dark green
-#     colorscale=[[False, '#eeeeee'], [True, '#76cf63']]
-
-#     data = [
-#     go.Heatmap(
-#     x = weeknumber_of_dates,
-#     y = weekdays_in_year,
-#     z = z,
-#     text=text,
-#     hoverinfo='text',
-#     xgap=3, # this
-#     ygap=3, # and this is used to make the grid-like apperance
-#     showscale=False,
-#     colorscale=colorscale
-#     )
-#     ]
-
-#     layout = go.Layout(
-#     title='activity chart',
-#     height=280,
-#     yaxis=dict(
-#     showline = False, showgrid = False, zeroline = False,
-#     tickmode='array',
-#     ticktext=['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-#     tickvals=[0,1,2,3,4,5,6],
-#     ),
-#     xaxis=dict(
-#     showline = False, showgrid = False, zeroline = False,
-#     ),
-#     font={'size':10, 'color':'#9e9e9e'},
-#     plot_bgcolor=('#fff'),
-#     margin = dict(t=40),
-#     )
-
-#     fig = go.Figure(data=data, layout=layout)
-#     return fig
-
-# #app = dash.Dash()
-# layout = html.Div([
-# dcc.Graph(id='heatmap-test', figure=holidays(), config={'displayModeBar': False})
-# ])
+    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly, ExportLabel, ExportTab 
+#    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
 
 
-# # Import necessary libraries
-# import dash
-# from dash import dash_table, dcc, html, callback
-# from dash.dependencies import Input, Output
-# import pandas as pd
-# from datetime import datetime, timedelta
-# import numpy as np
-# import plotly.express as px
-
-# sourcepath = 'C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'
-# #geofilename = sourcepath + 'newbahis_geo_cluster.csv'   # the available geodata from the bahis project
-# sourcefilename =sourcepath + 'preped_data2.csv'
-# bahis_sd = pd.read_csv(sourcefilename)
-# img_logo= 'assets/Logo.png'
-
-# path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson" #1 Nation # found shapefiles from the data.humdata.org
-# path1= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM1_simplified.geojson" #8 Division
-# path2= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM2_simplified.geojson" #64 District
-# path3= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM3_simplified.geojson" #495 Upazila
-# path4= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM4_simplified.geojson" #4562 Union
-
-# def fetchsourcedata():
-#     bahis_sd = pd.read_csv(sourcefilename)
-#     bahis_sd['basic_info_division'] = pd.to_numeric(bahis_sd['basic_info_division'])
-#     bahis_sd['basic_info_district'] = pd.to_numeric(bahis_sd['basic_info_district'])
-#     bahis_sd['basic_info_upazila'] = pd.to_numeric(bahis_sd['basic_info_upazila'])
-#     bahis_sd['basic_info_date'] = pd.to_datetime(bahis_sd['basic_info_date'])
-
-#     # restrict to data from 2019
-#     tmask= (bahis_sd['basic_info_date']>= pd.to_datetime('01.01.2019')) & (bahis_sd['basic_info_date'] <= pd.to_datetime(bahis_sd['basic_info_date'].max()))
-#     sub_data=bahis_sd.loc[tmask]
 
 
-#     rep = sub_data.filter(['basic_info_district', 'basic_info_date'], axis=1)
-#     rep = rep.groupby('basic_info_district').resample('W-Fri', on='basic_info_date').sum()
-#     rep = rep.rename(columns={'basic_info_district': 'reports'})
-#     rep = rep.reset_index()
 
-#     del bahis_sd
-#     #print(rep)
-#     return rep
-# bahis_sourcedata= fetchsourcedata()
-
-# tmp=bahis_sourcedata['basic_info_district'].unique()
-# #tmpp=pd.DataFrame([tmp]).transpose()
-# #tmpp.columns=['district']
-# wklst=np.arange(bahis_sourcedata['basic_info_date'].max(), bahis_sourcedata['basic_info_date'].min(), timedelta(weeks=-1)).astype(datetime)
-# tmpp=pd.DataFrame(data=[], index=tmp, columns=wklst)
-# for i in bahis_sourcedata.itertuples():
-#     # print(int(i[1]))
-#     # print(pd.to_datetime(i[2]))
-#     # print(int(i[3]))
-#     tmpp.loc[i[1],pd.to_datetime(i[2])]=int(i[3])
-
-
-#                 # sub_bahis_sourcedata= sub_bahis_sourcedata
-
-#                 # path=path2
-#                 # loc=2
-#                 # title='basic_info_district'
-#                 # pname='districtname'
-#                 # splace=' District'
-#                 # variab='district'
-#                 # labl='Incidences per district'
-#     # subDist=bahis_geodata[(bahis_geodata["loc_type"]==loc)]
-#     # reports = sub_bahis_sourcedata[title].value_counts().to_frame()
-#     # reports[pname] = reports.index
-#     # reports= reports.loc[reports[pname] != 'nan']
-
-#     # data = open_data(path)
-#     # for i in data['features']:
-#     #     i['id']= i['properties']['shapeName'].replace(" Division","")
-#     # for i in range(reports.shape[0]):
-#     #     reports[pname].iloc[i] = subDist.loc[subDist['value']==int(reports[pname].iloc[i]),'name'].iloc[0]
-#     # reports=reports.sort_values(pname)
-#     # reports[pname]=reports[pname].str.capitalize()
-
-#     # Rfigg=px.bar(reports, x=pname, y=title, labels= {variab:labl})# ,color='basic_info_division')
-#     # Rfigg.update_layout(autosize=True, height=500, margin={"r":0,"t":0,"l":0,"b":0}) # width= 100, height=500, margin={"r":0,"t":0,"l":0,"b":0})
-
-# bahis_sourcedata['id'] = bahis_sourcedata['basic_info_district']
-# bahis_sourcedata.set_index('id', inplace=True, drop=False)
-
-
-# ##df = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminder2007.csv')
-# # add an id column and set it as the index
-# # in this case the unique ID is just the country name, so we could have just
-# # renamed 'country' to 'id' (but given it the display name 'country'), but
-# # here it's duplicated just to show the more general pattern.
-
-# fig=px.imshow(tmpp)
-
-
-# ##df['id'] = df['country']
-# ##df.set_index('id', inplace=True, drop=False)
-
-# #app = Dash(__name__)
-# dash.register_page(__name__)
-
-# layout = html.Div([
-#     dcc.Graph(figure=fig)
-# #1    dash_table.DataTable(
-# #1        tmpp.to_dict('records'), [{"name": i, "id": i} for i in tmpp.columns])
-# #     dash_table.DataTable(
-# #         id='datatable-row-ids',
-# #         columns=[
-# #             {'name': i, 'id': i, 'deletable': True} for i in tmpp.columns
-# # #            {'name': i, 'id': i, 'deletable': True} for i in bahis_sourcedata.columns
-# # #            {'name': i, 'id': i, 'deletable': True} for i in df.columns
-# #             # omit the id column
-# #             if i != 'id'
-# #         ],
-# #         data=tmpp.to_dict('records'),
-# # #        data=bahis_sourcedata.to_dict('records'),
-# # #        data=df.to_dict('records'),
-# #         editable=True,
-# #         filter_action="native",
-# #         sort_action="native",
-# #         sort_mode='multi',
-# #         row_selectable='multi',
-# #         row_deletable=True,
-# #         selected_rows=[],
-# #         page_action='native',
-# #         page_current= 0,
-# #         page_size= 10,
-# #     ),
-# #     html.Div(id='datatable-row-ids-container')
-# ])
-
-
-# # @callback(
-# #     Output('datatable-row-ids-container', 'children'),
-# #     Input('datatable-row-ids', 'derived_virtual_row_ids'),
-# #     Input('datatable-row-ids', 'selected_row_ids'),
-# #     Input('datatable-row-ids', 'active_cell'))
-# # def update_graphs(row_ids, selected_row_ids, active_cell):
-# #     # When the table is first rendered, `derived_virtual_data` and
-# #     # `derived_virtual_selected_rows` will be `None`. This is due to an
-# #     # idiosyncrasy in Dash (unsupplied properties are always None and Dash
-# #     # calls the dependent callbacks when the component is first rendered).
-# #     # So, if `rows` is `None`, then the component was just rendered
-# #     # and its value will be the same as the component's dataframe.
-# #     # Instead of setting `None` in here, you could also set
-# #     # `derived_virtual_data=df.to_rows('dict')` when you initialize
-# #     # the component.
-# #     selected_id_set = set(selected_row_ids or [])
-
-# #     if row_ids is None:
-# #         dff = tmpp
-# # #        dff = bahis_sourcedata
-# # #        dff = df
-# #         # pandas Series works enough like a list for this to be OK
-# #         row_ids = tmpp['id']
-# # #        row_ids = bahis_sourcedata['id']
-# # #        row_ids = df['id']
-# #     else:
-# #         dff = tmpp.loc[row_ids]
-# # #        dff = bahis_sourcedata.loc[row_ids]
-# # #        dff = df.loc[row_ids]
-
-# #     active_row_id = active_cell['row_id'] if active_cell else None
-
-# #     colors = ['#FF69B4' if id == active_row_id
-# #               else '#7FDBFF' if id in selected_id_set
-# #               else '#0074D9'
-# #               for id in row_ids]
-
-# #     return [
-# #         dcc.Graph(
-# #             id=column + '--row-ids',
-# #             figure={
-# #                 'data': [
-# #                     {
-# #                         'x': dff['basic_info_district'],
-# # #                        'x': dff['basic_info_district'],
-# # #                        'x': dff['country'],
-# #                         'y': dff[column],
-# #                         'type': 'bar',
-# #                         'marker': {'color': colors},
-# #                     }
-# #                 ],
-# #                 'layout': {
-# #                     'xaxis': {'automargin': True},
-# #                     'yaxis': {
-# #                         'automargin': True,
-# #                         'title': {'text': column}
-# #                     },
-# #                     'height': 250,
-# #                     'margin': {'t': 10, 'l': 10, 'r': 10},
-# #                 },
-# #             },
-# #         )
-# #         # check if column exists - user may have deleted it
-# #         # If `column.deletable=False`, then you don't
-# #         # need to do this check.
-# #         for column in ['basic_info_date', 'reports'] if column in dff
-# # #        for column in ['pop', 'lifeExp', 'gdpPercap'] if column in dff
-# #     ]
-
-
-# # if __name__ == '__main__':
-# #     app.run_server(debug=True)
