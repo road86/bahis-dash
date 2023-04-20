@@ -238,6 +238,10 @@ layout =  html.Div([
                         updatemode="bothdates",
                         clearable=True
                     ),
+                    ]),
+                dbc.Col([
+                        html.Button("Export Data to CSV", id="btn_csv", disabled=True),
+                        dcc.Download(id="ULO_export"),
                     ])
                 ]),
             dbc.Row([
@@ -273,18 +277,19 @@ layout =  html.Div([
     Output ('ULO_Reports', 'figure'),
     Output ('ULO_Sick', 'figure'),
     Output ('ULO_Dead', 'figure'),
-
+    Output ('btn_csv', 'disabled'),
 
     Input ('ULO_Division', 'value'),
     Input ('ULO_District', 'value'),
     Input ('ULO_Upazila','value'),
     Input ('ULO_dislis','value'),
     Input ('ULO_SelDate', 'start_date'),
-    Input ('ULO_SelDate', 'end_date')
+    Input ('ULO_SelDate', 'end_date'),
+
 
 )
 
-def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
+def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate): #, btn_csv):
     global bahis_data, bahis_subdata, bahis_geodata, vDis, vUpa, dislis, Diseases, firstrun, maxdates,  startDate, endDate, disabSelDate, UpaSelected #, end_date
 
     starttime_tab1=datetime.now()
@@ -294,6 +299,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     figULORep={}    
     figULOSick={}    
     figULODead={}    
+    exportbutton=True     
     
     if firstrun==True:
         disabSelDate=True
@@ -304,7 +310,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
         dislis=[]
         firstrun=False
         UpaSelected=False
-        
+      
     
     if ctx.triggered_id=='ULO_dislis' or ctx.triggered_id=='ULO_SelDate':
         if edate is not None:
@@ -340,6 +346,8 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
                     bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
             figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
         Diseases=SelDiseases
+        if bahis_subdata.shape[0]>1:
+            exportbutton=False
             
     if ctx.triggered_id=='ULO_Division':
         if not SelDiv:      
@@ -405,11 +413,34 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             
             
             figULORep, figULOSick, figULODead = updateFig(bahis_data)
+            bahis_subdata=[]
+            if bahis_data.shape[0]>1:
+                exportbutton=False
         else:
             figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
-
-             
+            exportbutton=True
+            
+    # if ctx.triggered_id=='btn_csv':
+    #     print('click')
+    #     return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
+    # else:
+    #     print('Clock')
+    #     return dash.no_update
+    
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead, exportbutton
+    
+
+@callback(   
+    Output("ULO_export", "data"),
+    Input ('btn_csv', 'n_clicks'),
+    prevent_initial_call=True,
+)
+
+def export(btn_csv):
+    
+    return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
+
+    
