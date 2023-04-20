@@ -286,10 +286,9 @@ layout =  html.Div([
     Input ('ULO_SelDate', 'start_date'),
     Input ('ULO_SelDate', 'end_date'),
 
-
 )
 
-def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate): #, btn_csv):
+def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     global bahis_data, bahis_subdata, bahis_geodata, vDis, vUpa, dislis, Diseases, firstrun, maxdates,  startDate, endDate, disabSelDate, UpaSelected #, end_date
 
     starttime_tab1=datetime.now()
