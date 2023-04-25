@@ -13,7 +13,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -434,11 +434,16 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
 @callback(   
     Output("ULO_export", "data"),
     Input ('btn_csv', 'n_clicks'),
+    State ('ULO_Upazila','value'),
     prevent_initial_call=True,
 )
 
-def export(btn_csv):
-    
-    return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
+def export(btn_csv, SelUpa):
+    if btn_csv and SelUpa : #<--- correct the condition
+        print(btn_csv)
+        print(SelUpa)
+        return dcc.send_data_frame(bahis_subdata.to_csv, str(SelUpa) + "_export_" + str(date.today()) + ".csv")
+    else: 
+        return dash.no_update
 
     
