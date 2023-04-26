@@ -65,7 +65,8 @@ def fetchsourcedata(): #fetch and prepare source data
     bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32) #converting into uint makes odd values)
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
+#    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
+    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
     return bahis_data
 bahis_data=fetchsourcedata() 
 sub_bahis_sourcedata=bahis_data
@@ -322,11 +323,11 @@ layout =  html.Div([
                             dcc.DatePickerRange(
                                     id='daterange',
                                     min_date_allowed=start_date,
-                                    start_date=date(2022, 1, 1) ,
+                                    start_date=date(2023, 1, 1) ,
                                     max_date_allowed=end_date,
                                     # start_date=date(end_date.year-1, end_date.month, end_date.day),
                                     # initial_visible_month=end_date,
-                                    end_date=date(2022, 12, 31)
+                                    end_date=date(2023, 12, 31)
                                     #end_date=end_date
                                 ),
                             ]),
