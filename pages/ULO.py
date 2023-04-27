@@ -397,8 +397,9 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
             bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32)
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
-            bahis_data=bahis_data[bahis_data['date'].dt.date>= maxdates[1]-relativedelta(months=12)] #datetime(2019, 7, 1)]
+#            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+#            bahis_data=bahis_data[bahis_data['date'].dt.date>= maxdates[1]-relativedelta(months=12)] #datetime(2019, 7, 1)]
+            bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
             maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
             disabSelDate=False
             minSelDate=maxdates[0]
