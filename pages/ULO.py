@@ -59,7 +59,6 @@ def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, cach
     return Divlist.to_dict('records')
 Divlist=fetchDivisionlist(bahis_geodata)
 
-
 def fetchDistrictlist(SelDiv, bahis_geodata): # district list is dependent on selected division
     Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']] 
     Dislist['name']=Dislist['name'].str.capitalize()
@@ -92,6 +91,8 @@ def resetvalues():
 
 
 def updateFig(bahis_data):
+   # maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+
     tmpR=bahis_data['date'].value_counts()
     tmpR=tmpR.to_frame()
     tmpR['counts']=tmpR['date']
@@ -373,7 +374,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
             
     if ctx.triggered_id=='ULO_Upazila':            
-        if SelUpa:
+        if SelUpa:            
             UpaSelected=True
             minSelDate=""
             maxSelDate=""
@@ -435,13 +436,15 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     Output("ULO_export", "data"),
     Input ('btn_csv', 'n_clicks'),
     State ('ULO_Upazila','value'),
+    State ('ULO_Upazila','options'),
     prevent_initial_call=True,
 )
 
-def export(btn_csv, SelUpa):
-    if btn_csv and SelUpa : #<--- correct the condition
-        return dcc.send_data_frame(bahis_subdata.to_csv, str(SelUpa) + "_export_" + str(date.today()) + ".csv")
+def export(btn_csv, SelUpaNo, SelUpaOpt):
+    if btn_csv and SelUpaNo : #<--- correct the condition
+        return dcc.send_data_frame(bahis_subdata.to_csv, str(SelUpaNo) + "-" + str([x['label'] for x in SelUpaOpt if x['value'] == SelUpaNo])[2:-2] +  "_export_" + str(date.today()) + ".csv")
     else: 
         return dash.no_update
 
-    
+
+#todo: check if UpaSelcted can be deleted
