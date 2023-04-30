@@ -19,7 +19,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -392,7 +392,7 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('Upazila', 'options'),
     Output ('Diseaselist', 'options'),
 
-    Output ('Map', 'figure'),
+#    Output ('Map', 'figure'),
     Output ('Reports', 'figure'),
     Output ('Sick', 'figure'),
     Output ('Dead', 'figure'),
@@ -408,11 +408,13 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('figMonthly', 'figure'),
     Output ('ExportLabel', 'children'),
     Output ('ExportTab', 'children'),
+    
+    Output ('geoSlider' , 'value'),
 
     # Input ('cache_bahis_data', 'data'),
     # Input ('cache_bahis_dgdata', 'data'),
     # Input ('cache_bahis_geodata', 'data'),
-    Input ('geoSlider', 'value'),
+#    Input ('geoSlider', 'value'),
     Input ('Map', 'clickData'),
     Input ('Reports', 'clickData'),
     Input ('Sick', 'clickData'),
@@ -426,11 +428,13 @@ print('initialize : ' + str(endtime_start-starttime_start))
     
     Input ("Diseaselist",'value'),
     Input ('tabs', 'active_tab'),
-    Input ('Map', 'clickData'),
+    
+    State ('geoSlider', 'value'),
+    #Input ('Map', 'clickData'),
 )
-#def update_whatever(cbahis_data, cbahis_dgdata, cbahis_geodata, geoSlider, geoTile, clkRep, clkSick, clkDead, cU2Division, cU2District, cU2Upazila, start_date, end_date, diseaselist):
 
-def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
+#def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
+def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoSlider):
 
     starttime_general=datetime.now()
 
@@ -479,7 +483,7 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         variab='upazila'
         labl='Reports per upazila'
         firstrun=False
-        subDist=subDist[subDist['loc_type']==loc]
+        #subDist=subDist[subDist['loc_type']==loc]
     
         
     if ctx.triggered_id=='daterange':
@@ -496,7 +500,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         else:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
-            #subDist=subDist[subDist['loc_type']==3]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",
@@ -505,14 +508,12 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         if not SelDis:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
-            #subDist=subDist[subDist['loc_type']==3]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
             vUpa="",            
         else: 
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
-            #subDist=subDist[subDist['loc_type']==4]
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
             
@@ -520,7 +521,6 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
         if not SelUpa:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
-            #subDist=subDist[subDist['loc_type']==4]
         else:
             sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
             subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
@@ -560,16 +560,17 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     if geoSlider== 3:
         path=path3
         loc=geoSlider
+        loc=3
         title='upazila'
         pnumber='upazilanumber'
         pname='upazilaname'
         splace=' Upazila'
         variab='upazila'
         labl='Reports per upazila'
-        subDistM=subDist[subDist['loc_type']==geoSlider]
+        subDistM=subDist[subDist['loc_type']==3]
         #subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+#    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
     print('general callback : ' + str(endtime_general-starttime_general))
 ###tab1
@@ -889,10 +890,70 @@ def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis
     print('tab6 : ' + str(endtime_tab6-starttime_tab6))   
     
 
-    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly, ExportLabel, ExportTab 
-#    return vDiv, vDis, vUpa, ddDList, Rfig, figgR, figgSick, figgDead, Rfindic, Rfigg, AlertTable, GeoDynTable, figMonthly
+    return vDiv, vDis, vUpa, ddDList, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly, ExportLabel, ExportTab, geoSlider 
 
 
+@callback(   
+    Output ('Map', 'figure'),
+    Output ('geoSlider', 'value'),
+    
+    Input ('geoSlider', 'value'),
+    State ('Division','value'),
+    State ('District','value'),
+    State ('Upazila','value'),
+    prevent_initial_call=True,
+)
+
+def export(geoSlider, Division, District, Upazila):
 
 
+#    if ctx.triggered_id=='geoSlider':
+    if geoSlider== 1:
+        if not Division:
+            path=path1
+            loc=geoSlider
+            title='division'
+            pnumber='divnumber'
+            pname='divisionname'
+            splace=' Division'
+            variab='division'
+            labl='Reports per division'
+            subDistM=subDist[subDist['loc_type']==geoSlider]
+        else:
+            path=path1
+            loc=geoSlider
+            title='division'
+            pnumber='divnumber'
+            pname='divisionname'
+            splace=' Division'
+            variab='division'
+            labl='Reports per division'
+            subDistM=subDist[subDist['loc_type']==geoSlider]
+    if geoSlider== 2:
+        if not District:
+            path=path2
+            loc=geoSlider
+            title='district'
+            pnumber='districtnumber'
+            pname='districtname'
+            splace=' District'
+            variab='district'
+            labl='Reports per district'
+            subDistM=subDist[subDist['loc_type']==geoSlider]
+        else:
+            geoSlider=3
+            
+    if geoSlider== 3:
+        path=path3
+        loc=geoSlider
+        title='upazila'
+        pnumber='upazilanumber'
+        pname='upazilaname'
+        splace=' Upazila'
+        variab='upazila'
+        labl='Reports per upazila'
+        subDistM=subDist[subDist['loc_type']==geoSlider]
+
+    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+    return Rfig #, geoSlider
 
