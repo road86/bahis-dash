@@ -408,17 +408,16 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             dislis= bahis_data['top_diagnosis'].unique()
             dislis= pd.DataFrame(dislis, columns=['Disease'])
             dislis= dislis['Disease'].sort_values().tolist()
-            dislis.insert(0, 'All Diseases')
-            
+            dislis.insert(0, 'All Diseases')            
             
             figULORep, figULOSick, figULODead = updateFig(bahis_data)
-            bahis_subdata=[]
+            bahis_subdata=bahis_data
             if bahis_data.shape[0]>1:
                 exportbutton=False
         else:
             figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
             exportbutton=True
-            
+      
     # if ctx.triggered_id=='btn_csv':
     #     print('click')
     #     return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
@@ -441,8 +440,6 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
 
 def export(btn_csv, SelUpa):
     if btn_csv and SelUpa : #<--- correct the condition
-        print(btn_csv)
-        print(SelUpa)
         return dcc.send_data_frame(bahis_subdata.to_csv, str(SelUpa) + "_export_" + str(date.today()) + ".csv")
     else: 
         return dash.no_update
