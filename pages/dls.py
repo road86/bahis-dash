@@ -895,7 +895,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
 @callback(   
     Output ('Map', 'figure'),
-    Output ('geoSlider', 'value'),
+#    Output ('geoSlider', 'value'),
     
     Input ('geoSlider', 'value'),
     State ('Division','value'),
