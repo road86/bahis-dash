@@ -396,7 +396,9 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
             disabSelDate=False
             minSelDate=maxdates[0]
+            startDate=minSelDate
             maxSelDate=maxdates[1]
+            endDate=maxSelDate
 
             dislis= bahis_data['top_diagnosis'].unique()
             dislis= pd.DataFrame(dislis, columns=['Disease'])
