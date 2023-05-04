@@ -308,6 +308,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     
     if ctx.triggered_id=='ULO_dislis' or ctx.triggered_id=='ULO_SelDate':
         if edate is not None:
+            print(edate)
             startDate=sdate
             endDate=edate
             bahis_subdata=bahis_data[(bahis_data['date']>= sdate) & (bahis_data['date']<= edate)]
@@ -316,29 +317,61 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             maxSelDate=maxdates[1]
             maxdates=[pd.Timestamp(sdate),pd.Timestamp(edate)] 
 
+            dislis= bahis_subdata['top_diagnosis'].unique()
+            dislis= pd.DataFrame(dislis, columns=['Disease'])
+            dislis= dislis['Disease'].sort_values().tolist()
+            dislis.insert(0, 'All Diseases')
+           
 #            if len(SelDiseases) != 0:
             if SelDiseases:
                 if 'All Diseases' in SelDiseases:
-                    bahis_subdata=bahis_subdata
+                    print(bahis_subdata)
+                    bahis_subDdata=bahis_subdata
                 else:
-                    bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
-            
-            figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
+                    bahis_subDdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
+                    ###keep time range and fill rest with 0 must be in fig update itself # maxates is in figupdate, think carefully. when dat is reduced, when only displayed... hope i works. and test thoroughly!s
+                    # maxdates=[min(bahis_subDdata['date']),max(bahis_subDdata['date'])] 
+                    # minSelDate=maxdates[0]
+                    # maxSelDate=maxdates[1]
+                    # startDate=minSelDate
+                    # endDate=maxSelDate
+            else:
+                bahis_subDdata=bahis_subdata   # sorry for the complication: only if dates are selected, dislist needs to be updated, not when selecting specific diseases
+
+            figULORep, figULOSick, figULODead = updateFig(bahis_subDdata)
         else:
             startDate=None
             endDate=None
             bahis_subdata=bahis_data
-            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
-            minSelDate=maxdates[0]
-            maxSelDate=maxdates[1]
+            # maxdates=[min(bahis_subdata['date']),max(bahis_subdata['date'])] 
+            # minSelDate=maxdates[0]
+            # maxSelDate=maxdates[1]
+            # startDate=minSelDate
+            # endDate=maxSelDate
+
+            
+            dislis= bahis_subdata['top_diagnosis'].unique()
+            dislis= pd.DataFrame(dislis, columns=['Disease'])
+            dislis= dislis['Disease'].sort_values().tolist()
+            dislis.insert(0, 'All Diseases')
 
 #            if len(SelDiseases) != 0:
             if SelDiseases:
-                if 'All Diseases' in SelDiseases:
-                    bahis_subdata=bahis_subdata
+                print(SelDiseases)
+                if 'All Diseases' or None in SelDiseases:
+                    bahis_subDdata=bahis_subdata
                 else:
-                    bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
-            figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
+                    bahis_subDdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
+            else:
+                bahis_subDdata=bahis_subdata                   
+                
+            maxdates=[min(bahis_subDdata['date']),max(bahis_subDdata['date'])] 
+            minSelDate=maxdates[0]
+            maxSelDate=maxdates[1]
+            startDate=minSelDate
+            endDate=maxSelDate
+            
+            figULORep, figULOSick, figULODead = updateFig(bahis_subDdata)
         Diseases=SelDiseases
             
     if ctx.triggered_id=='ULO_Division':
