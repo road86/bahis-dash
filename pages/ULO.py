@@ -13,13 +13,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
 import numpy as np 
-
+from dash.exceptions import PreventUpdate
+from dash.dash import no_update
 
 pd.options.mode.chained_assignment = None
 
@@ -192,6 +193,17 @@ def updateFig(bahis_data):
 
 
 layout =  html.Div([
+
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle("Alert")),
+                    dbc.ModalBody("No data available for this selection"),
+                ],
+                id="modal",
+                is_open=False,
+            ),
+            
+    
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -248,8 +260,8 @@ layout =  html.Div([
                 ]),
             dbc.Row([
                 (dcc.Graph(id='ULO_Dead')),
-                ])
-            
+                ]),
+                        
 ])
                         
 
@@ -273,18 +285,20 @@ layout =  html.Div([
     Output ('ULO_Reports', 'figure'),
     Output ('ULO_Sick', 'figure'),
     Output ('ULO_Dead', 'figure'),
-
+    Output ("modal", "is_open"),
 
     Input ('ULO_Division', 'value'),
     Input ('ULO_District', 'value'),
     Input ('ULO_Upazila','value'),
     Input ('ULO_dislis','value'),
     Input ('ULO_SelDate', 'start_date'),
-    Input ('ULO_SelDate', 'end_date')
+    Input ('ULO_SelDate', 'end_date'),
+    
+    State("modal", "is_open"),
 
 )
 
-def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
+def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate, is_open): #, alert):
     global bahis_data, bahis_subdata, bahis_geodata, vDis, vUpa, dislis, Diseases, firstrun, maxdates,  startDate, endDate, disabSelDate, UpaSelected #, end_date
 
     starttime_tab1=datetime.now()
@@ -392,19 +406,23 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
 #            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
 #            bahis_data=bahis_data[bahis_data['date'].dt.date>= maxdates[1]-relativedelta(months=12)] #datetime(2019, 7, 1)]
-            bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
-            maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
-            disabSelDate=False
-            minSelDate=maxdates[0]
-            maxSelDate=maxdates[1]
+            if not bahis_data.shape[0] == 0:
+                bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
+                maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+                disabSelDate=False
+                minSelDate=maxdates[0]
+                maxSelDate=maxdates[1]
+    
+                dislis= bahis_data['top_diagnosis'].unique()
+                dislis= pd.DataFrame(dislis, columns=['Disease'])
+                dislis= dislis['Disease'].sort_values().tolist()
+                dislis.insert(0, 'All Diseases')
+                          
+                figULORep, figULOSick, figULODead = updateFig(bahis_data)
+            else:
 
-            dislis= bahis_data['top_diagnosis'].unique()
-            dislis= pd.DataFrame(dislis, columns=['Disease'])
-            dislis= dislis['Disease'].sort_values().tolist()
-            dislis.insert(0, 'All Diseases')
-            
-            
-            figULORep, figULOSick, figULODead = updateFig(bahis_data)
+                return no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, not is_open
+
         else:
             figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
 
@@ -412,4 +430,5 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead, no_update
+
