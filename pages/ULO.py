@@ -13,7 +13,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc #dbc deprecationwarning
 import pandas as pd
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import json, os, glob
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -59,7 +59,6 @@ def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, cach
     return Divlist.to_dict('records')
 Divlist=fetchDivisionlist(bahis_geodata)
 
-
 def fetchDistrictlist(SelDiv, bahis_geodata): # district list is dependent on selected division
     Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']] 
     Dislist['name']=Dislist['name'].str.capitalize()
@@ -92,6 +91,8 @@ def resetvalues():
 
 
 def updateFig(bahis_data):
+   # maxdates=[min(bahis_data['date']),max(bahis_data['date'])] 
+
     tmpR=bahis_data['date'].value_counts()
     tmpR=tmpR.to_frame()
     tmpR['counts']=tmpR['date']
@@ -238,6 +239,10 @@ layout =  html.Div([
                         updatemode="bothdates",
                         clearable=True
                     ),
+                    ]),
+                dbc.Col([
+                        html.Button("Export Data to CSV", id="btn_csv", disabled=True),
+                        dcc.Download(id="ULO_export"),
                     ])
                 ]),
             dbc.Row([
@@ -273,14 +278,14 @@ layout =  html.Div([
     Output ('ULO_Reports', 'figure'),
     Output ('ULO_Sick', 'figure'),
     Output ('ULO_Dead', 'figure'),
-
+    Output ('btn_csv', 'disabled'),
 
     Input ('ULO_Division', 'value'),
     Input ('ULO_District', 'value'),
     Input ('ULO_Upazila','value'),
     Input ('ULO_dislis','value'),
     Input ('ULO_SelDate', 'start_date'),
-    Input ('ULO_SelDate', 'end_date')
+    Input ('ULO_SelDate', 'end_date'),
 
 )
 
@@ -294,6 +299,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
     figULORep={}    
     figULOSick={}    
     figULODead={}    
+    exportbutton=True     
     
     if firstrun==True:
         disabSelDate=True
@@ -304,7 +310,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
         dislis=[]
         firstrun=False
         UpaSelected=False
-        
+      
     
     if ctx.triggered_id=='ULO_dislis' or ctx.triggered_id=='ULO_SelDate':
         if edate is not None:
@@ -340,6 +346,8 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
                     bahis_subdata=bahis_subdata[bahis_subdata['top_diagnosis'].isin(SelDiseases)]
             figULORep, figULOSick, figULODead = updateFig(bahis_subdata)
         Diseases=SelDiseases
+        if bahis_subdata.shape[0]>1:
+            exportbutton=False
             
     if ctx.triggered_id=='ULO_Division':
         if not SelDiv:      
@@ -366,7 +374,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
             
     if ctx.triggered_id=='ULO_Upazila':            
-        if SelUpa:
+        if SelUpa:            
             UpaSelected=True
             minSelDate=""
             maxSelDate=""
@@ -401,15 +409,42 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate):
             dislis= bahis_data['top_diagnosis'].unique()
             dislis= pd.DataFrame(dislis, columns=['Disease'])
             dislis= dislis['Disease'].sort_values().tolist()
-            dislis.insert(0, 'All Diseases')
-            
+            dislis.insert(0, 'All Diseases')            
             
             figULORep, figULOSick, figULODead = updateFig(bahis_data)
+            bahis_subdata=bahis_data
+            if bahis_data.shape[0]>1:
+                exportbutton=False
         else:
             figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis = resetvalues()
-
-             
+            exportbutton=True
+      
+    # if ctx.triggered_id=='btn_csv':
+    #     print('click')
+    #     return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
+    # else:
+    #     print('Clock')
+    #     return dash.no_update
+    
     endtime_tab1 = datetime.now()
     print('ULO timing : ' + str(endtime_tab1-starttime_tab1))   
 
-    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead
+    return SelDiv, SelDis, SelUpa, vDis, vUpa, dislis, Diseases, minSelDate, maxSelDate, startDate, endDate, disabSelDate, figULORep, figULOSick, figULODead, exportbutton
+    
+
+@callback(   
+    Output("ULO_export", "data"),
+    Input ('btn_csv', 'n_clicks'),
+    State ('ULO_Upazila','value'),
+    State ('ULO_Upazila','options'),
+    prevent_initial_call=True,
+)
+
+def export(btn_csv, SelUpaNo, SelUpaOpt):
+    if btn_csv and SelUpaNo : #<--- correct the condition
+        return dcc.send_data_frame(bahis_subdata.to_csv, str(SelUpaNo) + "-" + str([x['label'] for x in SelUpaOpt if x['value'] == SelUpaNo])[2:-2] +  "_export_" + str(date.today()) + ".csv")
+    else: 
+        return dash.no_update
+
+
+#todo: check if UpaSelcted can be deleted
