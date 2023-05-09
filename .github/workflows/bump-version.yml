@@ -1,0 +1,15 @@
+name: automatically add to project board
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  automatically_bump_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: automatically_bump_version
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ secrets.github_token }}
+          output-file: "false"
