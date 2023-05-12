@@ -350,8 +350,15 @@ layout =  html.Div([
                                 dbc.Row(dcc.Graph(id='Dead'))],
                                 label='Reports', tab_id='ReportsTab'),
                             dbc.Tab([
-                                dbc.Row(dcc.Graph(id='Livestock')),
-                                dbc.Row(dcc.Graph(id='Zoonotic'))],
+                                dbc.Row(dbc.Col([
+                                        html.Label("Top 10 Diseases"),
+                                        dcc.Graph(id='Livestock')
+                                    ])),
+                                dbc.Row(dbc.Col([
+                                        html.Label("Top 10 Zoonotic Diseases"),
+                                        dcc.Graph(id='Zoonotic')
+                                        ])
+                                    )], 
                                 label='Diseases', tab_id='DiseaseTab'),
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dbc.Row(dcc.Graph(id='DRindicators')),
@@ -725,7 +732,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         for i, figure in enumerate(subpl):
             for trace in range(len(figure['data'])):
                 figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
-        figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
+        figgLiveS.update_layout(height=350, margin={"r":0,"t":0,"l":0,"b":0})
     
         poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
         sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
@@ -761,7 +768,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         for i, figure in enumerate(subpl):
             for trace in range(len(figure['data'])):
                 figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-        figgZoon.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+        figgZoon.update_layout(height=150, margin={"r":0,"t":0,"l":0,"b":0})
     
         endtime_tab2 = datetime.now()
         print('tab2 : ' + str(endtime_tab2-starttime_tab2))   
@@ -800,7 +807,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         
     
         Rfindic=fIndicator(sub_bahis_sourcedata)
-        Rfindic.update_layout(height=100, margin={"r":0,"t":4,"l":0,"b":0})
+        Rfindic.update_layout(height=100, margin={"r":0,"t":30,"l":0,"b":0})
     
         Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
         Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
@@ -918,7 +925,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
                                             },
                                     style_cell={'textAlign': 'left'},
                                     export_format='csv',
-                                    style_table={'height': '600px', 'overflowY': 'auto'},
+                                    style_table={'height': '500px', 'overflowY': 'auto'},
     #                                style_as_list_view=True,
     #                                fixed_rows={'headers': True},
                                     data=sub_bahis_sourcedata.to_dict('records'),
