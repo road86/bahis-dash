@@ -22,9 +22,10 @@ import pandas as pd
 from dash.dependencies import Input, Output, State
 import json, os, glob
 from datetime import date, datetime, timedelta
-from dateutil.relativedelta import relativedelta
+#from dateutil.relativedelta import relativedelta
 from plotly.subplots import make_subplots
-import numpy as np 
+import numpy as np
+from dash.dash import no_update
 
 
 starttime_start=datetime.now()
@@ -39,21 +40,21 @@ sourcepath = 'exported_data/'
 geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]   # the available geodata from the bahis project (Masterdata)
 dgfilename = os.path.join(sourcepath, 'Diseaselist.csv')   # disease grouping info (Masterdata)
 sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')    # main data resource of prepared data from old and new bahis
-path1= "geodata/divdata.geojson" #8 Division
-path2= "geodata/distdata.geojson" #64 District
-path3= "geodata/upadata.geojson" #495 Upazila
+path1= os.path.join(sourcepath,"processed_geodata","divdata.geojson") #8 Division
+path2= os.path.join(sourcepath,"processed_geodata","distdata.geojson") #64 District
+path3= os.path.join(sourcepath,"processed_geodata","upadata.geojson") #495 Upazila
 
 firstrun=True
 
 def fetchsourcedata(): #fetch and prepare source data
     bahis_data = pd.read_csv(sourcefilename)
     bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])      
+    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
 #    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
     del bahis_data['Unnamed: 0']
-    bahis_data=bahis_data.rename(columns={'basic_info_date':'date', 
-                                        'basic_info_division':'division', 
-                                        'basic_info_district':'district', 
+    bahis_data=bahis_data.rename(columns={'basic_info_date':'date',
+                                        'basic_info_division':'division',
+                                        'basic_info_district':'district',
                                         'basic_info_upazila':'upazila',
                                         'patient_info_species':'species_no',
                                         'diagnosis_treatment_tentative_diagnosis':'tentative_diagnosis',
@@ -61,14 +62,14 @@ def fetchsourcedata(): #fetch and prepare source data
                                         'patient_info_dead_number':'dead',
                                         })
     #assuming non negative values from division, district, upazila, speciesno, sick and dead
-    bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)   
+    bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)
     bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32) #converting into uint makes odd values)
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
 #    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
     bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
     return bahis_data
-bahis_data=fetchsourcedata() 
+bahis_data=fetchsourcedata()
 sub_bahis_sourcedata=bahis_data
 monthlydatabasis=sub_bahis_sourcedata
 
@@ -88,7 +89,7 @@ Divlist=[]
 def fetchdisgroupdata(): #fetch and prepare disease groups
     bahis_dgdata= pd.read_csv(dgfilename)
 #    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
-    bahis_dgdata= bahis_dgdata[['name', 'Disease type']] 
+    bahis_dgdata= bahis_dgdata[['name', 'Disease type']]
     bahis_dgdata= bahis_dgdata.dropna()
 #    bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])    #can you change object to string and does it make a memory difference?
     bahis_dgdata = bahis_dgdata.drop_duplicates(subset='name', keep="first")
@@ -102,8 +103,8 @@ def fetchgeodata():     #fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
     geodata = geodata.drop(geodata[(geodata['loc_type']==4) | (geodata['loc_type']==5)].index)  #drop mouzas and unions
     geodata=geodata.drop(['id', 'longitude', 'latitude', 'updated_at'], axis=1)
-    geodata['parent']=geodata[['parent']].astype(np.uint16)   # assuming no mouza and union is taken into 
-    geodata[['value']]=geodata[['value']].astype(np.uint32)   
+    geodata['parent']=geodata[['parent']].astype(np.uint16)   # assuming no mouza and union is taken into
+    geodata[['value']]=geodata[['value']].astype(np.uint32)
     geodata[['loc_type']]=geodata[['loc_type']].astype(np.uint8)
     return geodata
 bahis_geodata= fetchgeodata()
@@ -113,7 +114,7 @@ subDist=bahis_geodata
 #cache these values
 
 def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, caching possible
-    Divlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']] 
+    Divlist=bahis_geodata[(bahis_geodata["loc_type"]==1)][['value', 'name']]
     Divlist['name']=Divlist['name'].str.capitalize()
     Divlist=Divlist.rename(columns={'name':'Division'})
     Divlist=Divlist.sort_values(by=['Division'])
@@ -122,7 +123,7 @@ def fetchDivisionlist(bahis_geodata):   # division lsit is always the same, cach
 
 
 def fetchDistrictlist(SelDiv, bahis_geodata): # district list is dependent on selected division
-    Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']] 
+    Dislist=bahis_geodata[bahis_geodata['parent']==SelDiv][['value','name']]
     Dislist['name']=Dislist['name'].str.capitalize()
     Dislist=Dislist.rename(columns={'name':'District'})
     Dislist=Dislist.sort_values(by=['District'])
@@ -137,7 +138,7 @@ def fetchUpazilalist(SelDis, bahis_geodata):   # upazila list is dependent on se
 
 
 def date_subset(dates, bahis_data):
-    
+
     tmask= (bahis_data['date']>= pd.to_datetime(dates[0])) & (bahis_data['date'] <= pd.to_datetime(dates[1]))
     return bahis_data.loc[tmask]
 
@@ -253,7 +254,7 @@ def open_data(path):
         # variab='upazila'
         # labl='Incidences per upazila'
         # incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
-        
+
 
 def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
@@ -349,8 +350,15 @@ layout =  html.Div([
                                 dbc.Row(dcc.Graph(id='Dead'))],
                                 label='Reports', tab_id='ReportsTab'),
                             dbc.Tab([
-                                dbc.Row(dcc.Graph(id='Livestock')),
-                                dbc.Row(dcc.Graph(id='Zoonotic'))],
+                                dbc.Row(dbc.Col([
+                                        html.Label("Top 10 Diseases"),
+                                        dcc.Graph(id='Livestock')
+                                    ])),
+                                dbc.Row(dbc.Col([
+                                        html.Label("Top 10 Zoonotic Diseases"),
+                                        dcc.Graph(id='Zoonotic')
+                                        ])
+                                    )],
                                 label='Diseases', tab_id='DiseaseTab'),
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dbc.Row(dcc.Graph(id='DRindicators')),
@@ -379,14 +387,18 @@ layout =  html.Div([
             ])
     ])
 
+
 endtime_start = datetime.now()
 print('initialize : ' + str(endtime_start-starttime_start))
 
 
 ## shape overlay of selected geotile(s)
 
-@callback(                             #splitting callbacks to prevent updates?
+@callback(
                               #dash cleintsied callback with js
+    Output ('Division', 'value'),
+    Output ('District', 'value'),
+    Output ('Upazila', 'value'),
     Output ('Division', 'options'),
     Output ('District', 'options'),
     Output ('Upazila', 'options'),
@@ -396,19 +408,19 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('Reports', 'figure'),
     Output ('Sick', 'figure'),
     Output ('Dead', 'figure'),
-    
+
     Output ('Livestock', 'figure'),
     Output ('Zoonotic', 'figure'),
     Output ('DRindicators', 'figure'),
     Output ('DRRepG1', 'figure'),
     Output ('NRlabel', 'children'),
     Output ('AlertTable', 'children'),
-    
+
     Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
     Output ('ExportLabel', 'children'),
     Output ('ExportTab', 'children'),
-    
+
     Output ('geoSlider' , 'value'),
 
     # Input ('cache_bahis_data', 'data'),
@@ -425,10 +437,10 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Input ("Upazila",'value'),
     Input ("daterange",'start_date'),  #make state to prevent upate before submitting
     Input ("daterange",'end_date'), #make state to prevent upate before submitting
-    
+
     Input ("Diseaselist",'value'),
     Input ('tabs', 'active_tab'),
-    
+
     State ('geoSlider', 'value'),
     #Input ('Map', 'clickData'),
 )
@@ -444,7 +456,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
     # starttime=datetime.now()
     # endtime = datetime.now()
-    # print(endtime-starttime)    
+    # print(endtime-starttime)
     # print(clkRep)
     # print(clkSick)
     # print(pd.DataFrame(cbahis_data).shape)
@@ -457,7 +469,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
     dates = [start_date, end_date]
     #sub_bahis_sourcedata=bahis_data
-        
+
     NRlabel= 'Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)'
     if firstrun==True:  #inital settings
 #        dates = sne_date(bahis_data)
@@ -469,11 +481,11 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         vDis=[]
         vUpa=[]
         # figgLiveS=lambda:None
-        # figgZoon=[] 
-        # Rfigg=[] 
+        # figgZoon=[]
+        # Rfigg=[]
         # Rfindic=[]
         # figMonthly=[]
-        
+
         path=path3
         loc=3
         title='upazila'
@@ -484,45 +496,53 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         labl='Reports per upazila'
         firstrun=False
         #subDist=subDist[subDist['loc_type']==loc]
-    
-        
+
+
     if ctx.triggered_id=='daterange':
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
-        
+
     if ctx.triggered_id=='Diseaselist':
         sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
-    
+
     if ctx.triggered_id=='Division':
         if not SelDiv:
             sub_bahis_sourcedata=bahis_data
-            subDist=bahis_geodata        
-            vDis="",
+            subDist=bahis_geodata
+            vDis=[]
+            Dislist=""
+            vUpa=[]
+            Upalist=[]
+            SelDis=""
+            SelUpa=""
         else:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-            vUpa="",
-            
+            vUpa=[]
+            SelUpa=""
+
     if ctx.triggered_id=='District':
         if not SelDis:
             sub_bahis_sourcedata= bahis_data.loc[bahis_data['division']==SelDiv] #DivNo]
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDiv))]
             Dislist=fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-            vUpa="",            
-        else: 
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['district']==SelDis] #DivNo]
+            Upalist=""
+            vUpa=[]
+            SelUpa=""
+        else:
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]    from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
             Upalist=fetchUpazilalist(SelDis, bahis_geodata)
             vUpa=[{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
-            
-    if ctx.triggered_id=='Upazila':            
+
+    if ctx.triggered_id=='Upazila':
         if not SelUpa:
-            sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo]
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['district']==SelDis] #DivNo] from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist=bahis_geodata.loc[bahis_geodata['parent'].astype('string').str.startswith(str(SelDis))]
         else:
-            sub_bahis_sourcedata= sub_bahis_sourcedata.loc[sub_bahis_sourcedata['upazila']==SelUpa]
+            sub_bahis_sourcedata= bahis_data.loc[bahis_data['upazila']==SelUpa]
             subDist=bahis_geodata.loc[bahis_geodata['value'].astype('string').str.startswith(str(SelUpa))]
 
 
@@ -573,330 +593,356 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 #    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
     print('general callback : ' + str(endtime_general-starttime_general))
+
 ###tab1
 
-    starttime_tab1=datetime.now()
-        
-    tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
-    tmp=tmp.to_frame()
-    tmp['counts']=tmp['date']
+    if tabs == 'ReportsTab':
+        starttime_tab1=datetime.now()
 
-    tmp['date']=pd.to_datetime(tmp.index)
-    tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.to_frame()
-    tmp['date']=tmp.index
-    tmp['date']=tmp['date'].astype('datetime64[D]')
+        tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
+        tmp=tmp.to_frame()
+        tmp['counts']=tmp['date']
 
-    figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
-    figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-    figgR.add_annotation(
-        x=end_date,
-        y=max(tmp),
-        text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
-        showarrow=False,
-        font=dict(
-            family="Courier New, monospace",
-            size=12,
-            color="#ffffff"
-            ),
-        align="center",
+        tmp['date']=pd.to_datetime(tmp.index)
+        tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+        tmp=tmp.to_frame()
+        tmp['date']=tmp.index
+        tmp['date']=tmp['date'].astype('datetime64[D]')
 
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8
-        )
+        figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
+        figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+        figgR.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgR.add_annotation(
+            x=end_date,
+            y=max(tmp),
+            text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
+            showarrow=False,
+            font=dict(
+                family="Courier New, monospace",
+                size=12,
+                color="#ffffff"
+                ),
+            align="center",
 
-    tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
-    tmp=tmp.reset_index()
-    tmp=tmp.rename(columns={'date':'date'})
-    tmp['date'] = tmp['date'].astype('datetime64[D]')
-    figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
-    figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-    figgSick.add_annotation(
-        x=end_date,
-        y=max(tmp),
-        text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
-        showarrow=False,
-        font=dict(
-            family="Courier New, monospace",
-            size=12,
-            color="#ffffff"
-            ),
-        align="center",
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8
-        )
+            bordercolor="#c7c7c7",
+            borderwidth=2,
+            borderpad=4,
+            bgcolor="#ff7f0e",
+            opacity=0.8
+            )
 
-    figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
-    figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-    figgDead.add_annotation(
-        x=end_date,
-        y=max(tmp),
-        text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
-        showarrow=False,
-        font=dict(
-            family="Courier New, monospace",
-            size=12,
-            color="#ffffff"
-            ),
-        align="center",
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8
-        )
- 
-    endtime_tab1 = datetime.now()
-    print('tab1 : ' + str(endtime_tab1-starttime_tab1))    
+        tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
+        tmp=tmp.reset_index()
+        tmp=tmp.rename(columns={'date':'date'})
+        tmp['date'] = tmp['date'].astype('datetime64[D]')
+        figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
+        figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+        figgSick.update_xaxes(range=['2022-12-21','2024-01-31'])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
+        figgSick.add_annotation(
+            x=end_date,
+            y=max(tmp),
+            text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
+            showarrow=False,
+            font=dict(
+                family="Courier New, monospace",
+                size=12,
+                color="#ffffff"
+                ),
+            align="center",
+            bordercolor="#c7c7c7",
+            borderwidth=2,
+            borderpad=4,
+            bgcolor="#ff7f0e",
+            opacity=0.8
+            )
+
+        figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
+        figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+        figgDead.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgDead.add_annotation(
+            x=end_date,
+            y=max(tmp),
+            text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
+            showarrow=False,
+            font=dict(
+                family="Courier New, monospace",
+                size=12,
+                color="#ffffff"
+                ),
+            align="center",
+            bordercolor="#c7c7c7",
+            borderwidth=2,
+            borderpad=4,
+            bgcolor="#ff7f0e",
+            opacity=0.8
+            )
+
+        endtime_tab1 = datetime.now()
+        print('tab1 : ' + str(endtime_tab1-starttime_tab1))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, figgR, figgSick, figgDead, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
+
+
 
 ####tab2
-    
-    starttime_tab2=datetime.now()
 
-    #preprocess groupdata ?
-    
-    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+    if tabs == 'DiseaseTab':
 
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
- 
-    
-    poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
+        starttime_tab2=datetime.now()
 
-    tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
+        #preprocess groupdata ?
 
-    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+        poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+        sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
 
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    # to_replace=tmpdg['name'].tolist()
-    # replace_with=tmpdg['Disease type'].tolist()
-    sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
-    LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
-
-    tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
-    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    subpl=[fpoul, flani]
-    figgLiveS= make_subplots(rows=2, cols=1)
-    for i, figure in enumerate(subpl):
-        for trace in range(len(figure['data'])):
-            figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgLiveS.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
-
-    poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
-    sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
-
-    # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-    tmpdg=bahis_dgdata[bahis_dgdata['Disease type']=='Zoonotic diseases']
-    tmpdg=tmpdg['name'].tolist()
-    sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
+        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+        # to_replace=tmpdg['name'].tolist()
+        # replace_with=tmpdg['Disease type'].tolist()
+        sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
 
 
-    tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
-    fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-    lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
-    sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        tmp=tmp.iloc[::-1]
+        fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+        fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        #figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1) #, labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
 
-    sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
+        lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+        sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
 
-    tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
-    tmp=tmp.sort_values(by='species', ascending=False)
-    tmp=tmp.rename({'species' : 'counts'}, axis=1)
-    tmp=tmp.head(10)
-    tmp=tmp.iloc[::-1]
-    flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
-    flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    subpl=[fpoul, flani]
-    figgZoon= make_subplots(rows=2, cols=1)
-    for i, figure in enumerate(subpl):
-        for trace in range(len(figure['data'])):
-            figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
-    figgZoon.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
+        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+        # to_replace=tmpdg['name'].tolist()
+        # replace_with=tmpdg['Disease type'].tolist()
+        sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
+        LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-    endtime_tab2 = datetime.now()
-    print('tab2 : ' + str(endtime_tab2-starttime_tab2))   
+        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        tmp=tmp.iloc[::-1]
+        flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Large Animal Diseases')
+        flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        subpl=[fpoul, flani]
+        figgLiveS= make_subplots(rows=2, cols=1)
+        for i, figure in enumerate(subpl):
+            for trace in range(len(figure['data'])):
+                figgLiveS.append_trace(figure['data'][trace], row=i+1, col=1)
+        figgLiveS.update_layout(height=350, margin={"r":0,"t":0,"l":0,"b":0})
 
-    
+        poultry=['Chicken', 'Duck', 'Goose', 'Pegion', 'Quail', 'Turkey']
+        sub_bahis_sourcedataP=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(poultry)]
+
+        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
+        tmpdg=bahis_dgdata[bahis_dgdata['Disease type']=='Zoonotic diseases']
+        tmpdg=tmpdg['name'].tolist()
+        sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
+
+
+        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        tmp=tmp.iloc[::-1]
+        fpoul =px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases')
+        fpoul.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+        lanimal=['Buffalo', 'Cattle', 'Goat', 'Sheep']
+        sub_bahis_sourcedataLA=sub_bahis_sourcedata[sub_bahis_sourcedata['species'].isin(lanimal)]
+
+        sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
+
+        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp=tmp.sort_values(by='species', ascending=False)
+        tmp=tmp.rename({'species' : 'counts'}, axis=1)
+        tmp=tmp.head(10)
+        tmp=tmp.iloc[::-1]
+        flani = px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Ruminant Diseases')
+        flani.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        subpl=[fpoul, flani]
+        figgZoon= make_subplots(rows=2, cols=1)
+        for i, figure in enumerate(subpl):
+            for trace in range(len(figure['data'])):
+                figgZoon.append_trace(figure['data'][trace], row=i+1, col=1)
+        figgZoon.update_layout(height=150, margin={"r":0,"t":0,"l":0,"b":0})
+
+        endtime_tab2 = datetime.now()
+        print('tab2 : ' + str(endtime_tab2-starttime_tab2))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update,  no_update, no_update, figgLiveS, figgZoon, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
+
+
 ### tab3 geolocation
 
-    starttime_tab3=datetime.now()
+    if tabs == 'GeoRepTab':
 
-    reports=sub_bahis_sourcedata[title].value_counts().to_frame()
+        starttime_tab3=datetime.now()
 
-    reports['cases']=reports[title]
-    reports[title] = reports.index
-    reports= reports.loc[reports[title] != 'nan']
-          
-    for i in range(reports.shape[0]):
-        reports[title].iloc[i] = subDistM.loc[subDistM['value']==int(reports[title].iloc[i]),'name'].iloc[0]
+        reports=sub_bahis_sourcedata[title].value_counts().to_frame()
 
-    reports=reports.sort_values(title)
-    reports[title]=reports[title].str.capitalize()
-    
-    tmp=subDistM[['value', 'name']]
-    tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
-    tmp[pname]=tmp[pname].str.title()
-    tmp['Index']=tmp[pnumber]
-    tmp=tmp.set_index('Index')
-    aaa=reports.combine_first(tmp)
-    aaa[pname]=tmp[pname]    
-    alerts=aaa[aaa.isna().any(axis=1)]
-    alerts= alerts[[pname, pnumber]]
-    del tmp
-    del aaa
-    
+        reports['cases']=reports[title]
+        reports[title] = reports.index
+        reports= reports.loc[reports[title] != 'nan']
 
-    Rfindic=fIndicator(sub_bahis_sourcedata)
-    Rfindic.update_layout(height=100, margin={"r":0,"t":4,"l":0,"b":0})
+        for i in range(reports.shape[0]):
+            reports[title].iloc[i] = subDistM.loc[subDistM['value']==int(reports[title].iloc[i]),'name'].iloc[0]
 
-    Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
-    Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
-    
-    NRlabel= 'Non-Reporting Regions: ' + str(len(alerts)) + ' (Please handle with care as geoshape files and geolocations have issues)'
-    AlertTable= dash_table.DataTable(
-                                #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
-                                style_header={
-                                        'overflow': 'hidden',
-                                        'maxWidth': 0,
-                                        'fontWeight': 'bold',
-                                        },
-                                style_cell={'textAlign': 'left'},
-                                export_format='csv',
-                                style_table={'height': '220px', 'overflowY': 'auto'},
-                                style_as_list_view=True,
-                                fixed_rows={'headers': True},
-                                data=alerts.to_dict('records'),
-                                ),
+        reports=reports.sort_values(title)
+        reports[title]=reports[title].str.capitalize()
 
-    endtime_tab3 = datetime.now()
-    print('tab3 : ' + str(endtime_tab3-starttime_tab3))
+        tmp=subDistM[['value', 'name']]
+        tmp=tmp.rename(columns={'value':pnumber, 'name':pname})
+        tmp[pname]=tmp[pname].str.title()
+        tmp['Index']=tmp[pnumber]
+        tmp=tmp.set_index('Index')
+        aaa=reports.combine_first(tmp)
+        aaa[pname]=tmp[pname]
+        alerts=aaa[aaa.isna().any(axis=1)]
+        alerts= alerts[[pname, pnumber]]
+        del tmp
+        del aaa
+
+
+        Rfindic=fIndicator(sub_bahis_sourcedata)
+        Rfindic.update_layout(height=100, margin={"r":0,"t":30,"l":0,"b":0})
+
+        Rfigg=px.bar(reports, x=title, y='cases', labels= {variab:labl, 'cases':'Reports'})# ,color='division')
+        Rfigg.update_layout(autosize=True, height=200, margin={"r":0,"t":0,"l":0,"b":0})
+
+        NRlabel= 'Regions with no data in the current database: ' + str(len(alerts)) + ' (Please handle with care as geoshape files and geolocations have issues)'
+        AlertTable= dash_table.DataTable(
+                                    #columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
+                                    style_header={
+                                            'overflow': 'hidden',
+                                            'maxWidth': 0,
+                                            'fontWeight': 'bold',
+                                            },
+                                    style_cell={'textAlign': 'left'},
+                                    export_format='csv',
+                                    style_table={'height': '220px', 'overflowY': 'auto'},
+                                    style_as_list_view=True,
+                                    fixed_rows={'headers': True},
+                                    data=alerts.to_dict('records'),
+                                    ),
+
+        endtime_tab3 = datetime.now()
+        print('tab3 : ' + str(endtime_tab3-starttime_tab3))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, Rfindic, Rfigg, NRlabel, AlertTable, no_update, no_update, no_update, no_update, geoSlider
+
 
 #### tab 4 geodyn tab per current year
 
-    starttime_tab4=datetime.now()
+    if tabs == 'GeoDynTab':
 
-    wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
-    wkRep=wkRep[['date', 'division', 'district', 'upazila']]
-    totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique())
+        starttime_tab4=datetime.now()
 
-    reports=pd.DataFrame({title.capitalize():[]})
-    for i in range(0,totalweeks):
-            reports[i+1]=''
-    reports['total']=''
-    
-    for geono in wkRep[title].unique():
-#        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title() # either all reports and all geodata or both only selected
-        reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
-#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-        tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
-#        tmpp.reset_index()
-        for entry in range(len(tmpp)):
-#################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-            reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
-    ###  speed suggestion: not groupby weeks, but calculate all except last week and sum over it.            
-        
-    reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
-    reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
-    reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
-    reports=reports.rename(columns={totalweeks-1:'week 1-'+ str(totalweeks-1), totalweeks:'week ' + str(totalweeks)})
-    reports=reports.fillna(0)
+#        wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
+        wkRep=sub_bahis_sourcedata[pd.DatetimeIndex(sub_bahis_sourcedata['date']).year==datetime.now().year]
+        wkRep=wkRep[['date', 'division', 'district', 'upazila']]
+        totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique())
+
+        reports=pd.DataFrame({title.capitalize():[]})
+        for i in range(0,totalweeks):
+                reports[i+1]=''
+        reports['total']=''
+
+        for geono in wkRep[title].unique():
+    #        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title() # either all reports and all geodata or both only selected
+#            reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
+            reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
+    #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+            tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
+    #        tmpp.reset_index()
+            for entry in range(len(tmpp)):
+    #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
+                reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
+        ###  speed suggestion: not groupby weeks, but calculate all except last week and sum over it.
+
+        reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
+        reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
+        reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
+        reports=reports.rename(columns={totalweeks-1:'week 1-'+ str(totalweeks-1), totalweeks:'week ' + str(totalweeks)})
+        reports=reports.fillna(0)
 
 
-    GeoDynTable = dash_table.DataTable(
-                                columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
-                                style_header={
-                                        'overflow': 'hidden',
-                                        'maxWidth': 0,
-                                        'fontWeight': 'bold',
-                                        },
-                                style_cell={'textAlign': 'left'},
-                                export_format='csv',
-                                style_table={'height': '600px', 'overflowY': 'auto'},
-                                style_as_list_view=True,
-                                fixed_rows={'headers': True},
-                                data=reports.to_dict('records'),
-                                ),
+        GeoDynTable = dash_table.DataTable(
+                                    columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
+                                    style_header={
+                                            'overflow': 'hidden',
+                                            'maxWidth': 0,
+                                            'fontWeight': 'bold',
+                                            },
+                                    style_cell={'textAlign': 'left'},
+                                    export_format='csv',
+                                    style_table={'height': '600px', 'overflowY': 'auto'},
+                                    style_as_list_view=True,
+                                    fixed_rows={'headers': True},
+                                    data=reports.to_dict('records'),
+                                    ),
 
-    endtime_tab4 = datetime.now()
-    print('tab4 : ' + str(endtime_tab4-starttime_tab4))    
+        endtime_tab4 = datetime.now()
+        print('tab4 : ' + str(endtime_tab4-starttime_tab4))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, GeoDynTable, no_update, no_update, no_update, geoSlider
+
 
 ### tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
-    starttime_tab5=datetime.now()
+    if tabs == 'MonthCompTab':
 
-    monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
-    monthly=monthly.rename({'count':'reports'}, axis=1)
-    monthly=monthly.reset_index()
-    monthly['year']=monthly['year'].astype(str)
-    figMonthly = px.bar(data_frame=monthly,
-                        x='month',
-                        y='reports',
-                        labels={'month':'Month','reports':'Reports'},
-                        color='year',
-                        barmode='group')
-    figMonthly.update_xaxes(dtick="M1", tickformat="%B")
+        starttime_tab5=datetime.now()
 
-    endtime_tab5 = datetime.now()
-    print('tab5 : ' + str(endtime_tab5-starttime_tab5))   
-    
+        monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
+        monthly=monthly.rename({'count':'reports'}, axis=1)
+        monthly=monthly.reset_index()
+        monthly['year']=monthly['year'].astype(str)
+        figMonthly = px.bar(data_frame=monthly,
+                            x='month',
+                            y='reports',
+                            labels={'month':'Month','reports':'Reports'},
+                            color='year',
+                            barmode='group')
+        figMonthly.update_xaxes(dtick="M1", tickformat="%B")
+
+        endtime_tab5 = datetime.now()
+        print('tab5 : ' + str(endtime_tab5-starttime_tab5))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, figMonthly, no_update, no_update, geoSlider
+
 ### tab 6 export tab
 
-    starttime_tab6=datetime.now()
-    
-    ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
-    ExportTab= dash_table.DataTable(
-                                style_header={
-#                                        'overflow': 'hidden',
-#                                        'maxWidth': 0,
-                                        'fontWeight': 'bold',
-                                        },
-                                style_cell={'textAlign': 'left'},
-                                export_format='csv',
-                                style_table={'height': '600px', 'overflowY': 'auto'},
-#                                style_as_list_view=True,
-#                                fixed_rows={'headers': True},
-                                data=sub_bahis_sourcedata.to_dict('records'),
-                                columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
-                                ),
+    if tabs == 'ExportTab':
 
-    endtime_tab6 = datetime.now()
-    print('tab6 : ' + str(endtime_tab6-starttime_tab6))   
-    
+        starttime_tab6=datetime.now()
 
-    return vDiv, vDis, vUpa, ddDList, figgR, figgSick, figgDead, figgLiveS, figgZoon, Rfindic, Rfigg, NRlabel, AlertTable, GeoDynTable, figMonthly, ExportLabel, ExportTab, geoSlider 
+        ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
+        ExportTab= dash_table.DataTable(
+                                    style_header={
+    #                                        'overflow': 'hidden',
+    #                                        'maxWidth': 0,
+                                            'fontWeight': 'bold',
+                                            },
+                                    style_cell={'textAlign': 'left'},
+                                    export_format='csv',
+                                    style_table={'height': '500px', 'overflowY': 'auto'},
+    #                                style_as_list_view=True,
+    #                                fixed_rows={'headers': True},
+                                    data=sub_bahis_sourcedata.to_dict('records'),
+                                    columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
+                                    ),
+
+        endtime_tab6 = datetime.now()
+        print('tab6 : ' + str(endtime_tab6-starttime_tab6))
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, ExportLabel, ExportTab, geoSlider
 
 
-@callback(   
+
+
+@callback(
     Output ('Map', 'figure'),
 #    Output ('geoSlider', 'value'),
-    
+
     Input ('geoSlider', 'value'),
     State ('Division','value'),
     State ('District','value'),
@@ -942,7 +988,7 @@ def export(geoSlider, Division, District, Upazila):
             subDistM=subDist[subDist['loc_type']==geoSlider]
         else:
             geoSlider=3
-            
+
     if geoSlider== 3:
         path=path3
         loc=geoSlider
@@ -957,3 +1003,4 @@ def export(geoSlider, Division, District, Upazila):
     Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     return Rfig #, geoSlider
 
+# make callback for tabs
