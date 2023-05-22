@@ -3,7 +3,7 @@ First [install pipenv](https://pipenv.pypa.io/en/latest/install/), or run the co
 ```
 pipenv install
 ```
-and copy data to `exported_data`.
+    and copy data from `bahis-data/output/` to `exported_data`.
 
 If you get an error when running install
 ```
@@ -14,8 +14,5 @@ remove the `Pipfile.lock` file and run again.
 ## Running
 ```
 pipenv shell
-python prep_data.py
-python prepgeojson.py
-python prepquickdata.py
 python index.py
 ```
