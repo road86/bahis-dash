@@ -1,4 +1,4 @@
-name: semantice versioning
+name: semantic versioning
 on:
   push:
     branches:
@@ -11,6 +11,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: bump version
+        id: bump
         uses: TriPSs/conventional-changelog-action@v3
         with:
           github-token: ${{ secrets.ROBOT_TOKEN }}
@@ -19,3 +20,12 @@ jobs:
           skip-commit: "true"
           skip-version-file: "true"
           output-file: "false"
+      - name: create release
+        uses: actions/create-release@v1
+        if: ${{ steps.bump.outputs.skipped == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.ROBOT_TOKEN }}
+        with:
+          tag_name: ${{ steps.id.outputs.tag }}
+          release_name: ${{ steps.id.outputs.tag }}
+          body: ${{ steps.id.outputs.clean_changelog }}
