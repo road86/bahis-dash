@@ -1,4 +1,4 @@
-name: automatically add to project board
+name: semantice versioning
 on:
   push:
     branches:
@@ -8,10 +8,14 @@ jobs:
   automatically_bump_version:
     runs-on: ubuntu-latest
     steps:
-      - name: automatically_bump_version
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: bump version
         uses: TriPSs/conventional-changelog-action@v3
         with:
-          github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.ROBOT_TOKEN }}
+          git-user-name: road86-robot
+          git-user-email: github@chasnelson.co.uk
           skip-commit: "true"
           skip-version-file: "true"
           output-file: "false"
