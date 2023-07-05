@@ -66,7 +66,15 @@ layout = dbc.Container([
                     html.Center(html.H1("DLS: Overview page ")),
                     ])
                 ])
+            ]),
+        dbc.Col([
+            dbc.Card([
+                dbc.Row([
+                    html.Center(html.H1("Reports Heatmap ")),
+                    ])
+                ])
             ])
+
         ]),
     dbc.Row([
         dbc.Col([
@@ -101,6 +109,13 @@ layout = dbc.Container([
             dbc.Card([
                 dbc.Row([
                     dbc.Button("DLS", href="/dls", size="lg")
+                    ])
+                ])
+            ]),
+        dbc.Col([
+            dbc.Card([
+                dbc.Row([
+                    dbc.Button("Reports", href="/reports", size="lg")
                     ])
                 ])
             ])
