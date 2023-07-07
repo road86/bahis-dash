@@ -486,7 +486,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                             annotation_dict = dict(
                                 showarrow=False,
                                 ###text="<b>" + str(sum_of_record) + "<b>",
-                                text="<b>" + str(sum(z.loc[x_val] ==1)/z.shape[1]) + "<b>",
+                                text="<b>" + str(sum(z.loc[x_val] ==1)/z.shape[1]*100) + " %<b>",
                                 xref="x",
                                 yref="y",
                                 x=x_val,
@@ -516,7 +516,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             hovertemplate=hovertemplate,
             showscale=False,
             ###colorscale=[[0, "#caf3ff"], [1, "#2c82ff"]],
-            colorscale=[[0, "red" ], [0.2, "tomato" ], [0.4, "lemonchiffon" ], [0.6, "khaki" ], [0.8, "limegreen" ], [1, "lime" ],],
+            colorscale=[[0, "white" ], [0.2, "#eeffe3" ], [0.4, "#ccfcae" ], [0.6, "#adfc7c" ], [0.8, "#77fc21" ], [1, "#62ff00" ],],
         )
     ]
     
