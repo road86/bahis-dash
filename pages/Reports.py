@@ -97,7 +97,7 @@ def generate_control_card():
             html.P("Select Check-In Time"),
             dcc.DatePickerRange(
                 id="date-picker-select",
-                start_date="2022-12-01",
+                start_date="2022-12-31",
                 end_date="2023-02-15",
                 min_date_allowed=dt(2022, 1, 1),
                 max_date_allowed=dt(2023, 12, 31),
@@ -187,12 +187,13 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                 ]
         z= pd.DataFrame(index=x_axis, columns=y_axis)
         annotations = []
+
+        tmp=filtered_bd.index.value_counts()
+        tmp=tmp.to_frame()
+        tmp['counts']=tmp['date']
+        tmp['date']=pd.to_datetime(tmp.index)
         
         for ind_x, x_val in enumerate(x_axis):
-            tmp=filtered_bd.index.value_counts()
-            tmp=tmp.to_frame()
-            tmp['counts']=tmp['date']
-            tmp['date']=pd.to_datetime(tmp.index)
             sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
             z.loc[x_val, 'Bangladesh'] = sum_of_record
     
@@ -290,11 +291,11 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                 #tmp['date']=tmp.index
 #                if district != 'No ' + str(division) :  #for districts
                 if district[:1] != 'Σ': #for districts
+                    tmp=filtered_district.index.value_counts()
+                    tmp=tmp.to_frame()
+                    tmp['counts']=tmp['date']
+                    tmp['date']=pd.to_datetime(tmp.index)
                     for ind_x, x_val in enumerate(x_axis):
-                        tmp=filtered_district.index.value_counts()
-                        tmp=tmp.to_frame()
-                        tmp['counts']=tmp['date']
-                        tmp['date']=pd.to_datetime(tmp.index)
             #            tmp=filtered_division['date'].dt.date.value_counts()
             #            sum_of_record = tmp['y'+tmp['date'].isocalendar().year+'w'+tmp['date'].isocalendar().week==x_val].sum()
             #            sum_of_record = len([x for x in tmp['date'] if (str(x.isocalendar().year) ==x_val[1:5] and str(x.isocalendar().week).zfill(2) ==x_val[6:8])])
@@ -327,11 +328,11 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         
                 if district[:1] == 'Σ': #for districts
 #                if district == 'No ' + str(division) :    # for total division
+                    tmp=filtered_bd.index.value_counts()
+                    tmp=tmp.to_frame()
+                    tmp['counts']=tmp['date']
+                    tmp['date']=pd.to_datetime(tmp.index)
                     for ind_x, x_val in enumerate(x_axis):
-                        tmp=filtered_bd.index.value_counts()
-                        tmp=tmp.to_frame()
-                        tmp['counts']=tmp['date']
-                        tmp['date']=pd.to_datetime(tmp.index)
                         sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
 #                        z.loc[x_val, 'No ' + str(division)] = sum_of_record
                         z.loc[x_val, district] = sum_of_record
@@ -432,17 +433,34 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                 filtered_upazila = filtered_bd[pd.Series([str(x)[:6]==y_axis_no[ind_y] for x in filtered_bd['upazila']]).values]
         
                 if upazila[:1] != 'Σ':  #for upazila
+                    tmp=filtered_upazila.index.value_counts()
+                    tmp=tmp.to_frame()
+                    tmp['counts']=tmp['date']
+                    tmp['date']=pd.to_datetime(tmp.index)            
+
                     for ind_x, x_val in enumerate(x_axis):
-                        tmp=filtered_upazila.index.value_counts()
-                        tmp=tmp.to_frame()
-                        tmp['counts']=tmp['date']
-                        tmp['date']=pd.to_datetime(tmp.index)            
-                        sum_of_record= tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
-                        z[upazila][x_val]=sum_of_record
+                        daysub=0
+###########weekly defined via isocalendar (starts with Monday). so does not coincide with bengalian time counts.
+                        for weekday in [1,2,3,6,7]: #Monday to Sunday skipping Thursday and Friday
+                            if pd.Timestamp(datetime.date.fromisocalendar(int(x_val[1:5]), int(x_val[6:8]), weekday)) in pd.to_datetime(tmp['date']):
+                                daysub=daysub + 1
+                            
+                                                    
+                        ###sum_of_record= tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
+
+################ !!bug with year transition!!! 1.1.23 counts to wk52 from 2022
+
+#                        ######
+# code snipped to see reports per weekday 
+# cats = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+# bahis_data.groupby(pd.to_datetime(bahis_data['date'].astype(str), format = '%Y-%m-%d').dt.day_name()).count().reindex(cats) 
+                        ###z[upazila][x_val]=sum_of_record
+                        z[upazila][x_val]=daysub/5
             
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + str(sum_of_record) + "<b>",
+                            ###text="<b>" + str(sum_of_record) + "<b>",
+                            text="<b>" + str(daysub/5) + "<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -456,28 +474,30 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                                 annotation_dict.update(size=15, font=dict(color="#ff6347"))
         
                 if upazila[:1] == 'Σ':  #for upazila
+                    ### tmp=filtered_bd.index.value_counts()
+                    ### tmp=tmp.to_frame()
+                    ### tmp['counts']=tmp['date']
+                    ### tmp['date']=pd.to_datetime(tmp.index)
                     for ind_x, x_val in enumerate(x_axis):
-                        tmp=filtered_bd.index.value_counts()
-                        tmp=tmp.to_frame()
-                        tmp['counts']=tmp['date']
-                        tmp['date']=pd.to_datetime(tmp.index)
-                        sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
-                        z.loc[x_val, upazila] = sum_of_record
-                
-                        annotation_dict = dict(
-                            showarrow=False,
-                            text="<b>" + str(sum_of_record) + "<b>",
-                            xref="x",
-                            yref="y",
-                            x=x_val,
-                            y=upazila, 
-                            font=dict(family="sans-serif"),
-                        )
-                        annotations.append(annotation_dict)    
-    
-                        if x_val == week and upazila == region:
-                            if not reset:
-                                annotation_dict.update(size=15, font=dict(color="#ff6347"))
+                        #for entries in range(z.shape[1]):
+                    ###     sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
+                    ###     z.loc[x_val, upazila] = sum_of_record
+                            z.loc[x_val, upazila] = sum(z.loc[x_val] ==1)/z.shape[1]#sum_of_record
+                            annotation_dict = dict(
+                                showarrow=False,
+                                ###text="<b>" + str(sum_of_record) + "<b>",
+                                text="<b>" + str(sum(z.loc[x_val] ==1)/z.shape[1]) + "<b>",
+                                xref="x",
+                                yref="y",
+                                x=x_val,
+                                y=upazila, 
+                                font=dict(family="sans-serif"),
+                            )
+                            annotations.append(annotation_dict)    
+        
+                            if x_val == week and upazila == region:
+                                if not reset:
+                                    annotation_dict.update(size=15, font=dict(color="#ff6347"))
         
     z=z.fillna(0)
     z=z.T
@@ -495,7 +515,8 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             name="",
             hovertemplate=hovertemplate,
             showscale=False,
-            colorscale=[[0, "#caf3ff"], [1, "#2c82ff"]],
+            ###colorscale=[[0, "#caf3ff"], [1, "#2c82ff"]],
+            colorscale=[[0, "red" ], [0.2, "tomato" ], [0.4, "lemonchiffon" ], [0.6, "khaki" ], [0.8, "limegreen" ], [1, "lime" ],],
         )
     ]
     
@@ -563,6 +584,9 @@ layout = html.Div([
     ],
 )
 
+# code snipped to see reports per weekday 
+# cats = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+# bahis_data.groupby(pd.to_datetime(bahis_data['date'].astype(str), format = '%Y-%m-%d').dt.day_name()).count().reindex(cats) 
 
 @callback(
     Output("reports_hm", "figure"),
