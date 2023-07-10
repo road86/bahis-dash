@@ -486,7 +486,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
                             annotation_dict = dict(
                                 showarrow=False,
                                 ###text="<b>" + str(sum_of_record) + "<b>",
-                                text="<b>" + str(sum(z.loc[x_val] ==1)/z.shape[1]*100) + " %<b>",
+                                text="<b>" + "{:.2f}".format(sum(z.loc[x_val] ==1)/(z.shape[1]-1)*100) + " %<b>",
                                 xref="x",
                                 yref="y",
                                 x=x_val,
