@@ -901,11 +901,26 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
     if tabs == 'MonthCompTab':
 
+        month_names = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'
+        }
         starttime_tab5=datetime.now()
 
         monthly=bahis_data.groupby([bahis_data['date'].dt.year.rename('year'), bahis_data['date'].dt.month.rename('month')])['date'].agg({'count'})
         monthly=monthly.rename({'count':'reports'}, axis=1)
         monthly=monthly.reset_index()
+        monthly['month']=monthly['month'].map(month_names)
         monthly['year']=monthly['year'].astype(str)
         figMonthly = px.bar(data_frame=monthly,
                             x='month',
