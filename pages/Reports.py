@@ -98,7 +98,7 @@ def generate_control_card():
             dcc.DatePickerRange(
                 id="date-picker-select",
                 start_date="2022-12-31",
-                end_date="2023-07-16",
+                end_date="2023-07-21",
                 min_date_allowed=dt(2022, 1, 1),
                 max_date_allowed=dt(2023, 12, 31),
                 initial_visible_month=dt(2023, 1, 1),
