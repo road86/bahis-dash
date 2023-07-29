@@ -40,7 +40,7 @@ def fetchsourcedata(): #fetch and prepare source data
     bahis_data[['division', 'district', 'species_no']]=bahis_data[['division', 'district', 'species_no']].astype(np.uint16)
     bahis_data[['upazila', 'sick', 'dead']]=bahis_data[['upazila',  'sick', 'dead']].astype(np.int32) #converting into uint makes odd values)
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
-    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
+    bahis_data=bahis_data[bahis_data['date'].dt.year > max(bahis_data['date']).year-2]
     return bahis_data
 bahis_data=fetchsourcedata()
 sub_bahis_sourcedata=bahis_data
@@ -148,15 +148,39 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         vDis=[]
         filtered_bd=bahis_data
         filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start:end]
-    
+        
+        Divlist=bahis_geodata[bahis_geodata['loc_type']==1][['value','name']]
+        Divlist['name']=Divlist['name'].str.capitalize()
+        Divlist=Divlist.rename(columns={'name':'Division'})
+        Divlist=Divlist.sort_values(by=['Division'])
+        Divlist=Divlist.to_dict('records')   
+        
         if 'All Diseases' in disease:
             filtered_bd=filtered_bd
         else:
             filtered_bd=filtered_bd[filtered_bd['top_diagnosis'].isin(disease)]
+
+#        filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start:end]
         
         x_axis = find_weeks(start,end) #[1:] without first week
         x_axis = [str(x) for x in x_axis]
-        y_axis=['Bangladesh']
+        
+        # get stuff for bangaldesh total numbers with division. copy comment stuff below.
+        y_axis_no = list(set([str(x)[:2] for x in filtered_bd['upazila']]))
+        y_axis=y_axis_no.copy()
+                        
+        for i, value in enumerate(y_axis_no):
+            tst= bahis_geodata[bahis_geodata['loc_type']==1].loc[bahis_geodata[bahis_geodata['loc_type']==1]['value']== int(value), 'name']
+            if not tst.empty:
+                y_axis[i] = tst.values[0].capitalize()
+            
+# #            y_axis = [('No ' + str(y)) for y in y_axis ]
+#        tst= bahis_geodata[bahis_geodata['loc_type']==1].loc[bahis_geodata[bahis_geodata['loc_type']==1]['value']== int(division), 'name']
+        y_axis.append('Bangladesh') #"Σ " + tst.values[0].capitalize())
+        y_axis_no.append('Bangladesh') #int(division))
+# #            y_axis.append('No ' + str(division))        
+        
+#        y_axis=['Bangladesh']
 
         week = ""
         region = ""
@@ -192,22 +216,75 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         tmp=tmp.to_frame()
         tmp['counts']=tmp['date']
         tmp['date']=pd.to_datetime(tmp.index)
-        
-        for ind_x, x_val in enumerate(x_axis):
-            sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
-            z.loc[x_val, 'Bangladesh'] = sum_of_record
-    
-            annotation_dict = dict(
-                showarrow=False,
-                text="<b>" + str(sum_of_record) + "<b>",
-                xref="x",
-                yref="y",
-                x=x_val,
-                y= 'Bangladesh',
-                font=dict(family="sans-serif"),
-            )
-            annotations.append(annotation_dict) 
+ 
+        for ind_y, division in enumerate(y_axis):   
+                filtered_division = filtered_bd[pd.Series([str(x)[:2]==y_axis_no[ind_y] for x in filtered_bd['upazila']]).values]
+                if division != 'Bangladesh': 
+                    tmp=filtered_division.index.value_counts()
+                    tmp=tmp.to_frame()
+                    tmp['counts']=tmp['date']
+                    tmp['date']=pd.to_datetime(tmp.index)
+                    for ind_x, x_val in enumerate(x_axis):
+                        sum_of_record= tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
+                        z[division][x_val]=sum_of_record
+            
+                        annotation_dict = dict(
+                            showarrow=False,
+                            text="<b>" + str(sum_of_record) + "<b>",
+                            xref="x",
+                            yref="y",
+                            x=x_val,
+                            y=division,
+                            font=dict(family="sans-serif"),
+                        )
+                        annotations.append(annotation_dict)    
 
+                        if x_val == week and division == region:
+                            if not reset:
+                                annotation_dict.update(size=15, font=dict(color="#ff6347"))
+                             
+                if division == 'Bangladesh':
+                    tmp=filtered_bd.index.value_counts()
+                    tmp=tmp.to_frame()
+                    tmp['counts']=tmp['date']
+                    tmp['date']=pd.to_datetime(tmp.index)
+                    for ind_x, x_val in enumerate(x_axis):
+                        sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
+                        z.loc[x_val, division] = sum_of_record
+                
+                        annotation_dict = dict(
+                            showarrow=False,
+                            text="<b>" + str(sum_of_record) + "<b>",
+                            xref="x",
+                            yref="y",
+                            x=x_val,
+                            y= division,
+                            font=dict(family="sans-serif"),
+                        )
+                        annotations.append(annotation_dict)    
+    
+                        if x_val == week and division == region:
+                            if not reset:
+                                annotation_dict.update(size=15, font=dict(color="#ff6347"))
+
+        # for ind_x, x_val in enumerate(x_axis):
+        #     sum_of_record=tmp.loc[((tmp['date'].dt.year.astype(str)== x_val[1:5]) & (tmp['date'].dt.isocalendar().week.astype(str).str.zfill(2)== x_val[6:8])), 'counts'].sum()
+        #     z.loc[x_val, 'Bangladesh'] = sum_of_record
+    
+        #     annotation_dict = dict(
+        #         showarrow=False,
+        #         text="<b>" + str(sum_of_record) + "<b>",
+        #         xref="x",
+        #         yref="y",
+        #         x=x_val,
+        #         y= 'Bangladesh',
+        #         font=dict(family="sans-serif"),
+        #     )
+        #     annotations.append(annotation_dict) 
+
+
+
+####
     else:   # for divisional numbers
         vDis=[]
         if district is None:

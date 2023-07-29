@@ -67,7 +67,7 @@ def fetchsourcedata(): #fetch and prepare source data
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
 #    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
-    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
+    bahis_data=bahis_data[bahis_data['date'].dt.year> max(bahis_data['date']).year-2]
     return bahis_data
 bahis_data=fetchsourcedata()
 sub_bahis_sourcedata=bahis_data
@@ -80,9 +80,10 @@ def sne_date(bahis_data):
     dates=[start_date, end_date]
     return dates
 
-start_date=date(2019, 1, 1)
-end_date=date(2023,3,1)
-dates=[start_date, end_date]
+#start_date=date(2019, 1, 1)
+#end_date=date(2023,3,1)
+#dates=[start_date, end_date]
+dates = sne_date(bahis_data)
 
 ddDList=[]
 Divlist=[]
@@ -323,9 +324,9 @@ layout =  html.Div([
                         dbc.Col([
                             dcc.DatePickerRange(
                                     id='daterange',
-                                    min_date_allowed=start_date,
+                                    min_date_allowed=dates[0], #start_date,
                                     start_date=date(2023, 1, 1) ,
-                                    max_date_allowed=end_date,
+                                    max_date_allowed=dates[1], #end_date,
                                     # start_date=date(end_date.year-1, end_date.month, end_date.day),
                                     # initial_visible_month=end_date,
                                     end_date=date(2023, 12, 31)
@@ -370,7 +371,7 @@ layout =  html.Div([
                             dbc.Tab([
                                 dbc.Row([html.Label("All Reports of current year"),
                                                       html.Div(id='GeoDynTable')])],
-                                label='Reportdynamics per Geolocation', tab_id='GeoDynTab'),
+                                label='Reports Table', tab_id='GeoDynTab'),
                             dbc.Tab([
                                 dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
                                           )],
@@ -472,7 +473,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
     NRlabel= 'Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)'
     if firstrun==True:  #inital settings
-#        dates = sne_date(bahis_data)
+        dates = sne_date(bahis_data)
         sub_bahis_sourcedata=date_subset(dates, bahis_data)
         ddDList= fetchdiseaselist(sub_bahis_sourcedata)
         ddDList.insert(0, 'All Diseases')
@@ -610,7 +611,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
         figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgR.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgR.update_xaxes(range=[min(tmp['date']), max(tmp['date'])])    #['2022-12-21','2024-01-31'])
         figgR.add_annotation(
             x=end_date,
             y=max(tmp),
@@ -636,7 +637,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp['date'] = tmp['date'].astype('datetime64[D]')
         figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
         figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgSick.update_xaxes(range=['2022-12-21','2024-01-31'])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
+        figgSick.update_xaxes(range=[min(tmp['date']), max(tmp['date'])])    #['2022-12-21','2024-01-31'])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
         figgSick.add_annotation(
             x=end_date,
             y=max(tmp),
@@ -657,7 +658,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
         figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgDead.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgDead.update_xaxes(range=[min(tmp['date']), max(tmp['date'])])    #['2022-12-21','2024-01-31'])
         figgDead.add_annotation(
             x=end_date,
             y=max(tmp),
