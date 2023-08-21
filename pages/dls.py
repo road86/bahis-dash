@@ -49,7 +49,7 @@ firstrun=True
 def fetchsourcedata(): #fetch and prepare source data
     bahis_data = pd.read_csv(sourcefilename)
     bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
+    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'],errors = 'coerce')
 #    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
     del bahis_data['Unnamed: 0']
     bahis_data=bahis_data.rename(columns={'basic_info_date':'date',
