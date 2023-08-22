@@ -270,7 +270,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
-    tmp[title]=-(reports[title].max())
+    tmp[title]=-(reports[pname].max())
 
 #    for i in range(tmp.shape[0]):
 #    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
@@ -601,8 +601,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
         tmp=tmp.to_frame()
-        tmp['counts']=tmp['date']
-
+        tmp['counts']=tmp['count']
         tmp['date']=pd.to_datetime(tmp.index)
         tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
         tmp=tmp.to_frame()

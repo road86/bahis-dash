@@ -98,7 +98,7 @@ def updateFig(bahis_data, startDate, endDate):
     fulldaterange=pd.date_range(startDate, endDate, freq='D')
     tmpR=bahis_data['date'].value_counts()
     tmpR=tmpR.to_frame()
-    tmpR['counts']=tmpR['date']
+    tmpR['counts']=tmpR['count']
     tmpR['date']=pd.to_datetime(tmpR.index)
 #    timediff=maxdates[1]- maxdates[0]
 
@@ -113,7 +113,6 @@ def updateFig(bahis_data, startDate, endDate):
 
     tmpR=tmpR.to_frame()
     tmpR['date']=tmpR.index
-    tmpR['date']=tmpR['date'].astype('datetime64[D]')
     tmpR=tmpR.reindex(fulldaterange, fill_value=0)
     tmpR['date']=tmpR.index
 
@@ -121,7 +120,6 @@ def updateFig(bahis_data, startDate, endDate):
     tmpSD.index=tmpSD['date']
     print(tmpSD)
     tmpSD=tmpSD.rename(columns={'date':'date'})
-    tmpSD['date'] = tmpSD['date'].astype('datetime64[D]')
     tmpSD=tmpSD.reindex(fulldaterange, fill_value=0)
 
     tmpSD['date']=tmpSD.index
@@ -427,7 +425,7 @@ def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate, is_open): #, al
             bahis_data = pd.read_csv(sourcefilename)
             bahis_data= bahis_data.loc[bahis_data['basic_info_upazila']==SelUpa]
             bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-            bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
+            bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'],errors = 'coerce', format='mixed')
             del bahis_data['Unnamed: 0']
             bahis_data=bahis_data.rename(columns={'basic_info_date':'date',
                                                 'basic_info_division':'division',
