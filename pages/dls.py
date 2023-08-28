@@ -49,7 +49,7 @@ firstrun=True
 def fetchsourcedata(): #fetch and prepare source data
     bahis_data = pd.read_csv(sourcefilename)
     bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
+    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'],errors = 'coerce')
 #    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int) # empty upazila data can be eliminated, if therre is
     del bahis_data['Unnamed: 0']
     bahis_data=bahis_data.rename(columns={'basic_info_date':'date',
@@ -270,7 +270,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     tmp[pname]=tmp[pname].str.title()
     tmp['Index']=tmp[pnumber]
     tmp=tmp.set_index('Index')
-    tmp[title]=-(reports[title].max())
+    tmp[title]=-(reports[pname].max())
 
 #    for i in range(tmp.shape[0]):
 #    aaa=pd.merge(tmp, reports, how="left", on=[pnumber])
@@ -601,8 +601,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
         tmp=tmp.to_frame()
-        tmp['counts']=tmp['date']
-
+        tmp['counts']=tmp['count']
         tmp['date']=pd.to_datetime(tmp.index)
         tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
         tmp=tmp.to_frame()
