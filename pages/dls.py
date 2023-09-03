@@ -284,7 +284,6 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     for i in range(reports.shape[0]): # go through all upazila report values
         reports[pname].iloc[i] = subDistM[subDistM['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
     reports[pname]=reports[pname].str.title()
-
     reports.set_index(pnumber) #1
 
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pnumber, color=title,
@@ -601,7 +600,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
         tmp=tmp.to_frame()
-        tmp['counts']=tmp['count']
+        tmp['counts']=tmp['date'] 
         tmp['date']=pd.to_datetime(tmp.index)
         tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
         tmp=tmp.to_frame()
@@ -701,7 +700,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
-        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -719,7 +718,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
         LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -742,7 +741,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
 
-        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -755,7 +754,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
 
-        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
