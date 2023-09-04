@@ -697,9 +697,10 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         # replace_with=tmpdg['Disease type'].tolist()
         sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
 
-
         poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
 
+        print(poultryTT) #'SeriesGroupBy' object has no attribute 'counts'
+        
         tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
