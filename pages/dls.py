@@ -698,10 +698,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
 
         poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
-
-        print(poultryTT) #'SeriesGroupBy' object has no attribute 'counts'
         
-        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
+        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -719,7 +717,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
         LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
+        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -742,7 +740,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
 
-        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
+        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -755,7 +753,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
 
-        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('counts').reset_index() 
+        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
