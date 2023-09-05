@@ -49,17 +49,24 @@ layout = dbc.Container([
         dbc.Col([
             dbc.Card([
                 dbc.Row([
-                    html.Center(html.H1("DLO: District Lifestock Office")),
+                    html.Center(html.H1("Completeness: Reports")),
                     ])
                 ])
             ]),
-        dbc.Col([
-            dbc.Card([
-                dbc.Row([
-                    html.Center(html.H1("DD: Division Director ")),
-                    ])
-                ])
-            ]),
+        # dbc.Col([
+        #     dbc.Card([
+        #         dbc.Row([
+        #             html.Center(html.H1("DLO: District Lifestock Office")),
+        #             ])
+        #         ])
+        #     ]),
+        # dbc.Col([
+        #     dbc.Card([
+        #         dbc.Row([
+        #             html.Center(html.H1("DD: Division Director ")),
+        #             ])
+        #         ])
+        #     ]),
         dbc.Col([
             dbc.Card([
                 dbc.Row([
@@ -86,17 +93,24 @@ layout = dbc.Container([
         dbc.Col([
             dbc.Card([
                 dbc.Row([
-                    dbc.Button("DLO", href="/dls", size="lg")
+                    dbc.Button("Completeness", href="/reports", size="lg")
                     ])
                 ])
             ]),
-        dbc.Col([
-            dbc.Card([
-                dbc.Row([
-                    dbc.Button("DD", href="/dls", size="lg")
-                    ])
-                ])
-            ]),
+        # dbc.Col([
+        #     dbc.Card([
+        #         dbc.Row([
+        #             dbc.Button("DLO", href="/dls", size="lg")
+        #             ])
+        #         ])
+        #     ]),
+        # dbc.Col([
+        #     dbc.Card([
+        #         dbc.Row([
+        #             dbc.Button("DD", href="/dls", size="lg")
+        #             ])
+        #         ])
+        #     ]),
         dbc.Col([
             dbc.Card([
                 dbc.Row([
