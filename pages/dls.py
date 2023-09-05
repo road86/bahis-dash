@@ -778,6 +778,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         starttime_tab3=datetime.now()
 
+        # geoSlider "if" can be included to accumulate over different resolution
+        
         reports=sub_bahis_sourcedata[title].value_counts().to_frame()
 
         reports['cases']=reports[title]
@@ -835,6 +837,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
     if tabs == 'GeoDynTab':
 
         starttime_tab4=datetime.now()
+
+        # geoSlider "if" can be included to accumulate over different resolution
 
 #        wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
         wkRep=sub_bahis_sourcedata[pd.DatetimeIndex(sub_bahis_sourcedata['date']).year==datetime.now().year]
