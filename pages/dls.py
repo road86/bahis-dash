@@ -924,6 +924,12 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='division', right_on='value')
         ExportTable['division']=ExportTable['name'].str.capitalize()
         ExportTable.drop('name', inplace=True, axis=1)
+
+        ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='district', right_on='value')
+        ExportTable['district']=ExportTable['name'].str.capitalize()
+        ExportTable.drop('name', inplace=True, axis=1)
+
+
         ExportLabel= 'Export Data: ' + str(ExportTable.shape)
         
         ExportTab= dash_table.DataTable(
