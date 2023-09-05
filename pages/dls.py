@@ -918,8 +918,13 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         starttime_tab6=datetime.now()
 
         ExportTable=sub_bahis_sourcedata
-        ExportLabel= 'Export Data: ' + str(ExportTable.shape)
         ExportTable.drop('species_no', inplace=True, axis=1)
+        ExportTable.drop('tentative_diagnosis', inplace=True, axis=1)
+        ExportTable.rename(columns={'top_diagnosis': 'Diagnosis'}, inplace=True)
+        ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='division', right_on='value')
+        ExportTable['division']=ExportTable['name'].str.capitalize()
+        ExportTable.drop('name', inplace=True, axis=1)
+        ExportLabel= 'Export Data: ' + str(ExportTable.shape)
         
         ExportTab= dash_table.DataTable(
                                     style_header={
