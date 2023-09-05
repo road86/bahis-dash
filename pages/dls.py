@@ -917,7 +917,10 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         starttime_tab6=datetime.now()
 
-        ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
+        ExportTable=sub_bahis_sourcedata
+        ExportLabel= 'Export Data: ' + str(ExportTable.shape)
+        ExportTable.drop('species_no', inplace=True, axis=1)
+        
         ExportTab= dash_table.DataTable(
                                     style_header={
     #                                        'overflow': 'hidden',
@@ -929,8 +932,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
                                     style_table={'height': '500px', 'overflowY': 'auto'},
     #                                style_as_list_view=True,
     #                                fixed_rows={'headers': True},
-                                    data=sub_bahis_sourcedata.to_dict('records'),
-                                    columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
+                                    data=ExportTable.to_dict('records'),
+                                    columns=[{"name": i, "id": i} for i in ExportTable.columns],
                                     ),
 
         endtime_tab6 = datetime.now()
