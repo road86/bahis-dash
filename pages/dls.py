@@ -86,6 +86,7 @@ dates=[start_date, end_date]
 
 ddDList=[]
 Divlist=[]
+
 def fetchdisgroupdata(): #fetch and prepare disease groups
     bahis_dgdata= pd.read_csv(dgfilename)
 #    bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']] remark what might be helpful: reminder: memory size
@@ -146,7 +147,7 @@ def disease_subset(cDisease, sub_bahis_sourcedata):
     if 'All Diseases' in cDisease:
         sub_bahis_sourcedata=sub_bahis_sourcedata
     else:
-        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis'].isin(cDisease)]
+        sub_bahis_sourcedata=sub_bahis_sourcedata[sub_bahis_sourcedata['top_diagnosis']==cDisease]
     return sub_bahis_sourcedata
 
 ddDivision = html.Div(
@@ -336,7 +337,7 @@ layout =  html.Div([
                                 ddDList,
                                 "All Diseases",
                                 id="Diseaselist",
-                                multi=True,
+                                multi=False,
                                 clearable=False,
                                 ),
                             ])
@@ -468,13 +469,13 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
     dates = [start_date, end_date]
     #sub_bahis_sourcedata=bahis_data
+    sub_bahis_sourcedata=date_subset(dates, bahis_data)
 
     NRlabel= 'Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)'
     if firstrun==True:  #inital settings
 #        dates = sne_date(bahis_data)
-        sub_bahis_sourcedata=date_subset(dates, bahis_data)
         ddDList= fetchdiseaselist(sub_bahis_sourcedata)
-        ddDList.insert(0, 'All Diseases')
+#        ddDList.insert(0, 'All Diseases')
         Divlist=fetchDivisionlist(bahis_geodata)
         vDiv = [{'label': i['Division'], 'value': i['value']} for i in Divlist]
         vDis=[]
@@ -497,8 +498,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         #subDist=subDist[subDist['loc_type']==loc]
 
 
-    if ctx.triggered_id=='daterange':
-        sub_bahis_sourcedata=date_subset(dates, bahis_data)
+#    if ctx.triggered_id=='daterange':
+#        sub_bahis_sourcedata=date_subset(dates, bahis_data)
 
     if ctx.triggered_id=='Diseaselist':
         sub_bahis_sourcedata=disease_subset(diseaselist, sub_bahis_sourcedata)
