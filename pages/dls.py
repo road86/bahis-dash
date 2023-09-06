@@ -81,7 +81,7 @@ def sne_date(bahis_data):
     return dates
 
 start_date=date(2019, 1, 1)
-end_date=date(2023,3,1)
+end_date=date(2023,12,31)
 dates=[start_date, end_date]
 
 ddDList=[]
@@ -917,8 +917,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         starttime_tab6=datetime.now()
 
-        ExportTable=sub_bahis_sourcedata
-        ExportTable.drop('species_no', inplace=True, axis=1)
+        ExportTable=sub_bahis_sourcedata.copy()
+        #ExportTable.drop('species_no', inplace=True, axis=1)
         ExportTable.drop('tentative_diagnosis', inplace=True, axis=1)
         ExportTable.rename(columns={'top_diagnosis': 'Diagnosis'}, inplace=True)
         ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='division', right_on='value')
