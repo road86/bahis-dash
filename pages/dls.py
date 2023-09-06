@@ -81,7 +81,7 @@ def sne_date(bahis_data):
     return dates
 
 start_date=date(2019, 1, 1)
-end_date=date(2023,3,1)
+end_date=date(2023,12,31)
 dates=[start_date, end_date]
 
 ddDList=[]
@@ -284,7 +284,6 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     for i in range(reports.shape[0]): # go through all upazila report values
         reports[pname].iloc[i] = subDistM[subDistM['value']==reports.index[i]]['name'].values[0] ###still to work with the copy , this goes with numbers and nnot names
     reports[pname]=reports[pname].str.title()
-
     reports.set_index(pnumber) #1
 
     fig = px.choropleth_mapbox(reports, geojson=data, locations=pnumber, color=title,
@@ -601,7 +600,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         tmp=sub_bahis_sourcedata['date'].dt.date.value_counts()
         tmp=tmp.to_frame()
-        tmp['counts']=tmp['count']
+        tmp['counts']=tmp['date'] 
         tmp['date']=pd.to_datetime(tmp.index)
         tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
         tmp=tmp.to_frame()
@@ -698,10 +697,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         # replace_with=tmpdg['Disease type'].tolist()
         sub_bahis_sourcedataP['top_diagnosis']= sub_bahis_sourcedataP.top_diagnosis.replace(to_replace, replace_with, regex=True)
 
-
         poultryTT=sub_bahis_sourcedataP.drop(sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis']=='Zoonotic diseases'].index)
-
-        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        
+        tmp= poultryTT.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -719,7 +717,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataLA['top_diagnosis']= sub_bahis_sourcedataLA.top_diagnosis.replace(to_replace, replace_with, regex=True)
         LATT=sub_bahis_sourcedataLA.drop(sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis']=='Zoonotic diseases'].index)
 
-        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= LATT.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -742,7 +740,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         sub_bahis_sourcedataP= sub_bahis_sourcedataP[sub_bahis_sourcedataP['top_diagnosis'].isin(tmpdg)]
 
 
-        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= sub_bahis_sourcedataP.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -755,7 +753,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         sub_bahis_sourcedataLA= sub_bahis_sourcedataLA[sub_bahis_sourcedataLA['top_diagnosis'].isin(tmpdg)]
 
-        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index()
+        tmp= sub_bahis_sourcedataLA.groupby(['top_diagnosis'])['species'].agg('count').reset_index() 
         tmp=tmp.sort_values(by='species', ascending=False)
         tmp=tmp.rename({'species' : 'counts'}, axis=1)
         tmp=tmp.head(10)
@@ -780,6 +778,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         starttime_tab3=datetime.now()
 
+        # geoSlider "if" can be included to accumulate over different resolution
+        
         reports=sub_bahis_sourcedata[title].value_counts().to_frame()
 
         reports['cases']=reports[title]
@@ -837,6 +837,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
     if tabs == 'GeoDynTab':
 
         starttime_tab4=datetime.now()
+
+        # geoSlider "if" can be included to accumulate over different resolution
 
 #        wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
         wkRep=sub_bahis_sourcedata[pd.DatetimeIndex(sub_bahis_sourcedata['date']).year==datetime.now().year]
@@ -915,7 +917,24 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         starttime_tab6=datetime.now()
 
-        ExportLabel= 'Export Data: ' + str(sub_bahis_sourcedata.shape)
+        ExportTable=sub_bahis_sourcedata.copy()
+        #ExportTable.drop('species_no', inplace=True, axis=1)
+        ExportTable.drop('tentative_diagnosis', inplace=True, axis=1)
+        ExportTable.rename(columns={'top_diagnosis': 'Diagnosis'}, inplace=True)
+        ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='division', right_on='value')
+        ExportTable['division']=ExportTable['name'].str.capitalize()
+        ExportTable.drop(['name','value'], inplace=True, axis=1)
+
+        ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='district', right_on='value')
+        ExportTable['district']=ExportTable['name'].str.capitalize()
+        ExportTable.drop(['name','value'], inplace=True, axis=1)
+
+        ExportTable=ExportTable.merge(bahis_geodata[['value','name']], left_on='upazila', right_on='value')
+        ExportTable['upazila']=ExportTable['name'].str.capitalize()
+        ExportTable.drop(['name','value'], inplace=True, axis=1)
+
+        ExportLabel= 'Export Data: ' + str(ExportTable.shape)
+        
         ExportTab= dash_table.DataTable(
                                     style_header={
     #                                        'overflow': 'hidden',
@@ -927,8 +946,8 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
                                     style_table={'height': '500px', 'overflowY': 'auto'},
     #                                style_as_list_view=True,
     #                                fixed_rows={'headers': True},
-                                    data=sub_bahis_sourcedata.to_dict('records'),
-                                    columns=[{"name": i, "id": i} for i in sub_bahis_sourcedata.columns],
+                                    data=ExportTable.to_dict('records'),
+                                    columns=[{"name": i, "id": i} for i in ExportTable.columns],
                                     ),
 
         endtime_tab6 = datetime.now()
