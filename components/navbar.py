@@ -17,7 +17,7 @@ import os
 
 sourcepath = 'exported_data/'
 sourcefilename =os.path.join(sourcepath, 'preped_data2.csv')  
-create_time = os.path.getmtime(sourcefilename)
+create_time = os.path.getctime(sourcepath)
 create_date = datetime.datetime.fromtimestamp(create_time).date()
 
 # Define the navbar structure
