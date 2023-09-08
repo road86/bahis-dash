@@ -609,9 +609,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
         figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgR.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), dates[1]])
+        figgR.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])
         figgR.add_annotation(
-            x=end_date,
+            x= datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.05)),
             y=max(tmp),
             text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
             showarrow=False,
@@ -635,9 +635,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp['date'] = tmp['date'].astype('datetime64[D]')
         figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
         figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgSick.update_xaxes(range=dates)   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
+        figgSick.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
         figgSick.add_annotation(
-            x=end_date,
+            x=datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.05)),
             y=max(tmp),
             text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
             showarrow=False,
@@ -656,9 +656,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
         figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgDead.update_xaxes(range=dates)
+        figgDead.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])
         figgDead.add_annotation(
-            x=end_date,
+            x=datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.05)),
             y=max(tmp),
             text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
             showarrow=False,
