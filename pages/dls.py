@@ -67,7 +67,7 @@ def fetchsourcedata(): #fetch and prepare source data
 #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']].astype(str) # can you change object to string and does it make a memory difference`?
     bahis_data['dead'] = bahis_data['dead'].clip(lower=0)
 #    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
-    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
+# limit to this year    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
     return bahis_data
 bahis_data=fetchsourcedata()
 sub_bahis_sourcedata=bahis_data
@@ -368,10 +368,6 @@ layout =  html.Div([
                                          )],
                                 label='Reports per Geolocation', tab_id='GeoRepTab'),
                             dbc.Tab([
-                                dbc.Row([html.Label("All Reports of current year"),
-                                                      html.Div(id='GeoDynTable')])],
-                                label='Reportdynamics per Geolocation', tab_id='GeoDynTab'),
-                            dbc.Tab([
                                 dbc.Card(dbc.Col([dcc.Graph(id='figMonthly')])
                                           )],
                                 label='Monthly Comparison', tab_id='MonthCompTab'),
@@ -416,7 +412,7 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Output ('NRlabel', 'children'),
     Output ('AlertTable', 'children'),
 
-    Output ('GeoDynTable', 'children'),
+#    Output ('GeoDynTable', 'children'),
     Output ('figMonthly', 'figure'),
     Output ('ExportLabel', 'children'),
     Output ('ExportTab', 'children'),
@@ -468,6 +464,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
     # bahis_geodata=pd.DataFrame(cbahis_geodata)
 
     dates = [start_date, end_date]
+    print(start_date)
     #sub_bahis_sourcedata=bahis_data
     sub_bahis_sourcedata=date_subset(dates, bahis_data)
 
@@ -608,11 +605,13 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp['date']=tmp.index
         tmp['date']=tmp['date'].astype('datetime64[D]')
 
+#accumulating numbers when cutting always in 7 packages.
+
         figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
         figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgR.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgR.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])
         figgR.add_annotation(
-            x=end_date,
+            x= datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.08)),
             y=max(tmp),
             text="total reports " + str('{:,}'.format(sub_bahis_sourcedata['date'].dt.date.value_counts().sum())),
             showarrow=False,
@@ -636,9 +635,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp['date'] = tmp['date'].astype('datetime64[D]')
         figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
         figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgSick.update_xaxes(range=['2022-12-21','2024-01-31'])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
+        figgSick.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
         figgSick.add_annotation(
-            x=end_date,
+            x=datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.08)),
             y=max(tmp),
             text="total sick " + str('{:,}'.format(int(sub_bahis_sourcedata['sick'].sum()))), ###realy outlyer
             showarrow=False,
@@ -657,9 +656,9 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
         figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
-        figgDead.update_xaxes(range=['2022-12-21','2024-01-31'])
+        figgDead.update_xaxes(range=[datetime.strptime(dates[0],"%Y-%m-%d")-timedelta(days=6), datetime.strptime(dates[1],"%Y-%m-%d")+timedelta(days=6)])
         figgDead.add_annotation(
-            x=end_date,
+            x=datetime.strptime(dates[1],"%Y-%m-%d")-timedelta(days=int(((datetime.strptime(dates[1],"%Y-%m-%d")-datetime.strptime(dates[0],"%Y-%m-%d")).days)*0.08)),
             y=max(tmp),
             text="total dead " + str('{:,}'.format(int(sub_bahis_sourcedata['dead'].sum()))), ###really
             showarrow=False,
@@ -678,7 +677,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         endtime_tab1 = datetime.now()
         print('tab1 : ' + str(endtime_tab1-starttime_tab1))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, figgR, figgSick, figgDead, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, figgR, figgSick, figgDead, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
 
 
 
@@ -773,7 +772,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         endtime_tab2 = datetime.now()
         print('tab2 : ' + str(endtime_tab2-starttime_tab2))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update,  no_update, no_update, figgLiveS, figgZoon, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update,  no_update, no_update, figgLiveS, figgZoon, no_update, no_update, no_update, no_update, no_update, no_update, no_update, geoSlider
 
 
 ### tab3 geolocation
@@ -833,65 +832,12 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         endtime_tab3 = datetime.now()
         print('tab3 : ' + str(endtime_tab3-starttime_tab3))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, Rfindic, Rfigg, NRlabel, AlertTable, no_update, no_update, no_update, no_update, geoSlider
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, Rfindic, Rfigg, NRlabel, AlertTable, no_update, no_update, no_update, geoSlider
 
 
 #### tab 4 geodyn tab per current year
 
-    if tabs == 'GeoDynTab':
-
-        starttime_tab4=datetime.now()
-
-        # geoSlider "if" can be included to accumulate over different resolution
-
-#        wkRep=bahis_data[pd.DatetimeIndex(bahis_data['date']).year==datetime.now().year]
-        wkRep=sub_bahis_sourcedata[pd.DatetimeIndex(sub_bahis_sourcedata['date']).year==datetime.now().year]
-        wkRep=wkRep[['date', 'division', 'district', 'upazila']]
-        totalweeks=len(wkRep['date'].dt.to_period('W-SAT').unique())
-
-        reports=pd.DataFrame({title.capitalize():[]})
-        for i in range(0,totalweeks):
-                reports[i+1]=''
-        reports['total']=''
-
-        for geono in wkRep[title].unique():
-    #        reports.at[geono,title.capitalize()]=str(subDist[subDist['value']==geono]['name'].reset_index(drop=True)[0]).title() # either all reports and all geodata or both only selected
-#            reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
-            reports.at[geono,title.capitalize()]=str(bahis_geodata[bahis_geodata['value']==geono]['name'].reset_index(drop=True)[0]).title()
-    #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-            tmpp=wkRep[wkRep[title]==geono].groupby([wkRep['date'].dt.to_period('W-SAT')]).value_counts() #['cases'].sum()
-    #        tmpp.reset_index()
-            for entry in range(len(tmpp)):
-    #################discrepancy international bangladesh weeks. 1.1.23 is sunday and would be week one. internationally it is week 52
-                reports.loc[geono][tmpp.index[0][0].end_time.date().isocalendar()[1]]=tmpp[entry]
-        ###  speed suggestion: not groupby weeks, but calculate all except last week and sum over it.
-
-        reports['total']= reports.iloc[:,1:totalweeks+1].sum(axis=1)
-        reports[totalweeks-1]=reports.iloc[:, 1:totalweeks-2].sum(axis=1)
-        reports.drop(reports.iloc[:, 1:totalweeks-1], inplace=True, axis=1)
-        reports=reports.rename(columns={totalweeks-1:'week 1-'+ str(totalweeks-1), totalweeks:'week ' + str(totalweeks)})
-        reports=reports.fillna(0)
-
-
-        GeoDynTable = dash_table.DataTable(
-                                    columns=[{'name': i, 'id': i} for i in reports.loc[:,:]], #['Upazila','total']]],
-                                    style_header={
-                                            'overflow': 'hidden',
-                                            'maxWidth': 0,
-                                            'fontWeight': 'bold',
-                                            },
-                                    style_cell={'textAlign': 'left'},
-                                    export_format='csv',
-                                    style_table={'height': '600px', 'overflowY': 'auto'},
-                                    style_as_list_view=True,
-                                    fixed_rows={'headers': True},
-                                    data=reports.to_dict('records'),
-                                    ),
-
-        endtime_tab4 = datetime.now()
-        print('tab4 : ' + str(endtime_tab4-starttime_tab4))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, GeoDynTable, no_update, no_update, no_update, geoSlider
-
+ # removed since Completeness is replacing this tab
 
 ### tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
@@ -913,7 +859,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         endtime_tab5 = datetime.now()
         print('tab5 : ' + str(endtime_tab5-starttime_tab5))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, figMonthly, no_update, no_update, geoSlider
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, figMonthly, no_update, no_update, geoSlider
 
 ### tab 6 export tab
 
@@ -956,7 +902,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
 
         endtime_tab6 = datetime.now()
         print('tab6 : ' + str(endtime_tab6-starttime_tab6))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, ExportLabel, ExportTab, geoSlider
+        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, ExportLabel, ExportTab, geoSlider
 
 
 
