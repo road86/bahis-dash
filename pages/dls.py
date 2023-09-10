@@ -332,6 +332,13 @@ layout =  html.Div([
                                     #end_date=end_date
                                 ),
                             ]),
+                        dbc.Col(dcc.Slider(min=1, max=3, step=1,
+                                       marks={1:'monthly',
+                                              2:'weekly',
+                                              3:'daily',},
+                            value=2,
+                            id="periodSlider")
+                            ),
                         dbc.Col([
                             dcc.Dropdown(
                                 ddDList,
@@ -438,11 +445,12 @@ print('initialize : ' + str(endtime_start-starttime_start))
     Input ('tabs', 'active_tab'),
 
     State ('geoSlider', 'value'),
+    State ('periodSlider', 'value')
     #Input ('Map', 'clickData'),
 )
 
 #def update_whatever(geoSlider, geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoclick):
-def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoSlider):
+def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoSlider, periodClick):
 
     starttime_general=datetime.now()
 
@@ -600,7 +608,12 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp=tmp.to_frame()
         tmp['counts']=tmp['date'] 
         tmp['date']=pd.to_datetime(tmp.index)
-        tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+        if periodClick== 3:
+            tmp=tmp['counts'].groupby(tmp['date']).sum().astype(int)
+        if periodClick== 2:
+            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('W-SAT')).sum().astype(int)
+        if periodClick== 1:
+            tmp=tmp['counts'].groupby(tmp['date'].dt.to_period('M')).sum().astype(int)
         tmp=tmp.to_frame()
         tmp['date']=tmp.index
         tmp['date']=tmp['date'].astype('datetime64[D]')
@@ -629,7 +642,12 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
             opacity=0.8
             )
 
-        tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
+        if periodClick== 3:
+            tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date']).sum().astype(int)
+        if periodClick== 2:
+            tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT')).sum().astype(int)
+        if periodClick== 1:
+            tmp=sub_bahis_sourcedata[['sick','dead']].groupby(sub_bahis_sourcedata['date'].dt.to_period('M')).sum().astype(int)
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'date':'date'})
         tmp['date'] = tmp['date'].astype('datetime64[D]')
@@ -897,7 +915,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
                                     export_format='csv',
                                     style_table={'height': '500px', 'overflowY': 'auto'},
     #                                style_as_list_view=True,
-    #                                fixed_rows={'headers': True},
+                                    fixed_rows={'headers': True},
                                     data=ExportTable.to_dict('records'),
                                     columns=[{"name": i, "id": i} for i in ExportTable.columns],
                                     ),
