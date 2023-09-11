@@ -11,6 +11,6 @@ ENV PIPENV_VENV_IN_PROJECT=1
 RUN pipenv sync
 ENV PATH=/home/app/.venv/bin:${PATH}
 
-COPY app.py ./
+COPY . ./
 
 CMD gunicorn --workers=5 --threads=1 -b 0.0.0.0:80 app:server
