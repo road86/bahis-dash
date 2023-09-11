@@ -9,7 +9,7 @@ First [install pipenv](https://pipenv.pypa.io/en/latest/install/). If you instal
 
 If you get an error when running install like this:
 
-```
+```bash
 Resolving dependencies...
 ✘ Locking Failed!
 ```
