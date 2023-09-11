@@ -26,7 +26,7 @@ geofilename = glob.glob(sourcepath + 'newbahis_geo_cluster*.csv')[-1]
 def fetchsourcedata(): #fetch and prepare source data
     bahis_data = pd.read_csv(sourcefilename)
     bahis_data['from_static_bahis']=bahis_data['basic_info_date'].str.contains('/') # new data contains -, old data contains /
-    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'], format="ISO8601")
+    bahis_data['basic_info_date'] = pd.to_datetime(bahis_data['basic_info_date'])
     del bahis_data['Unnamed: 0']
     bahis_data=bahis_data.rename(columns={'basic_info_date':'date',
                                         'basic_info_division':'division',
