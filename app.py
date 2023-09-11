@@ -5,8 +5,6 @@ Created on Sun Jan 22 07:43:22 2023
 @author: yoshka
 """
 
-# Import necessary libraries 
-import dash
 from dash import html, dcc, Dash, Output, Input
 import dash_bootstrap_components as dbc
 
