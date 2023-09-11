@@ -608,7 +608,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp['date']=tmp.index
         tmp['date']=tmp['date'].astype('datetime64[D]')
 
-        figgR= px.bar(tmp, x='date', y='counts', labels={'date':'Date', 'counts':'No. of Reports'})
+        figgR= px.bar(tmp, x='date', y='counts', labels={'date':'', 'counts':'No. of Reports'})
         figgR.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
         figgR.update_xaxes(range=['2022-12-21','2024-01-31'])
         figgR.add_annotation(
@@ -634,7 +634,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
         tmp=tmp.reset_index()
         tmp=tmp.rename(columns={'date':'date'})
         tmp['date'] = tmp['date'].astype('datetime64[D]')
-        figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'Date', 'sick':'No. of Sick Animals'})
+        figgSick= px.bar(tmp, x='date', y='sick', labels={'date':'', 'sick':'No. of Sick Animals'})
         figgSick.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
         figgSick.update_xaxes(range=['2022-12-21','2024-01-31'])   #manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
         figgSick.add_annotation(
@@ -655,7 +655,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
             opacity=0.8
             )
 
-        figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
+        figgDead= px.bar(tmp, x='date', y='dead', labels={'date':'', 'dead':'No. of Dead Animals'})
         figgDead.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0})
         figgDead.update_xaxes(range=['2022-12-21','2024-01-31'])
         figgDead.add_annotation(
