@@ -1,18 +1,27 @@
-## Installation
-First [install pipenv](https://pipenv.pypa.io/en/latest/install/), or run the command below to confirm it works. If you installed pipenv using `sudo apt install pipenv` and [getting this error](https://github.com/pypa/pipenv/issues/5133) install using `pip` instaed.
-```
-pipenv install
-```
-    and copy data from `bahis-data/output/` to `exported_data`.
+# BAHIS Dashboard
 
-If you get an error when running install
+## Local Installation
+
+First [install pipenv](https://pipenv.pypa.io/en/latest/install/). If you installed pipenv using `sudo apt install pipenv` and [getting this error](https://github.com/pypa/pipenv/issues/5133) install using `pip` instead.
+
+1. `pipenv install`
+2. copy data from `bahis-data/output/` to `exported_data`
+
+If you get an error when running install like this:
+
 ```
 Resolving dependencies...
 ✘ Locking Failed!
 ```
+
 remove the `Pipfile.lock` file and run again.
-## Running
-```
-pipenv shell
-python index.py
-```
+
+## Local development
+
+Run `pipenv run python app.py`.
+
+This will run a development server with hot reloading and other useful features.
+
+## Deployment
+
+Deployment is done (currently manually) using bahis-infra. Only the latest release will be deployed - releases are created automatically when a PR is successfully merged into `main`.
