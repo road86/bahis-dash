@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-dash = "~=1.19.0"
+dash = "~=2.13.0"
 dash-bootstrap-components = "~=1.5.0"
-gunicorn = "~=21.0.0"
-pandas = "~=1.5.3"
+gunicorn = "~=21.2.0"
+pandas = "~=2.1.0"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
