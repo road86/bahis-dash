@@ -4,9 +4,9 @@ Created on Sun Jan 22 07:43:22 2023
 
 @author: yoshka
 """
-
-from dash import html, dcc, Dash, Output, Input
+import dash
 import dash_bootstrap_components as dbc
+from dash import html, dcc, Dash, Output, Input
 
 
 # Connect to your app pages

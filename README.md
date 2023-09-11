@@ -18,10 +18,12 @@ remove the `Pipfile.lock` file and run again.
 
 ## Local development
 
-Run `pipenv run python app.py`.
+Run `pipenv run python app.py`. (If you get a `Permission denied` error you may need to run as `sudo`)
 
 This will run a development server with hot reloading and other useful features.
 
 ## Deployment
 
-Deployment is done (currently manually) using bahis-infra. Only the latest release will be deployed - releases are created automatically when a PR is successfully merged into `main`.
+To run the system in a local "deployment" you can use the Dockerfile with `docker build -t dash . && docker run -p 80:80 dash:latest`.
+
+Cloud deployment is done (currently manually) using bahis-infra. Only the latest release will be deployed - releases are created automatically when a PR is successfully merged into `main`.
