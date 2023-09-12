@@ -1,13 +1,13 @@
 FROM python:3.11-slim
  
-RUN apt-get update
+RUN apt update
 
 RUN mkdir -p /home/app
 WORKDIR /home/app
 
-COPY Pipfile Pipfile.lock ./
 RUN pip install pipenv==2023.9.8
 ENV PIPENV_VENV_IN_PROJECT=1
+COPY Pipfile Pipfile.lock ./
 RUN pipenv sync
 ENV PATH=/home/app/.venv/bin:${PATH}
 
