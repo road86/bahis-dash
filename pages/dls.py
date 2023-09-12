@@ -467,6 +467,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
 
 ####
     else:   # for divisional numbers
+        print('Here')
         vDis=[]
         if district is None:
             tst=[str(x)[:4] for x in bahis_data['upazila']]
@@ -1119,7 +1120,7 @@ def update_whatever(geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, s
             #     if prop_id == "division-select":
         district=None
             
-        a=  generate_reports_heatmap(start, end, SelDiv, district, Completeness, diseaselist, reset
+        a=  generate_reports_heatmap(start, end, SelDiv, SelDis, Completeness, diseaselist, reset
             )
  
         endtime_tab0 = datetime.now()
