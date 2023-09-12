@@ -2,7 +2,7 @@
 
 ## Local Installation
 
-First [install pipenv](https://pipenv.pypa.io/en/latest/install/). If you installed pipenv using `sudo apt install pipenv` and [getting this error](https://github.com/pypa/pipenv/issues/5133) install using `pip` instead.
+First [install pipenv](https://pipenv.pypa.io/). If you installed pipenv using `sudo apt install pipenv` and [getting this error](https://github.com/pypa/pipenv/issues/5133) install using `pip` instead.
 
 1. `pipenv install`
 2. copy data from `bahis-data/output/` to `exported_data`
