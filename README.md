@@ -24,6 +24,6 @@ This will run a development server with hot reloading and other useful features.
 
 ## Deployment
 
-To run the system in a local "deployment" you can use the Dockerfile with `docker build -t dash . && docker run -p 80:80 dash:latest`.
+To run the system in a local "deployment" you can use the Dockerfile with `docker build -t dash . && docker run -p 80:80 --name bahis-dash dash:latest`.
 
 Cloud deployment is done (currently manually) using bahis-infra. Only the latest release will be deployed - releases are created automatically when a PR is successfully merged into `main`.
