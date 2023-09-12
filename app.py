@@ -4,11 +4,9 @@ Created on Sun Jan 22 07:43:22 2023
 
 @author: yoshka
 """
-
-# Import necessary libraries 
 import dash
-from dash import html, dcc, Dash, Output, Input
 import dash_bootstrap_components as dbc
+from dash import html, dcc, Dash, Output, Input
 
 
 # Connect to your app pages
@@ -83,6 +81,6 @@ app.validation_layout = html.Div([
 
 # Run the app on localhost:8050
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=False)
+    app.run(debug=True, host="0.0.0.0", port=80)
 else:
-    application = app.server
+    server = app.server

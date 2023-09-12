@@ -4,17 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-uwsgi = "*"
-streamlit = "*"
-plotly = "*"
-pandas = "*"
-altair = "*"
-shapely = "*"
-dash = "*"
-dash-bootstrap-components = "*"
-dash-bootstrap-templates = "*"
+dash = "~=2.13.0"
+dash-bootstrap-components = "~=1.5.0"
+gunicorn = "~=21.2.0"
+pandas = "~=1.5.0"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
