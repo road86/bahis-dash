@@ -11,6 +11,8 @@ pandas = "~=1.5.0"
 colorama = "*" # for windows
 
 [dev-packages]
+black = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.11"
