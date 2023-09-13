@@ -507,7 +507,6 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
 
     ####
     else:  # for divisional numbers
-        print('Here')
         vDis = []
         if district is None:
             tst = [str(x)[:4] for x in bahis_data["upazila"]]
@@ -677,7 +676,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
-                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
+                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"]==disease]
 
             # filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start[0]:end[0]]
 
