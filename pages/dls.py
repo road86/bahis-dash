@@ -732,7 +732,6 @@ def update_whatever(
                 datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
             ]
         )
-        print(sub_bahis_sourcedata["date"])
         figgR.add_annotation(
             x=datetime.strptime(dates[1], "%Y-%m-%d")
             - timedelta(
