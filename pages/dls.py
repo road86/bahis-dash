@@ -576,11 +576,6 @@ def update_whatever(
     # bahis_dgdata=pd.DataFrame(cbahis_dgdata)
     # bahis_geodata=pd.DataFrame(cbahis_geodata)
 
-    dates = [start_date, end_date]
-    print(start_date)
-    # sub_bahis_sourcedata=bahis_data
-    sub_bahis_sourcedata = date_subset(dates, bahis_data)
-
     NRlabel = "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"
     if firstrun is True:  # inital settings
         #        dates = sne_date(bahis_data)
@@ -610,12 +605,11 @@ def update_whatever(
     #    if ctx.triggered_id=='daterange':
     #        sub_bahis_sourcedata=date_subset(dates, bahis_data)
 
-    if ctx.triggered_id == "Diseaselist":
-        sub_bahis_sourcedata = disease_subset(diseaselist, sub_bahis_sourcedata)
+    # if ctx.triggered_id == "Diseaselist":
+    #     sub_bahis_sourcedata = disease_subset(diseaselist, sub_bahis_sourcedata)
 
     if ctx.triggered_id == "Division":
         if not SelDiv:
-            sub_bahis_sourcedata = bahis_data
             subDist = bahis_geodata
             vDis = []
             Dislist = ""
@@ -624,7 +618,6 @@ def update_whatever(
             SelDis = ""
             SelUpa = ""
         else:
-            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
             Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
@@ -633,7 +626,6 @@ def update_whatever(
 
     if ctx.triggered_id == "District":
         if not SelDis:
-            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
             Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
@@ -641,7 +633,6 @@ def update_whatever(
             vUpa = []
             SelUpa = ""
         else:
-            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
             Upalist = fetchUpazilalist(SelDis, bahis_geodata)
@@ -649,12 +640,27 @@ def update_whatever(
 
     if ctx.triggered_id == "Upazila":
         if not SelUpa:
-            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
         else:
-            sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
             subDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(SelUpa))]
+
+    if SelUpa:
+        sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
+    else:
+        if SelDis:
+            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
+        else:
+            if SelDiv:
+                sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
+            else:
+                sub_bahis_sourcedata = bahis_data
+
+    dates = [start_date, end_date]
+    print(start_date)
+    # sub_bahis_sourcedata=bahis_data
+    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata)
+    sub_bahis_sourcedata = disease_subset(diseaselist, sub_bahis_sourcedata)
 
     #    if ctx.triggered_id=='geoSlider':
     if geoSlider == 1:
@@ -726,6 +732,7 @@ def update_whatever(
                 datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
             ]
         )
+        print(sub_bahis_sourcedata["date"])
         figgR.add_annotation(
             x=datetime.strptime(dates[1], "%Y-%m-%d")
             - timedelta(
@@ -734,7 +741,7 @@ def update_whatever(
                 )
             ),
             y=max(tmp),
-            text="total reports " + str("{:,}".format(sub_bahis_sourcedata["date"].dt.date.value_counts().sum())),
+            text="total reports " + str("{:,}".format(sub_bahis_sourcedata["date"].size)),
             showarrow=False,
             font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
             align="center",
