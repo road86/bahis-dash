@@ -279,16 +279,6 @@ def open_data(path):
         data = json.load(f)
     return data
 
-    # path=path3
-    # loc=3
-    # title='upazila'
-    # pnumber='upazilanumber'
-    # pname='upazilaname'
-    # splace=' Upazila'
-    # variab='upazila'
-    # labl='Incidences per upazila'
-    # incsub_bahis_sourcedata = pd.to_numeric(sub_bahis_sourcedata['upazila']).dropna().astype(int)
-
 
 def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
@@ -324,7 +314,6 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     reports[pname] = reports[pname].str.title()
     reports.set_index(pnumber)  # 1
 
-
     fig = px.choropleth_mapbox(
         reports,
         geojson=data,
@@ -347,6 +336,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     )  # , width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600,
     return fig
 
+
 def find_weeks(start, end):
     list_of_weeks = []
     for i in range((end - start).days + 1):
@@ -355,12 +345,13 @@ def find_weeks(start, end):
         list_of_weeks.append(yearweek)
     return sorted(set(list_of_weeks))
 
-def generate_reports_heatmap(start, end, division, district, hm_click, disease, reset):
+
+def generate_reports_heatmap(start, end, division, district, Completeness, disease, reset):
     """
     :param: start: start date from selection.
     :param: end: end date from selection.
     :param: clinic: clinic from selection.
-    :param: hm_click: clickData from heatmap.
+    :param: Completeness: clickData from heatmap.
     :param: admit_type: admission type from selection.
     :param: reset (boolean): reset heatmap graph if True.
 
@@ -370,7 +361,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
     end = datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
 
     if division is None:  # for national numbers
-        vDis = []
+        # vDis = []
         filtered_bd = bahis_data
         filtered_bd = filtered_bd.sort_values("date").set_index("date").loc[start:end]
 
@@ -383,7 +374,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         if "All Diseases" in disease:
             filtered_bd = filtered_bd
         else:
-            filtered_bd = filtered_bd[filtered_bd["top_diagnosis"]==disease] #.isin(disease)]
+            filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
 
         #        filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start:end]
 
@@ -411,9 +402,9 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         region = ""
         shapes = []  # when selected red rectangle
 
-        if hm_click is not None:
-            week = hm_click["points"][0]["x"]
-            region = hm_click["points"][0]["y"]
+        if Completeness is not None:
+            week = Completeness["points"][0]["x"]
+            region = Completeness["points"][0]["y"]
             if region in y_axis:
                 # Add shapes
                 x0 = x_axis.index(week) / len(x_axis)
@@ -507,7 +498,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
 
     ####
     else:  # for divisional numbers
-        vDis = []
+        # vDis = []
         if district is None:
             tst = [str(x)[:4] for x in bahis_data["upazila"]]
             tst2 = [i for i in range(len(tst)) if tst[i][:2] == str(division)]
@@ -518,12 +509,12 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             Dislist = Dislist.rename(columns={"name": "District"})
             Dislist = Dislist.sort_values(by=["District"])
             Dislist = Dislist.to_dict("records")
-            vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
+            # vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
 
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
-                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"]== disease] #.isin(disease)]
+                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
 
             # filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start[0]:end[0]]
 
@@ -554,9 +545,9 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             region = ""
             shapes = []  # when selected red rectangle
 
-            if hm_click is not None:
-                week = hm_click["points"][0]["x"]
-                region = hm_click["points"][0]["y"]
+            if Completeness is not None:
+                week = Completeness["points"][0]["x"]
+                region = Completeness["points"][0]["y"]
                 if region in y_axis:
                     # Add shapes
                     if y_axis.index(region):
@@ -664,7 +655,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             Dislist = Dislist.rename(columns={"name": "District"})
             Dislist = Dislist.sort_values(by=["District"])
             Dislist = Dislist.to_dict("records")
-            vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
+            # vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
 
             # Upalist=bahis_geodata[bahis_geodata['parent']==district][['value','name']]
             # Upalist['name']=Upalist['name'].str.capitalize()
@@ -676,7 +667,7 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
-                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"]==disease]
+                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
 
             # filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start[0]:end[0]]
 
@@ -705,9 +696,9 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
             region = ""
             shapes = []  # when selected red rectangle
 
-            if hm_click is not None:
-                week = hm_click["points"][0]["x"]
-                region = hm_click["points"][0]["y"]
+            if Completeness is not None:
+                week = Completeness["points"][0]["x"]
+                region = Completeness["points"][0]["y"]
                 if region in y_axis:
                     # Add shapes
                     if y_axis.index(region):
@@ -832,7 +823,8 @@ def generate_reports_heatmap(start, end, division, district, hm_click, disease, 
         hovermode="closest",
         showlegend=False,
     )
-    return {"data": data, "layout": layout} #, vDis
+    return {"data": data, "layout": layout}  # , vDis
+
 
 layout = html.Div(
     [
@@ -1013,8 +1005,6 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("ExportTab", "children"),
     Output("Completeness", "figure"),
     Output("geoSlider", "value"),
-
-
     # Input ('cache_bahis_data', 'data'),
     # Input ('cache_bahis_dgdata', 'data'),
     # Input ('cache_bahis_geodata', 'data'),
@@ -1030,13 +1020,24 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("daterange", "end_date"),  # make state to prevent upate before submitting
     Input("Diseaselist", "value"),
     Input("tabs", "active_tab"),
-    Input ("Completeness", "clickData"),
+    Input("Completeness", "clickData"),
     State("geoSlider", "value"),
-            
     # Input ('Map', 'clickData'),
 )
 def update_whatever(
-    geoTile, clkRep, clkSick, clkDead, SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, Completeness, geoSlider
+    geoTile,
+    clkRep,
+    clkSick,
+    clkDead,
+    SelDiv,
+    SelDis,
+    SelUpa,
+    start_date,
+    end_date,
+    diseaselist,
+    tabs,
+    Completeness,
+    geoSlider,
 ):
     starttime_general = datetime.now()
 
@@ -1053,7 +1054,6 @@ def update_whatever(
         pnumber, \
         loc, \
         title, \
-        incsub_bahis_sourcedata, \
         sub_bahis_sourcedata, \
         monthlydatabasis, \
         subDist
@@ -1199,36 +1199,55 @@ def update_whatever(
     endtime_general = datetime.now()
     print("general callback : " + str(endtime_general - starttime_general))
 
-###tab0
+# tab0
 
-    if tabs == 'CompletenessTab':
-        starttime_tab0=datetime.now()
+    if tabs == "CompletenessTab":
+        starttime_tab0 = datetime.now()
         start = start_date + " 00:00:00"
         end = end_date + " 00:00:00"
 
         reset = False
-            # # Find which one has been triggered
-            # ctx = dash.callback_context
+        # # Find which one has been triggered
+        # ctx = dash.callback_context
 
-            # if ctx.triggered:
-            #     prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-            #     if prop_id == "reset-btn":
-            #         reset = True
-            #     if prop_id == "division-select":
-        district=None
-            
-        a=  generate_reports_heatmap(start, end, SelDiv, SelDis, Completeness, diseaselist, reset
+        # if ctx.triggered:
+        #     prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        #     if prop_id == "reset-btn":
+        #         reset = True
+        #     if prop_id == "division-select":
 
-            )
- 
+        a = generate_reports_heatmap(start, end, SelDiv, SelDis, Completeness, diseaselist, reset)
+
         endtime_tab0 = datetime.now()
-        print('tabCompleteness : ' + str(endtime_tab0-starttime_tab0))
-        return SelDiv, SelDis, SelUpa, vDiv, vDis, vUpa, ddDList, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, no_update, a, geoSlider
+        print("tabCompleteness : " + str(endtime_tab0 - starttime_tab0))
+        return (
+            SelDiv,
+            SelDis,
+            SelUpa,
+            vDiv,
+            vDis,
+            vUpa,
+            ddDList,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            a,
+            geoSlider,
+        )
 
     # tab1
 
-    if tabs == 'ReportsTab':
-        starttime_tab1=datetime.now()
+    if tabs == "ReportsTab":
+        starttime_tab1 = datetime.now()
 
         tmp = sub_bahis_sourcedata["date"].dt.date.value_counts()
         tmp = tmp.to_frame()
@@ -1352,7 +1371,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            geoSlider
+            geoSlider,
         )
 
     # tab2
@@ -1475,11 +1494,10 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            geoSlider
-
+            geoSlider,
         )
 
-### tab3 geolocation    # tab3 geolocation
+# tab3 geolocation
     if tabs == "GeoRepTab":
         starttime_tab3 = datetime.now()
 
@@ -1558,7 +1576,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            geoSlider
+            geoSlider,
         )
 
     # tab 4 geodyn tab per current year
@@ -1609,7 +1627,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            geoSlider
+            geoSlider,
         )
 
     # tab 6 export tab
@@ -1677,7 +1695,7 @@ def update_whatever(
             ExportLabel,
             ExportTab,
             no_update,
-            geoSlider
+            geoSlider,
         )
 
 
@@ -1743,4 +1761,3 @@ def export(geoSlider, Division, District, Upazila):
 
 
 # make callback for tabs
-

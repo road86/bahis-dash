@@ -5,7 +5,7 @@ from dash import html
 dash.register_page(__name__, path="/")
 
 layout = dbc.Container(
-
+    [
         dbc.Row(
             [
                 dbc.Col(
@@ -14,7 +14,7 @@ layout = dbc.Container(
                             [
                                 dbc.Row(
                                     [
-                                        html.Center(html.H1("Home: This landing page")),
+                                        html.Center(html.H1(["Home: This landing page"])),
                                     ]
                                 )
                             ]
@@ -27,7 +27,7 @@ layout = dbc.Container(
                             [
                                 dbc.Row(
                                     [
-                                        html.Center(html.H1("ULO: Upazila Lifestock Office")),
+                                        html.Center(html.H1(["ULO: Upazila Lifestock Office"])),
                                     ]
                                 )
                             ]
@@ -40,7 +40,7 @@ layout = dbc.Container(
                             [
                                 dbc.Row(
                                     [
-                                        html.Center(html.H1("DLS: Overview page ")),
+                                        html.Center(html.H1(["DLS: Overview page "])),
                                     ]
                                 )
                             ]
@@ -55,5 +55,6 @@ layout = dbc.Container(
                 dbc.Col([dbc.Card([dbc.Row([dbc.Button("ULO", href="/ulo", size="lg")])])]),
                 dbc.Col([dbc.Card([dbc.Row([dbc.Button("DLS", href="/dls", size="lg")])])]),
             ]
-        ),        
-    )
+        ),
+    ]
+)
