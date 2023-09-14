@@ -1038,6 +1038,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     # Input ('Map', 'clickData'),
 )
 def update_whatever(
+<<<<<<< HEAD
     SelDiv,
     SelDis,
     SelUpa,
@@ -1047,6 +1048,10 @@ def update_whatever(
     tabs,
     Completeness,
     geoSlider,
+=======
+    # geoTile, clkRep, clkSick, clkDead,
+    SelDiv, SelDis, SelUpa, start_date, end_date, diseaselist, tabs, geoSlider
+>>>>>>> 378b173b5fe782de9b72f51d713c8e2635700a86
 ):
     starttime_general = datetime.now()
 
@@ -1212,6 +1217,7 @@ def update_whatever(
     endtime_general = datetime.now()
     print("general callback : " + str(endtime_general - starttime_general))
 
+<<<<<<< HEAD
 # tab0
 
     if tabs == "CompletenessTab":
@@ -1259,6 +1265,10 @@ def update_whatever(
 
     # tabLA
 
+=======
+    # tabLA
+
+>>>>>>> 378b173b5fe782de9b72f51d713c8e2635700a86
     if tabs == "ReportsLATab":
         starttime_tab1 = datetime.now()
 
@@ -1290,7 +1300,11 @@ def update_whatever(
                 )
             ),
             y=max(tmp),
+<<<<<<< HEAD
             text="total reports " + str("{:,}".format(sub_bahis_sourcedata["date"].size)),
+=======
+            text="total reports " + str("{:,}".format(sub_bahis_sourcedataLA["date"].dt.date.value_counts().sum())),
+>>>>>>> 378b173b5fe782de9b72f51d713c8e2635700a86
             showarrow=False,
             font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
             align="center",
@@ -1515,7 +1529,10 @@ def update_whatever(
             figgPR,
             figgPSick,
             figgPDead,
+<<<<<<< HEAD
             no_update,
+=======
+>>>>>>> 378b173b5fe782de9b72f51d713c8e2635700a86
             no_update,
             no_update,
             no_update,
