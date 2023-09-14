@@ -898,7 +898,7 @@ layout = html.Div(
                                                 dbc.Row(dcc.Graph(id="SickLA")),
                                                 dbc.Row(dcc.Graph(id="DeadLA")),
                                             ],
-                                            label="ReportsLA",
+                                            label="Large Animal Reports",
                                             tab_id="ReportsLATab",
                                         ),
                                         dbc.Tab(
@@ -907,7 +907,7 @@ layout = html.Div(
                                                 dbc.Row(dcc.Graph(id="SickP")),
                                                 dbc.Row(dcc.Graph(id="DeadP")),
                                             ],
-                                            label="ReportsP",
+                                            label="Poultry Reports",
                                             tab_id="ReportsPTab",
                                         ),
                                         dbc.Tab(
@@ -1229,7 +1229,7 @@ def update_whatever(
         #         reset = True
         #     if prop_id == "division-select":
 
-        a = generate_reports_heatmap(start, end, SelDiv, SelDis, Completeness, diseaselist, reset)
+        Completeness = generate_reports_heatmap(start, end, SelDiv, SelDis, Completeness, diseaselist, reset)
 
         endtime_tab0 = datetime.now()
         print("tabCompleteness : " + str(endtime_tab0 - starttime_tab0))
@@ -1253,7 +1253,10 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            a,
+            no_update,
+            no_update,
+            no_update,
+            Completeness,
             geoSlider,
         )
 
@@ -1290,7 +1293,7 @@ def update_whatever(
                 )
             ),
             y=max(tmp),
-            text="total reports " + str("{:,}".format(sub_bahis_sourcedata["date"].size)),
+            text="total reports " + str("{:,}".format(sub_bahis_sourcedataLA["date"].size)),
             showarrow=False,
             font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
             align="center",
@@ -1377,6 +1380,7 @@ def update_whatever(
             figgLAR,
             figgLASick,
             figgLADead,
+            no_update,
             no_update,
             no_update,
             no_update,
