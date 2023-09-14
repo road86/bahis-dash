@@ -14,6 +14,7 @@ from dash.dash import no_update
 from dash.dependencies import Input, Output, State
 from plotly.subplots import make_subplots
 from components import yearly_comparison
+from components import ReportsSickDead
 
 starttime_start = datetime.now()
 
@@ -1264,109 +1265,9 @@ def update_whatever(
 
     if tabs == "ReportsLATab":
         starttime_tab1 = datetime.now()
-
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-
-        tmp = sub_bahis_sourcedataLA["date"].dt.date.value_counts()
-        tmp = tmp.to_frame()
-        tmp["counts"] = tmp["date"]
-        tmp["date"] = pd.to_datetime(tmp.index)
-        tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
-        tmp = tmp.to_frame()
-        tmp["date"] = tmp.index
-        tmp["date"] = tmp["date"].astype("datetime64[D]")
-
-        figgLAR = px.bar(tmp, x="date", y="counts", labels={"date": "", "counts": "No. of Reports"})
-        figgLAR.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgLAR.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )
-        figgLAR.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total reports " + str("{:,}".format(sub_bahis_sourcedataLA["date"].size)),
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
-        tmp = (
-            sub_bahis_sourcedataLA[["sick", "dead"]]
-            .groupby(sub_bahis_sourcedataLA["date"].dt.to_period("W-SAT"))
-            .sum()
-            .astype(int)
-        )
-        tmp = tmp.reset_index()
-        tmp = tmp.rename(columns={"date": "date"})
-        tmp["date"] = tmp["date"].astype("datetime64[D]")
-        figgLASick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
-        figgLASick.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgLASick.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )  # manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
-        figgLASick.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total sick " + str("{:,}".format(int(sub_bahis_sourcedataLA["sick"].sum()))),  # realy outlyer
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
-        figgLADead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
-        figgLADead.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgLADead.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )
-        figgLADead.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total dead " + str("{:,}".format(int(sub_bahis_sourcedataLA["dead"].sum()))),  # really
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
+        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
@@ -1400,109 +1301,9 @@ def update_whatever(
 
     if tabs == "ReportsPTab":
         starttime_tab1 = datetime.now()
-
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-
-        tmp = sub_bahis_sourcedataP["date"].dt.date.value_counts()
-        tmp = tmp.to_frame()
-        tmp["counts"] = tmp["date"]
-        tmp["date"] = pd.to_datetime(tmp.index)
-        tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
-        tmp = tmp.to_frame()
-        tmp["date"] = tmp.index
-        tmp["date"] = tmp["date"].astype("datetime64[D]")
-
-        figgPR = px.bar(tmp, x="date", y="counts", labels={"date": "", "counts": "No. of Reports"})
-        figgPR.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgPR.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )
-        figgPR.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total reports " + str("{:,}".format(sub_bahis_sourcedataP["date"].dt.date.value_counts().sum())),
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
-        tmp = (
-            sub_bahis_sourcedataP[["sick", "dead"]]
-            .groupby(sub_bahis_sourcedataP["date"].dt.to_period("W-SAT"))
-            .sum()
-            .astype(int)
-        )
-        tmp = tmp.reset_index()
-        tmp = tmp.rename(columns={"date": "date"})
-        tmp["date"] = tmp["date"].astype("datetime64[D]")
-        figgPSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
-        figgPSick.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgPSick.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )  # manual setting should be done better with [start_date,end_date] annotiation is invisible and bar is cut
-        figgPSick.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total sick " + str("{:,}".format(int(sub_bahis_sourcedataP["sick"].sum()))),  # realy outlyer
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
-        figgPDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
-        figgPDead.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        figgPDead.update_xaxes(
-            range=[
-                datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
-                datetime.strptime(dates[1], "%Y-%m-%d") + timedelta(days=6),
-            ]
-        )
-        figgPDead.add_annotation(
-            x=datetime.strptime(dates[1], "%Y-%m-%d")
-            - timedelta(
-                days=int(
-                    ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-                )
-            ),
-            y=max(tmp),
-            text="total dead " + str("{:,}".format(int(sub_bahis_sourcedataP["dead"].sum()))),  # really
-            showarrow=False,
-            font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-            align="center",
-            bordercolor="#c7c7c7",
-            borderwidth=2,
-            borderpad=4,
-            bgcolor="#ff7f0e",
-            opacity=0.8,
-        )
-
+        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
