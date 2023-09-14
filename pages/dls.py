@@ -13,6 +13,7 @@ from dash import callback, ctx, dash_table, dcc, html
 from dash.dash import no_update
 from dash.dependencies import Input, Output, State
 from plotly.subplots import make_subplots
+from components import yearly_comparison
 
 starttime_start = datetime.now()
 
@@ -942,8 +943,8 @@ layout = html.Div(
                                         ),
                                         dbc.Tab(
                                             [dbc.Card(dbc.Col([dcc.Graph(id="figMonthly")]))],
-                                            label="Monthly Comparison",
-                                            tab_id="MonthCompTab",
+                                            label="Yearly Comparison",
+                                            tab_id="YearCompTab",
                                         ),
                                         dbc.Tab(
                                             [
@@ -1589,24 +1590,10 @@ def update_whatever(
 
     # tab 5 monthly currently not geo resolved and disease, because of bahis_data, either ata is time restricted or
 
-    if tabs == "MonthCompTab":
+    if tabs == "YearCompTab":
         starttime_tab5 = datetime.now()
 
-        monthly = bahis_data.groupby(
-            [bahis_data["date"].dt.year.rename("year"), bahis_data["date"].dt.month.rename("month")]
-        )["date"].agg({"count"})
-        monthly = monthly.rename({"count": "reports"}, axis=1)
-        monthly = monthly.reset_index()
-        monthly["year"] = monthly["year"].astype(str)
-        figMonthly = px.bar(
-            data_frame=monthly,
-            x="month",
-            y="reports",
-            labels={"month": "Month", "reports": "Reports"},
-            color="year",
-            barmode="group",
-        )
-        figMonthly.update_xaxes(dtick="M1", tickformat="%B")
+        figMonthly = yearly_comparison.yearlyComp(bahis_data)
 
         endtime_tab5 = datetime.now()
         print("tab5 : " + str(endtime_tab5 - starttime_tab5))
