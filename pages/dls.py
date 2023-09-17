@@ -236,7 +236,7 @@ def generate_reports_heatmap(start, end, division, district, Completeness, disea
         if "All Diseases" in disease:
             filtered_bd = filtered_bd
         else:
-            filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
+            filtered_bd = filtered_bd[filtered_bd["top_diagnosis"] == disease]
 
         #        filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start:end]
 
@@ -376,7 +376,7 @@ def generate_reports_heatmap(start, end, division, district, Completeness, disea
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
-                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
+                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"] == disease]
 
             # filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start[0]:end[0]]
 
@@ -529,7 +529,7 @@ def generate_reports_heatmap(start, end, division, district, Completeness, disea
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
-                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"].isin(disease)]
+                filtered_bd = filtered_bd[filtered_bd["top_diagnosis"] == disease]
 
             # filtered_bd=filtered_bd.sort_values('date').set_index('date').loc[start[0]:end[0]]
 
