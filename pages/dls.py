@@ -1013,7 +1013,6 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("DRRepG1", "figure"),
     Output("NRlabel", "children"),
     Output("AlertTable", "children"),
-    #    Output ('GeoDynTable', 'children'),
     Output("figMonthly", "figure"),
     Output("ExportLabel", "children"),
     Output("ExportTab", "children"),
@@ -1022,11 +1021,6 @@ print("initialize : " + str(endtime_start - starttime_start))
     # Input ('cache_bahis_data', 'data'),
     # Input ('cache_bahis_dgdata', 'data'),
     # Input ('cache_bahis_geodata', 'data'),
-    #    Input ('geoSlider', 'value'),
-    # Input("Map", "clickData"),
-    # Input("Reports", "clickData"),
-    # Input("Sick", "clickData"),
-    # Input("Dead", "clickData"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -1069,18 +1063,8 @@ def update_whatever(
         subDist
     #    print(geoclick)
 
-    # starttime=datetime.now()
-    # endtime = datetime.now()
-    # print(endtime-starttime)
     # print(clkRep)
     # print(clkSick)
-    # print(pd.DataFrame(cbahis_data).shape)
-    # print(pd.DataFrame(cbahis_dgdata).shape)
-    # print(pd.DataFrame(cbahis_geodata).shape)
-    # bahis_data=pd.DataFrame(cbahis_data)
-    # bahis_data['date']= pd.to_datetime(bahis_data['date'])
-    # bahis_dgdata=pd.DataFrame(cbahis_dgdata)
-    # bahis_geodata=pd.DataFrame(cbahis_geodata)
     NRlabel = "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"
     if firstrun is True:  # inital settings
         #        dates = sne_date(bahis_data)
@@ -1090,12 +1074,6 @@ def update_whatever(
         vDiv = [{"label": i["Division"], "value": i["value"]} for i in Divlist]
         vDis = []
         vUpa = []
-        # figgLiveS=lambda:None
-        # figgZoon=[]
-        # Rfigg=[]
-        # Rfindic=[]
-        # figMonthly=[]
-
         path = path3
         loc = 3
         title = "upazila"
@@ -1105,13 +1083,6 @@ def update_whatever(
         variab = "upazila"
         labl = "Reports per upazila"
         firstrun = False
-        # subDist=subDist[subDist['loc_type']==loc]
-
-    #    if ctx.triggered_id=='daterange':
-    #        sub_bahis_sourcedata=date_subset(dates, bahis_data)
-
-    # if ctx.triggered_id == "Diseaselist":
-    #     sub_bahis_sourcedata = disease_subset(diseaselist, sub_bahis_sourcedata)
 
     if ctx.triggered_id == "Division":
         if not SelDiv:
@@ -1161,9 +1132,11 @@ def update_whatever(
             else:
                 sub_bahis_sourcedata = bahis_data
 
+
+    sub_bahis_sourcedata4yc = disease_subset(diseaselist, sub_bahis_sourcedata)
+
     dates = [start_date, end_date]
-    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata)
-    sub_bahis_sourcedata = disease_subset(diseaselist, sub_bahis_sourcedata)
+    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata4yc)
 
     #    if ctx.triggered_id=='geoSlider':
     if geoSlider == 1:
@@ -1553,7 +1526,7 @@ def update_whatever(
     if tabs == "YearCompTab":
         starttime_tab5 = datetime.now()
 
-        figMonthly = yearly_comparison.yearlyComp(bahis_data)
+        figMonthly = yearly_comparison.yearlyComp(sub_bahis_sourcedata4yc)
 
         endtime_tab5 = datetime.now()
         print("tab5 : " + str(endtime_tab5 - starttime_tab5))
