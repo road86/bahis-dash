@@ -1,11 +1,8 @@
-import glob
 import json
-import os
 from datetime import date, datetime, timedelta
 
 import dash
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,8 +10,7 @@ from dash import callback, ctx, dash_table, dcc, html
 from dash.dash import no_update
 from dash.dependencies import Input, Output, State
 from plotly.subplots import make_subplots
-from components import yearly_comparison
-from components import ReportsSickDead
+from components import yearly_comparison, ReportsSickDead, pathnames, fetchdata
 
 starttime_start = datetime.now()
 
@@ -22,73 +18,14 @@ pd.options.mode.chained_assignment = None
 
 dash.register_page(__name__)  # register page to main dash app
 
-# sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'    #for local debugging purposes
-# path0= "C:/Users/yoshka/Documents/GitHub/bahis-dash/geodata/geoBoundaries-BGD-ADM0_simplified.geojson"
 # #1 Nation # reminder: found shapefiles from the data.humdata.org
 sourcepath = "exported_data/"
-geofilename = glob.glob(sourcepath + "newbahis_geo_cluster*.csv")[
-    -1
-]  # the available geodata from the bahis project (Masterdata)
-dgfilename = os.path.join(sourcepath, "Diseaselist.csv")  # disease grouping info (Masterdata)
-sourcefilename = os.path.join(
-    sourcepath, "preped_data2.csv"
-)  # main data resource of prepared data from old and new bahis
-path1 = os.path.join(sourcepath, "processed_geodata", "divdata.geojson")  # 8 Division
-path2 = os.path.join(sourcepath, "processed_geodata", "distdata.geojson")  # 64 District
-path3 = os.path.join(sourcepath, "processed_geodata", "upadata.geojson")  # 495 Upazila
+geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 
 firstrun = True
 
-
-def fetchsourcedata():  # fetch and prepare source data
-    bahis_data = pd.read_csv(sourcefilename)
-    bahis_data["from_static_bahis"] = bahis_data["basic_info_date"].str.contains(
-        "/"
-    )  # new data contains -, old data contains /
-    bahis_data["basic_info_date"] = pd.to_datetime(bahis_data["basic_info_date"], errors="coerce")
-    #    bahis_data = pd.to_numeric(bahis_data['basic_info_upazila']).dropna().astype(int)
-    # empty upazila data can be eliminated, if therre is
-    del bahis_data["Unnamed: 0"]
-    bahis_data = bahis_data.rename(
-        columns={
-            "basic_info_date": "date",
-            "basic_info_division": "division",
-            "basic_info_district": "district",
-            "basic_info_upazila": "upazila",
-            "patient_info_species": "species_no",
-            "diagnosis_treatment_tentative_diagnosis": "tentative_diagnosis",
-            "patient_info_sick_number": "sick",
-            "patient_info_dead_number": "dead",
-        }
-    )
-    # assuming non negative values from division, district, upazila, speciesno, sick and dead
-    bahis_data[["division", "district", "species_no"]] = bahis_data[["division", "district", "species_no"]].astype(
-        np.uint16
-    )
-    bahis_data[["upazila", "sick", "dead"]] = bahis_data[["upazila", "sick", "dead"]].astype(
-        np.int32
-    )  # converting into uint makes odd values)
-    #    bahis_data[['species', 'tentative_diagnosis', 'top_diagnosis']]=bahis_data[['species',
-    #                                                                                'tentative_diagnosis',
-    #                                                                                'top_diagnosis']].astype(str)
-    # can you change object to string and does it make a memory difference`?
-    bahis_data["dead"] = bahis_data["dead"].clip(lower=0)
-    #    bahis_data=bahis_data[bahis_data['date']>=datetime(2019, 7, 1)]
-    # limit to this year    bahis_data=bahis_data[bahis_data['date'].dt.year== max(bahis_data['date']).year]
-    return bahis_data
-
-
-bahis_data = fetchsourcedata()
+bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 sub_bahis_sourcedata = bahis_data
-monthlydatabasis = sub_bahis_sourcedata
-
-
-def sne_date(bahis_data):
-    start_date = min(bahis_data["date"]).date()
-    end_date = max(bahis_data["date"]).date()
-    dates = [start_date, end_date]
-    return dates
-
 
 start_date = date(2019, 1, 1)
 end_date = date(2023, 12, 31)
@@ -97,81 +34,12 @@ dates = [start_date, end_date]
 ddDList = []
 Divlist = []
 
-
-def fetchdisgroupdata():  # fetch and prepare disease groups
-    bahis_dgdata = pd.read_csv(dgfilename)
-    # bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]
-    # remark what might be helpful: reminder: memory size
-    bahis_dgdata = bahis_dgdata[["name", "Disease type"]]
-    bahis_dgdata = bahis_dgdata.dropna()
-    # bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])
-    # can you change object to string and does it make a memory difference?
-    bahis_dgdata = bahis_dgdata.drop_duplicates(subset="name", keep="first")
-    return bahis_dgdata
-
-
-bahis_dgdata = fetchdisgroupdata()
+bahis_dgdata = fetchdata.fetchdisgroupdata(dgfilename)
 to_replace = bahis_dgdata["name"].tolist()
 replace_with = bahis_dgdata["Disease type"].tolist()
 
-
-def fetchgeodata():  # fetch geodata from bahis, delete mouzas and unions
-    geodata = pd.read_csv(geofilename)
-    geodata = geodata.drop(
-        geodata[(geodata["loc_type"] == 4) | (geodata["loc_type"] == 5)].index
-    )  # drop mouzas and unions
-    geodata = geodata.drop(["id", "longitude", "latitude", "updated_at"], axis=1)
-    geodata["parent"] = geodata[["parent"]].astype(np.uint16)  # assuming no mouza and union is taken into
-    geodata[["value"]] = geodata[["value"]].astype(np.uint32)
-    geodata[["loc_type"]] = geodata[["loc_type"]].astype(np.uint8)
-    return geodata
-
-
-bahis_geodata = fetchgeodata()
+bahis_geodata = fetchdata.fetchgeodata(geofilename)
 subDist = bahis_geodata
-
-
-# cache these values
-
-
-def fetchDivisionlist(bahis_geodata):  # division lsit is always the same, caching possible
-    Divlist = bahis_geodata[(bahis_geodata["loc_type"] == 1)][["value", "name"]]
-    Divlist["name"] = Divlist["name"].str.capitalize()
-    Divlist = Divlist.rename(columns={"name": "Division"})
-    Divlist = Divlist.sort_values(by=["Division"])
-    return Divlist.to_dict("records")
-
-
-# Divlist=fetchDivisionlist()
-
-
-def fetchDistrictlist(SelDiv, bahis_geodata):  # district list is dependent on selected division
-    Dislist = bahis_geodata[bahis_geodata["parent"] == SelDiv][["value", "name"]]
-    Dislist["name"] = Dislist["name"].str.capitalize()
-    Dislist = Dislist.rename(columns={"name": "District"})
-    Dislist = Dislist.sort_values(by=["District"])
-    return Dislist.to_dict("records")
-
-
-def fetchUpazilalist(SelDis, bahis_geodata):  # upazila list is dependent on selected district
-    Upalist = bahis_geodata[bahis_geodata["parent"] == SelDis][["value", "name"]]  # .str.capitalize()
-    Upalist["name"] = Upalist["name"].str.capitalize()
-    Upalist = Upalist.rename(columns={"name": "Upazila"})
-    Upalist = Upalist.sort_values(by=["Upazila"])
-    return Upalist.to_dict("records")
-
-
-def date_subset(dates, bahis_data):
-    tmask = (bahis_data["date"] >= pd.to_datetime(dates[0])) & (bahis_data["date"] <= pd.to_datetime(dates[1]))
-    return bahis_data.loc[tmask]
-
-
-def disease_subset(cDisease, sub_bahis_sourcedata):
-    if "All Diseases" in cDisease:
-        sub_bahis_sourcedata = sub_bahis_sourcedata
-    else:
-        sub_bahis_sourcedata = sub_bahis_sourcedata[sub_bahis_sourcedata["top_diagnosis"] == cDisease]
-    return sub_bahis_sourcedata
 
 
 ddDivision = html.Div(
@@ -207,14 +75,6 @@ ddUpazila = html.Div(
     ],
     className="mb-4",
 )
-
-
-def fetchdiseaselist(bahis_data):
-    dislis = bahis_data["top_diagnosis"].unique()
-    dislis = pd.DataFrame(dislis, columns=["Disease"])
-    dislis = dislis["Disease"].sort_values().tolist()
-    dislis.insert(0, "All Diseases")
-    return dislis
 
 
 def natNo(sub_bahis_sourcedata):
@@ -1059,7 +919,6 @@ def update_whatever(
         loc, \
         title, \
         sub_bahis_sourcedata, \
-        monthlydatabasis, \
         subDist
     #    print(geoclick)
 
@@ -1068,9 +927,9 @@ def update_whatever(
     NRlabel = "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"
     if firstrun is True:  # inital settings
         #        dates = sne_date(bahis_data)
-        ddDList = fetchdiseaselist(sub_bahis_sourcedata)
+        ddDList = fetchdata.fetchdiseaselist(sub_bahis_sourcedata)
         #        ddDList.insert(0, 'All Diseases')
-        Divlist = fetchDivisionlist(bahis_geodata)
+        Divlist = fetchdata.fetchDivisionlist(bahis_geodata)
         vDiv = [{"label": i["Division"], "value": i["value"]} for i in Divlist]
         vDis = []
         vUpa = []
@@ -1095,7 +954,7 @@ def update_whatever(
             SelUpa = ""
         else:
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
-            Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
+            Dislist = fetchdata.fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
             vUpa = []
             SelUpa = ""
@@ -1103,7 +962,7 @@ def update_whatever(
     if ctx.triggered_id == "District":
         if not SelDis:
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
-            Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
+            Dislist = fetchdata.fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
             Upalist = ""
             vUpa = []
@@ -1111,7 +970,7 @@ def update_whatever(
         else:
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
-            Upalist = fetchUpazilalist(SelDis, bahis_geodata)
+            Upalist = fetchdata.fetchUpazilalist(SelDis, bahis_geodata)
             vUpa = [{"label": i["Upazila"], "value": i["value"]} for i in Upalist]
 
     if ctx.triggered_id == "Upazila":
@@ -1136,7 +995,10 @@ def update_whatever(
     sub_bahis_sourcedata4yc = disease_subset(diseaselist, sub_bahis_sourcedata)
 
     dates = [start_date, end_date]
-    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata4yc)
+    sub_bahis_sourcedata = fetchdata.date_subset(dates, sub_bahis_sourcedata)
+    sub_bahis_sourcedata = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
+
+#    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata4yc)
 
     #    if ctx.triggered_id=='geoSlider':
     if geoSlider == 1:
@@ -1316,9 +1178,6 @@ def update_whatever(
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
 
-        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-        # to_replace=tmpdg['name'].tolist()
-        # replace_with=tmpdg['Disease type'].tolist()
         sub_bahis_sourcedataP["top_diagnosis"] = sub_bahis_sourcedataP.top_diagnosis.replace(
             to_replace, replace_with, regex=True
         )
@@ -1341,9 +1200,6 @@ def update_whatever(
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
 
-        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
-        # to_replace=tmpdg['name'].tolist()
-        # replace_with=tmpdg['Disease type'].tolist()
         sub_bahis_sourcedataLA["top_diagnosis"] = sub_bahis_sourcedataLA.top_diagnosis.replace(
             to_replace, replace_with, regex=True
         )
@@ -1369,7 +1225,6 @@ def update_whatever(
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
 
-        # tmpdg= bahis_dgdata.drop_duplicates(subset='name', keep="first")
         tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
         tmpdg = tmpdg["name"].tolist()
         sub_bahis_sourcedataP = sub_bahis_sourcedataP[sub_bahis_sourcedataP["top_diagnosis"].isin(tmpdg)]
