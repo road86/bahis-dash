@@ -24,6 +24,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
     """
     start = datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
     end = datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
+    compcols = False
 
     if division is None:  # for national numbers
         # vDis = []
@@ -394,6 +395,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                 ]
 
                 if upazila[:1] != "Σ":  # for upazila
+                    compcols = True
                     tmp = filtered_upazila.index.value_counts()
                     tmp = tmp.to_frame()
                     tmp["counts"] = tmp["date"]
@@ -450,6 +452,26 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
     # Heatmap
     hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Records"
 
+    if compcols:
+        compcol = [
+            [0, "red"],
+            [0.2, "#d7301f"],
+            [0.4, "#fc8d59"],
+            [0.6, "#fdcc8a"],
+            [0.8, "#fef0d9"],
+            [1, "white"]
+        ]
+    else:
+        compcol = [
+            [0, "white"],
+            [0.2, "white"],
+            [0.4, "white"],
+            [0.6, "white"],
+            [0.8, "white"],
+            [1, "white"]
+        ]
+    print(z)
+    print(z[ 0:len(z)-1 , :] )
     data = [
         dict(
             x=x_axis,
@@ -459,14 +481,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             name="",
             hovertemplate=hovertemplate,
             showscale=False,
-            colorscale=[
-                [0, "white"],
-                [0.2, "#eeffe3"],
-                [0.4, "#ccfcae"],
-                [0.6, "#adfc7c"],
-                [0.8, "#77fc21"],
-                [1, "#62ff00"],
-            ],
+            colorscale=compcol,
         )
     ]
 
