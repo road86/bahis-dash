@@ -415,6 +415,8 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                         annotation_dict = dict(
                             showarrow=False,
+                            #text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            #z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
                             text="<b>" + str(daysub / 5) + "<b>",
                             xref="x",
                             yref="y",
@@ -430,10 +432,11 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
-                        z.loc[x_val, upazila] = sum(z.loc[x_val] == 1) / z.shape[1]  # sum_of_record
+                        print(z[upazila])
+                        z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.2f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -459,7 +462,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             [0.4, "#fc8d59"],
             [0.6, "#fdcc8a"],
             [0.8, "#fef0d9"],
-            [1, "white"]
+            [1, "#b8e186"]
         ]
     else:
         compcol = [
@@ -470,8 +473,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             [0.8, "white"],
             [1, "white"]
         ]
-    print(z)
-    print(z[ 0:len(z)-1 , :] )
+
     data = [
         dict(
             x=x_axis,
