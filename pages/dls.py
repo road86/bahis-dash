@@ -991,8 +991,7 @@ def update_whatever(
             else:
                 sub_bahis_sourcedata = bahis_data
 
-
-    sub_bahis_sourcedata4yc = disease_subset(diseaselist, sub_bahis_sourcedata)
+    sub_bahis_sourcedata4yc = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
 
     dates = [start_date, end_date]
     sub_bahis_sourcedata = fetchdata.date_subset(dates, sub_bahis_sourcedata)
