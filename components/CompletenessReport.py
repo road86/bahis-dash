@@ -4,10 +4,13 @@ import pandas as pd
 
 def find_weeks(start, end):
     list_of_weeks = []
+    days_to_thursday = (3 - start.weekday()) % 7
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
+        print(d)
         yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
         list_of_weeks.append(yearweek)
+    print(sorted(set(list_of_weeks)))
     return sorted(set(list_of_weeks))
 
 
