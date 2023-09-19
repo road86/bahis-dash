@@ -5,6 +5,7 @@ import pandas as pd
 def find_weeks(start, end):
     list_of_weeks = []
     days_to_thursday = (3 - start.weekday()) % 7
+    print(days_to_thursday)
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
         print(d)
@@ -418,8 +419,8 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                         annotation_dict = dict(
                             showarrow=False,
-                            #text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
-                            #z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            # z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
                             text="<b>" + str(daysub / 5) + "<b>",
                             xref="x",
                             yref="y",
