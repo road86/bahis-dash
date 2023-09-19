@@ -5,13 +5,13 @@ import pandas as pd
 def find_weeks(start, end):
     list_of_weeks = []
     days_to_thursday = (3 - start.weekday()) % 7
-    print(days_to_thursday)
+#    print(days_to_thursday)
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
         print(d)
         yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
         list_of_weeks.append(yearweek)
-    print(sorted(set(list_of_weeks)))
+#    print(sorted(set(list_of_weeks)))
     return sorted(set(list_of_weeks))
 
 
@@ -419,7 +419,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                         annotation_dict = dict(
                             showarrow=False,
-                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
                             # z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
                             text="<b>" + str(daysub / 5) + "<b>",
                             xref="x",
@@ -440,7 +440,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                         z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -466,7 +466,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             [0.4, "#fc8d59"],
             [0.6, "#fdcc8a"],
             [0.8, "#fef0d9"],
-            [1, "#b8e186"]
+            [1, "white"]
         ]
     else:
         compcol = [
