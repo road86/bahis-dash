@@ -16,5 +16,5 @@ def yearlyComp(bahis_data):
         color="year",
         barmode="group",
     )
-    figYearlyComp.update_xaxes(dtick="M1", tickformat="%b\n%Y")
+    figYearlyComp.update_xaxes(dtick="M1", tickformat="%B \n%Y")
     return figYearlyComp
