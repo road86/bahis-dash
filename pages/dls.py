@@ -15,7 +15,7 @@ from components import ReportsSickDead
 from components import CompletenessReport
 from components import pathnames
 from components import fetchdata
-
+from components import ReportView
 
 starttime_start = datetime.now()
 
@@ -270,6 +270,11 @@ layout = html.Div(
                                             tab_id="CompletenessTab",
                                         ),
                                         dbc.Tab(
+                                            [dbc.Card(dbc.Col([dcc.Graph(id="Reports")]))],
+                                            label="Reports",
+                                            tab_id="ReportsTab",
+                                        ),
+                                        dbc.Tab(
                                             [
                                                 dbc.Row(dcc.Graph(id="ReportsLA")),
                                                 dbc.Row(dcc.Graph(id="SickLA")),
@@ -368,7 +373,7 @@ print("initialize : " + str(endtime_start - starttime_start))
 
 
 @callback(
-    # dash cleintsied callback with js
+    # dash clientside callback with js
     Output("Division", "value"),
     Output("District", "value"),
     Output("Upazila", "value"),
@@ -377,6 +382,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("Upazila", "options"),
     Output("Diseaselist", "options"),
     #    Output ('Map', 'figure'),
+    Output("Reports", "figure"),
     Output("ReportsLA", "figure"),
     Output("SickLA", "figure"),
     Output("DeadLA", "figure"),
@@ -607,12 +613,45 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,
             Completeness,
             geoSlider,
         )
 
+    if tabs == "ReportsTab":
+        starttime_tab1 = datetime.now()
+        Reports = ReportView.Reports(sub_bahis_sourcedata, dates)
+        endtime_tab1 = datetime.now()
+        print("tabReports : " + str(endtime_tab1 - starttime_tab1))
+        return (
+            SelDiv,
+            SelDis,
+            SelUpa,
+            vDiv,
+            vDis,
+            vUpa,
+            ddDList,
+            Reports,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            no_update,
+            geoSlider,
+        )
+        
     # tabLA
-
     if tabs == "ReportsLATab":
         starttime_tab1 = datetime.now()
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
@@ -628,6 +667,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            no_update,
             figgLAR,
             figgLASick,
             figgLADead,
@@ -664,6 +704,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            no_update,
             no_update,
             no_update,
             no_update,
@@ -789,6 +830,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,
             figgLiveS,
             figgZoon,
             no_update,
@@ -876,6 +918,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,
             Rfindic,
             Rfigg,
             NRlabel,
@@ -908,6 +951,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            no_update,
             no_update,
             no_update,
             no_update,
@@ -979,6 +1023,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            no_update,
             no_update,
             no_update,
             no_update,

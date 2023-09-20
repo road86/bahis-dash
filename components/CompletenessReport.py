@@ -5,13 +5,10 @@ import pandas as pd
 def find_weeks(start, end):
     list_of_weeks = []
     days_to_thursday = (3 - start.weekday()) % 7
-    print(days_to_thursday)
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
-        print(d)
         yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
         list_of_weeks.append(yearweek)
-    print(sorted(set(list_of_weeks)))
     return sorted(set(list_of_weeks))
 
 
@@ -436,7 +433,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
-                        print(z[upazila])
                         z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
