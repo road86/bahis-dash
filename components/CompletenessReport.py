@@ -8,7 +8,7 @@ def find_weeks(start, end):
 #    print(days_to_thursday)
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
-        print(d)
+        #print(d)
         yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
         list_of_weeks.append(yearweek)
 #    print(sorted(set(list_of_weeks)))
