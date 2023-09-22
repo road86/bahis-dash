@@ -1,4 +1,5 @@
 import plotly.express as px
+import pandas as pd
 
 def Reports(sub_bahis_sourcedata, dates):
 
@@ -17,7 +18,7 @@ def Reports(sub_bahis_sourcedata, dates):
     tmp["date"] = tmp.index
     tmp["date"] = tmp["date"].astype("datetime64[D]")
 
-    fig = px.bar(tmp, x="date", y="counts", labels={"date": "", "counts": "No. of Reports"})
+    fig1 = px.bar(tmp, x="date", y="counts", labels={"date": "", "counts": "No. of Reports"})
     
     df = px.data.gapminder()
     print(df)
@@ -27,4 +28,4 @@ def Reports(sub_bahis_sourcedata, dates):
 
     fig["layout"].pop("updatemenus") # optional, drop animation buttons
 #    fig.show()
-    return fig
+    return fig1

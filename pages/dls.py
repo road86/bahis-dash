@@ -197,7 +197,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
         opacity=0.5,
         labels={variab: labl},
         hover_name=pname,
-    )
+    )Repo
     fig.update_layout(
         autosize=True, coloraxis_showscale=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550
     )  # , width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600,
