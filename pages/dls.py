@@ -163,7 +163,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
     tmp = tmp.set_index("Index")
-    tmp[title] = 0 #-(reports[pname].max())
+    tmp[title] = 0
 
     aaa = reports.combine_first(tmp)
     aaa[pname] = tmp[pname]
@@ -177,7 +177,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     reports[pname] = reports[pname].str.title()
     reports.set_index(pnumber)  # 1
 
-    custolor = [[0, "black"], [1/reports[title].max(), "lightgray"], [1, "red"]]
+    custolor = [[0, "black"], [1 / reports[title].max(), "lightgray"], [1, "red"]]
 
     fig = px.choropleth_mapbox(
         reports,
@@ -185,7 +185,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
         locations=pnumber,
         color=title,
         featureidkey="properties." + pnumber,
-        color_continuous_scale = custolor,  
+        color_continuous_scale=custolor,
         range_color=(1, reports[title].max()),
         mapbox_style="carto-positron",
         zoom=5.8,
@@ -193,7 +193,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
         opacity=0.7,
         labels={variab: labl},
         hover_name=pname,
-        hover_data= {pname: False, pnumber : False}
+        hover_data={pname: False, pnumber: False}
     )
     fig.update_layout(
         autosize=True, coloraxis_showscale=True, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550
@@ -437,7 +437,7 @@ def update_whatever(
 
     # print(clkRep)
     # print(clkSick)
-    labl= "Reports"
+    labl = "Reports"
     NRlabel = "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"
     if firstrun is True:  # inital settings
         #        dates = sne_date(bahis_data)
@@ -454,7 +454,6 @@ def update_whatever(
         pname = "upazilaname"
         splace = " Upazila"
         variab = "upazila"
-        #labl = "Reports per upazila"
         firstrun = False
 
     if ctx.triggered_id == "Division":
@@ -522,7 +521,6 @@ def update_whatever(
         pname = "divisionname"
         splace = " Division"
         variab = "division"
-        #labl = "Reports per division"
         subDistM = subDist[subDist["loc_type"] == geoSlider]
         # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -540,7 +538,6 @@ def update_whatever(
         pname = "districtname"
         splace = " District"
         variab = "district"
-        #labl = "Reports per district"
         subDistM = subDist[subDist["loc_type"] == geoSlider]
         # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -553,7 +550,6 @@ def update_whatever(
         pname = "upazilaname"
         splace = " Upazila"
         variab = "upazila"
-        #labl = "Reports per upazila"
         subDistM = subDist[subDist["loc_type"] == 3]
         # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
@@ -1017,7 +1013,6 @@ def export(geoSlider, Division, District, Upazila):
             pname = "divisionname"
             splace = " Division"
             variab = "division"
-            #labl = "Reports per division"
             subDistM = subDist[subDist["loc_type"] == geoSlider]
         else:
             path = path1
@@ -1027,7 +1022,6 @@ def export(geoSlider, Division, District, Upazila):
             pname = "divisionname"
             splace = " Division"
             variab = "division"
-            #labl = "Reports per division"
             subDistM = subDist[subDist["loc_type"] == geoSlider]
     if geoSlider == 2:
         if not District:
@@ -1038,7 +1032,6 @@ def export(geoSlider, Division, District, Upazila):
             pname = "districtname"
             splace = " District"
             variab = "district"
-            #labl = "Reports per district"
             subDistM = subDist[subDist["loc_type"] == geoSlider]
         else:
             geoSlider = 3
@@ -1051,7 +1044,6 @@ def export(geoSlider, Division, District, Upazila):
         pname = "upazilaname"
         splace = " Upazila"
         variab = "upazila"
-        #labl = "Reports per upazila"
         subDistM = subDist[subDist["loc_type"] == geoSlider]
 
     Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
