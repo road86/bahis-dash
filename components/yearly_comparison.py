@@ -7,12 +7,13 @@ def yearlyComp(bahis_data):
     )["date"].agg({"count"})
     monthly = monthly.rename({"count": "reports"}, axis=1)
     monthly = monthly.reset_index()
+    monthly['reports'] = monthly['reports'] / 1000
     monthly["Year"] = monthly["Year"].astype(str)
     figYearlyComp = px.bar(
         data_frame=monthly,
         x="Month",
         y="reports",
-        labels={"Month": "Month", "reports": "Reports"},
+        labels={"Month": "Month", "reports": "Reports in Thousands"},
         color="Year",
         barmode="group",
     )
