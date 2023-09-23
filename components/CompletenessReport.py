@@ -416,7 +416,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                         annotation_dict = dict(
                             showarrow=False,
-                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
                             # z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
                             text="<b>" + str(daysub / 5) + "<b>",
                             xref="x",
@@ -437,7 +437,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                         z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
+                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -463,7 +463,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             [0.4, "#fc8d59"],
             [0.6, "#fdcc8a"],
             [0.8, "#fef0d9"],
-            [1, "#b8e186"]
+            [1, "white"]
         ]
     else:
         compcol = [
