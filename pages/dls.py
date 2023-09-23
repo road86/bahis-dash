@@ -163,7 +163,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
     tmp = tmp.set_index("Index")
-    tmp[title] = -(reports[pname].max())
+    tmp[title] = 0 #-(reports[pname].max())
 
     aaa = reports.combine_first(tmp)
     aaa[pname] = tmp[pname]
@@ -176,20 +176,21 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
         ]  # still to work with the copy , this goes with numbers and nnot names
     reports[pname] = reports[pname].str.title()
     reports.set_index(pnumber)  # 1
+
+    custolor = [[0, "black"], [1/reports[title].max(), "lightgray"], [1, "red"]]
+
     fig = px.choropleth_mapbox(
         reports,
         geojson=data,
         locations=pnumber,
         color=title,
         featureidkey="properties." + pnumber,
-        #                            featureidkey="Cmap",
-        color_continuous_scale="RdBu_r",  # "YlOrBr",
-        color_continuous_midpoint=0,
-        range_color=(-reports[title].max(), reports[title].max()),
+        color_continuous_scale = custolor,  
+        range_color=(1, reports[title].max()),
         mapbox_style="carto-positron",
         zoom=5.8,
         center={"lat": 23.7, "lon": 90.3},
-        opacity=0.5,
+        opacity=0.7,
         labels={variab: labl},
         hover_name=pname,
         hover_data= {pname: False, pnumber : False}
@@ -436,7 +437,7 @@ def update_whatever(
 
     # print(clkRep)
     # print(clkSick)
-    labl= "Number of Reports"
+    labl= "Reports"
     NRlabel = "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)"
     if firstrun is True:  # inital settings
         #        dates = sne_date(bahis_data)
