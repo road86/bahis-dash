@@ -11,8 +11,6 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick):
     tmp["counts"] = tmp["date"]
     tmp["date"] = pd.to_datetime(tmp.index)
 
-    #tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
-
     if periodClick == 3:
         tmp = (
             tmp['counts']
@@ -34,7 +32,6 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick):
             .sum()
             .astype(int)
         )
-        
     tmp = tmp.to_frame()
     tmp["date"] = tmp.index
     tmp["date"] = tmp["date"].astype("datetime64[D]")

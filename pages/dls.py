@@ -243,18 +243,13 @@ layout = html.Div(
                                             # end_date=end_date
                                         ),
                                     ],
-                                    #width=5,
+                                    # width=5,
                                 ),
                                 dbc.Col(
                                     [
-                                        dcc.Slider(min=1, max=3, step=1,
-                                            marks={1:'Reports monthly',
-                                                    2:'Reports weekly',
-                                                    3:'Reports daily',},
-                                            value=2,
-                                            id="periodSlider")
+                                        dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
                                     ],
-                                    #width=4,
+                                    # width=4,
                                 ),
                                 dbc.Col(
                                     [
@@ -266,7 +261,7 @@ layout = html.Div(
                                             clearable=False,
                                         ),
                                     ],
-                                    #width=3,
+                                    # width=3,
                                 ),
                             ]
                         ),
