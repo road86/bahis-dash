@@ -4,13 +4,37 @@ import pandas as pd
 import plotly.express as px
 
 
-def ReportsSickDead(sub_bahis_sourcedata, dates):
+def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick):
 
     tmp = sub_bahis_sourcedata["date"].dt.date.value_counts()
     tmp = tmp.to_frame()
     tmp["counts"] = tmp["date"]
     tmp["date"] = pd.to_datetime(tmp.index)
-    tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
+
+    #tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
+
+    if periodClick == 3:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'])
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 2:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'].dt.to_period('W-SAT'))
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 1:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'].dt.to_period('M'))
+            .sum()
+            .astype(int)
+        )
+        
     tmp = tmp.to_frame()
     tmp["date"] = tmp.index
     tmp["date"] = tmp["date"].astype("datetime64[D]")
@@ -42,12 +66,35 @@ def ReportsSickDead(sub_bahis_sourcedata, dates):
         opacity=0.8,
     )
 
-    tmp = (
-        sub_bahis_sourcedata[["sick", "dead"]]
-        .groupby(sub_bahis_sourcedata["date"].dt.to_period("W-SAT"))
-        .sum()
-        .astype(int)
-    )
+    # tmp = (
+    #     sub_bahis_sourcedata[["sick", "dead"]]
+    #     .groupby(sub_bahis_sourcedata["date"].dt.to_period("W-SAT"))
+    #     .sum()
+    #     .astype(int)
+    # )
+
+    if periodClick == 3:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'])
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 2:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT'))
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 1:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'].dt.to_period('M'))
+            .sum()
+            .astype(int)
+        )
+
     tmp = tmp.reset_index()
     tmp = tmp.rename(columns={"date": "date"})
     tmp["date"] = tmp["date"].astype("datetime64[D]")

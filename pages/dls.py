@@ -242,7 +242,19 @@ layout = html.Div(
                                             end_date=date(2023, 12, 31)
                                             # end_date=end_date
                                         ),
-                                    ]
+                                    ],
+                                    #width=5,
+                                ),
+                                dbc.Col(
+                                    [
+                                        dcc.Slider(min=1, max=3, step=1,
+                                            marks={1:'Reports monthly',
+                                                    2:'Reports weekly',
+                                                    3:'Reports daily',},
+                                            value=2,
+                                            id="periodSlider")
+                                    ],
+                                    #width=4,
                                 ),
                                 dbc.Col(
                                     [
@@ -253,7 +265,8 @@ layout = html.Div(
                                             multi=False,
                                             clearable=False,
                                         ),
-                                    ]
+                                    ],
+                                    #width=3,
                                 ),
                             ]
                         ),
@@ -399,6 +412,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("Upazila", "value"),
     Input("daterange", "start_date"),  # make state to prevent upate before submitting
     Input("daterange", "end_date"),  # make state to prevent upate before submitting
+    Input("periodSlider", "value"),
     Input("Diseaselist", "value"),
     Input("tabs", "active_tab"),
     Input("Completeness", "clickData"),
@@ -411,6 +425,7 @@ def update_whatever(
     SelUpa,
     start_date,
     end_date,
+    periodClick,
     diseaselist,
     tabs,
     Completeness,
@@ -611,7 +626,7 @@ def update_whatever(
         starttime_tab1 = datetime.now()
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates)
+        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates, periodClick)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
@@ -647,7 +662,7 @@ def update_whatever(
         starttime_tab1 = datetime.now()
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates)
+        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates, periodClick)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
