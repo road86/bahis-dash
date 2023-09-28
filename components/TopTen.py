@@ -86,4 +86,4 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
             figgZoon.append_trace(figure["data"][trace], row=i + 1, col=1)
     figgZoon.update_layout(height=150, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-    return figgLiveS, figgZoon
+    return flani, fpoul, figgZoon
