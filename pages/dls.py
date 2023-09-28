@@ -33,8 +33,11 @@ bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 sub_bahis_sourcedata = bahis_data
 
 start_date = date(2019, 1, 1)
-end_date = date(2023, 12, 31)
-dates = [start_date, end_date]
+last_date = max(bahis_data['date']).date()  # 
+#last_date = date(2023, 12, 31)
+dates = [start_date, last_date]
+
+create_date = fetchdata.create_date(sourcefilename)
 
 ddDList = []
 Divlist = []
@@ -248,16 +251,10 @@ layout = html.Div(
                                                     id="daterange",
                                                     min_date_allowed=start_date,
                                                     start_date=date(2023, 1, 1),
-                                                    max_date_allowed=end_date,
-                                                    end_date=date(2023, 12, 31)
+                                                    max_date_allowed=create_date,
+                                                    end_date=last_date,  # date(2023, 12, 31)
                                                 ),
                                             ),
-                                            # dbc.Col(
-                                            #     [
-                                            #         dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
-                                            #     ],
-                                            #     # width=4,
-                                            # ),
                                             dbc.Col(
                                                 [
                                                     dcc.Dropdown(
@@ -268,7 +265,6 @@ layout = html.Div(
                                                         clearable=False,
                                                     ),
                                                 ],
-                                                # width=3,
                                             )
                                         ]
                                     )
@@ -281,7 +277,16 @@ layout = html.Div(
                                     dbc.Tabs(
                                         [
                                             dbc.Tab(
-                                                [dbc.Card(dbc.Col([dcc.Graph(id="Completeness")]))],
+                                                [
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Col([dcc.Graph(id="Completeness")
+                                                                        ])
+                                                            ]
+                                                        )
+                                                    )
+                                                ],
                                                 label="Completeness",
                                                 tab_id="CompletenessTab",
                                             ),
@@ -702,7 +707,7 @@ def update_whatever(
         figheight = 175
         figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates, LAperiodClick, figheight)
         endtime_tab1 = datetime.now()
-        print("tab1 : " + str(endtime_tab1 - starttime_tab1))
+        print("tabCompleteness : " + str(endtime_tab1 - starttime_tab1))
         return (
             SelDiv,
             SelDis,
@@ -739,7 +744,7 @@ def update_whatever(
         figheight = 175
         figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates, PperiodClick, figheight)
         endtime_tab1 = datetime.now()
-        print("tab1 : " + str(endtime_tab1 - starttime_tab1))
+        print("tabLA : " + str(endtime_tab1 - starttime_tab1))
         return (
             SelDiv,
             SelDis,
@@ -858,7 +863,7 @@ def update_whatever(
         figgZoon.update_layout(height=150, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
         endtime_tab2 = datetime.now()
-        print("tab2 : " + str(endtime_tab2 - starttime_tab2))
+        print("tabP : " + str(endtime_tab2 - starttime_tab2))
         return (
             SelDiv,
             SelDis,
@@ -943,7 +948,7 @@ def update_whatever(
         )
 
         endtime_tab3 = datetime.now()
-        print("tab3 : " + str(endtime_tab3 - starttime_tab3))
+        print("tabGeo : " + str(endtime_tab3 - starttime_tab3))
         return (
             SelDiv,
             SelDis,
@@ -983,7 +988,7 @@ def update_whatever(
         figMonthly = yearly_comparison.yearlyComp(sub_bahis_sourcedata4yc, diseaselist)
 
         endtime_tab5 = datetime.now()
-        print("tab5 : " + str(endtime_tab5 - starttime_tab5))
+        print("tabYearly : " + str(endtime_tab5 - starttime_tab5))
         return (
             SelDiv,
             SelDis,

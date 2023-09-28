@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from datetime import datetime
 
 
@@ -56,6 +57,12 @@ def sne_date(bahis_data):
     end_date = max(bahis_data["date"]).date()
     dates = [start_date, end_date]
     return dates
+
+
+def create_date(sourcefilename):
+    create_time = os.path.getmtime(sourcefilename)
+    create_date = datetime.fromtimestamp(create_time).date()
+    return create_date
 
 
 def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups

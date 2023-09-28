@@ -9,16 +9,17 @@ Created on Sun Jan 22 07:56:51 2023
 import dash
 from dash import html  # , dcc
 import dash_bootstrap_components as dbc
-import datetime
+# import datetime
 import os
-
+from components import fetchdata
 
 # dash.register_page(__name__)
 
 sourcepath = "exported_data/"
 sourcefilename = os.path.join(sourcepath, "preped_data2.csv")
-create_time = os.path.getmtime(sourcefilename)
-create_date = datetime.datetime.fromtimestamp(create_time).date()
+# create_time = os.path.getmtime(sourcefilename)
+# create_date = datetime.datetime.fromtimestamp(create_time).date()
+create_date = fetchdata.create_date(sourcefilename)
 
 
 # Define the navbar structure
