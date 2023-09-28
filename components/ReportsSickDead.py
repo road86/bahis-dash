@@ -4,13 +4,34 @@ import pandas as pd
 import plotly.express as px
 
 
-def ReportsSickDead(sub_bahis_sourcedata, dates):
+def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick):
 
     tmp = sub_bahis_sourcedata["date"].dt.date.value_counts()
     tmp = tmp.to_frame()
     tmp["counts"] = tmp["date"]
     tmp["date"] = pd.to_datetime(tmp.index)
-    tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
+
+    if periodClick == 3:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'])
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 2:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'].dt.to_period('W-SAT'))
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 1:
+        tmp = (
+            tmp['counts']
+            .groupby(tmp['date'].dt.to_period('M'))
+            .sum()
+            .astype(int)
+        )
     tmp = tmp.to_frame()
     tmp["date"] = tmp.index
     tmp["date"] = tmp["date"].astype("datetime64[D]")
@@ -42,16 +63,40 @@ def ReportsSickDead(sub_bahis_sourcedata, dates):
         opacity=0.8,
     )
 
-    tmp = (
-        sub_bahis_sourcedata[["sick", "dead"]]
-        .groupby(sub_bahis_sourcedata["date"].dt.to_period("W-SAT"))
-        .sum()
-        .astype(int)
-    )
+    # tmp = (
+    #     sub_bahis_sourcedata[["sick", "dead"]]
+    #     .groupby(sub_bahis_sourcedata["date"].dt.to_period("W-SAT"))
+    #     .sum()
+    #     .astype(int)
+    # )
+
+    if periodClick == 3:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'])
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 2:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'].dt.to_period('W-SAT'))
+            .sum()
+            .astype(int)
+        )
+    if periodClick == 1:
+        tmp = (
+            sub_bahis_sourcedata[['sick', 'dead']]
+            .groupby(sub_bahis_sourcedata['date'].dt.to_period('M'))
+            .sum()
+            .astype(int)
+        )
+
     tmp = tmp.reset_index()
     tmp = tmp.rename(columns={"date": "date"})
     tmp["date"] = tmp["date"].astype("datetime64[D]")
     figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
+    figSick.update_traces(marker_color='black')
     figSick.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     figSick.update_xaxes(
         range=[
@@ -80,6 +125,7 @@ def ReportsSickDead(sub_bahis_sourcedata, dates):
 
     figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
     figDead.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    figDead.update_traces(marker_color='red')
     figDead.update_xaxes(
         range=[
             datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
