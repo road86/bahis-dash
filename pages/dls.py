@@ -41,8 +41,9 @@ create_date = fetchdata.create_date(sourcefilename)
 
 ddDList = []
 Divlist = []
+ddDistypes = []
 
-bahis_dgdata, bahis_distype = fetchdata.fetchdisgroupdata(dgfilename)
+bahis_dgdata, bahis_distypes = fetchdata.fetchdisgroupdata(dgfilename)
 to_replace = bahis_dgdata["name"].tolist()
 replace_with = bahis_dgdata["Disease type"].tolist()
 
@@ -82,6 +83,18 @@ ddUpazila = html.Div(
             id="Upazila",
             clearable=True,
             placeholder="Select Upazila"
+        ),
+    ],
+    className="mb-4",
+)
+
+ddDiseaseType = html.Div(
+    [
+        dbc.Label("DiseaseTypes"),
+        dcc.Dropdown(
+            id="Distypes",
+            clearable=True,
+            placeholder="Select DiseaseType"
         ),
     ],
     className="mb-4",
@@ -400,10 +413,11 @@ layout = html.Div(
                                                         dbc.CardBody(
                                                             [
                                                                 dbc.Row([
+                                                                    dbc.Col(ddDiseaseType, width=3,),
                                                                     dbc.Col(
                                                                         [
-                                                                            html.Label("Top 10 Zoonotic Diseases"),
-                                                                            dcc.Graph(id="Zoonotic"),
+                                                                            html.Label("Top 10 Disease Types"),
+                                                                            dcc.Graph(id="figDistypes"),
                                                                         ]
                                                                     )
                                                                 ])
@@ -487,6 +501,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("District", "options"),
     Output("Upazila", "options"),
     Output("Diseaselist", "options"),
+    Output("Distypes", "options"),
     #    Output ('Map', 'figure'),
     Output("ReportsLA", "figure"),
     Output("SickLA", "figure"),
@@ -496,7 +511,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("DeadP", "figure"),
     Output("LATop10", "figure"),
     Output("PTop10", "figure"),
-    Output("Zoonotic", "figure"),
+    Output("figDistypes", "figure"),
     Output("DRindicators", "figure"),
     Output("DRRepG1", "figure"),
     Output("NRlabel", "children"),
@@ -517,6 +532,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("LAperiodSlider", "value"),
     Input("PperiodSlider", "value"),
     Input("Diseaselist", "value"),
+    Input("Distypes", "options"),
     Input("tabs", "active_tab"),
     Input("Completeness", "clickData"),
     State("geoSlider", "value"),
@@ -531,6 +547,7 @@ def update_whatever(
     LAperiodClick,
     PperiodClick,
     diseaselist,
+    SelDistypes,
     tabs,
     Completeness,
     geoSlider,
@@ -542,6 +559,7 @@ def update_whatever(
         vDis, \
         vUpa, \
         ddDList, \
+        vDistypes, \
         path, \
         variab, \
         labl, \
@@ -563,6 +581,7 @@ def update_whatever(
         ddDList = fetchdata.fetchdiseaselist(sub_bahis_sourcedata)
         #        ddDList.insert(0, 'All Diseases')
         Divlist = fetchdata.fetchDivisionlist(bahis_geodata)
+        vDistypes = bahis_distypes['Disease type']
         vDiv = [{"label": i["Division"], "value": i["value"]} for i in Divlist]
         vDis = []
         vUpa = []
@@ -705,6 +724,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,
@@ -743,6 +763,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             figgLAR,
             figgLASick,
             figgLADead,
@@ -781,6 +802,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,
@@ -808,90 +830,7 @@ def update_whatever(
 
         # preprocess groupdata ?
 
-        flani, fpoul, figgZoon = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with)
-
-        # poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        # sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-
-        # sub_bahis_sourcedataP["top_diagnosis"] = sub_bahis_sourcedataP.top_diagnosis.replace(
-        #     to_replace, replace_with, regex=True
-        # )
-
-        # poultryTT = sub_bahis_sourcedataP.drop(
-        #     sub_bahis_sourcedataP[sub_bahis_sourcedataP["top_diagnosis"] == "Zoonotic diseases"].index
-        # )
-
-        # tmp = poultryTT.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
-
-        # tmp = tmp.sort_values(by="species", ascending=False)
-        # tmp = tmp.rename({"species": "counts"}, axis=1)
-        # tmp = tmp.head(10)
-        # tmp = tmp.iloc[::-1]
-        # fpoul = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Poultry Diseases")
-        # fpoul.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        # # figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1)
-        # # , labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
-
-        # lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        # sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-
-        # sub_bahis_sourcedataLA["top_diagnosis"] = sub_bahis_sourcedataLA.top_diagnosis.replace(
-        #     to_replace, replace_with, regex=True
-        # )
-        # LATT = sub_bahis_sourcedataLA.drop(
-        #     sub_bahis_sourcedataLA[sub_bahis_sourcedataLA["top_diagnosis"] == "Zoonotic diseases"].index
-        # )
-
-        # tmp = LATT.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
-
-        # tmp = tmp.sort_values(by="species", ascending=False)
-        # tmp = tmp.rename({"species": "counts"}, axis=1)
-        # tmp = tmp.head(10)
-        # tmp = tmp.iloc[::-1]
-        # flani = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Large Animal Diseases")
-        # flani.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        # subpl = [fpoul, flani]
-        # figgLiveS = make_subplots(rows=2, cols=1)
-        # for i, figure in enumerate(subpl):
-        #     for trace in range(len(figure["data"])):
-        #         figgLiveS.append_trace(figure["data"][trace], row=i + 1, col=1)
-        # figgLiveS.update_layout(height=350, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-
-        # poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        # sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-
-        # tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
-        # tmpdg = tmpdg["name"].tolist()
-        # sub_bahis_sourcedataP = sub_bahis_sourcedataP[sub_bahis_sourcedataP["top_diagnosis"].isin(tmpdg)]
-
-        # tmp = sub_bahis_sourcedataP.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
-
-        # tmp = tmp.sort_values(by="species", ascending=False)
-        # tmp = tmp.rename({"species": "counts"}, axis=1)
-        # tmp = tmp.head(10)
-        # tmp = tmp.iloc[::-1]
-        # fpoul = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Poultry Diseases")
-        # fpoul.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-
-        # lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        # sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-
-        # sub_bahis_sourcedataLA = sub_bahis_sourcedataLA[sub_bahis_sourcedataLA["top_diagnosis"].isin(tmpdg)]
-
-        # tmp = sub_bahis_sourcedataLA.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
-
-        # tmp = tmp.sort_values(by="species", ascending=False)
-        # tmp = tmp.rename({"species": "counts"}, axis=1)
-        # tmp = tmp.head(10)
-        # tmp = tmp.iloc[::-1]
-        # flani = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Ruminant Diseases")
-        # flani.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        # subpl = [fpoul, flani]
-        # figgZoon = make_subplots(rows=2, cols=1)
-        # for i, figure in enumerate(subpl):
-        #     for trace in range(len(figure["data"])):
-        #         figgZoon.append_trace(figure["data"][trace], row=i + 1, col=1)
-        # figgZoon.update_layout(height=150, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata, ddDistypes, to_replace, replace_with)
 
         endtime_tab2 = datetime.now()
         print("tabP : " + str(endtime_tab2 - starttime_tab2))
@@ -903,6 +842,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,
@@ -911,7 +851,7 @@ def update_whatever(
             no_update,
             flani,
             fpoul,
-            figgZoon,
+            figDistypes,
             no_update,
             no_update,
             no_update,
@@ -989,6 +929,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,
@@ -1030,6 +971,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,
@@ -1102,6 +1044,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            vDistypes,
             no_update,
             no_update,
             no_update,

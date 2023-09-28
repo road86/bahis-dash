@@ -2,7 +2,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 
 
-def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
+def TopTen(sub_bahis_sourcedata, bahis_dgdata, distypes, to_replace, replace_with):
     poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
     sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
 
@@ -39,7 +39,7 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
 
     tmp = tmp.sort_values(by="species", ascending=False)
     tmp = tmp.rename({"species": "counts"}, axis=1)
-    tmp['counts']=tmp['counts']/1000
+    tmp['counts'] = tmp['counts'] / 1000
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
     flani = px.bar(tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts in Thousands", "top_diagnosis": ""}, title="")  # Top10 Large Animal Diseases")
