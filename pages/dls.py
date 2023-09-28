@@ -252,12 +252,12 @@ layout = html.Div(
                                                 end_date=date(2023, 12, 31)
                                             ),
                                         ),
-                                        dbc.Col(
-                                            [
-                                                dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
-                                            ],
-                                            # width=4,
-                                        ),
+                                        # dbc.Col(
+                                        #     [
+                                        #         dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
+                                        #     ],
+                                        #     # width=4,
+                                        # ),
                                         dbc.Col(
                                             [
                                                 dcc.Dropdown(
@@ -287,18 +287,77 @@ layout = html.Div(
                                         ),
                                         dbc.Tab(
                                             [
-                                                dbc.Row(dcc.Graph(id="ReportsLA")),
-                                                dbc.Row(dcc.Graph(id="SickLA")),
-                                                dbc.Row(dcc.Graph(id="DeadLA")),
+                                                dbc.Card(
+                                                    dbc.CardBody(
+                                                        [
+                                                            dbc.Row([
+                                                                dbc.Col(
+                                                                    [
+                                                                        dbc.Row(dcc.Graph(id="ReportsLA")),
+                                                                        dbc.Row(dcc.Graph(id="SickLA")),
+                                                                        dbc.Row(dcc.Graph(id="DeadLA")),
+                                                                    ]
+                                                                ),
+                                                                dbc.Col(
+                                                                    [
+                                                                        dcc.Slider(
+                                                                            min=1,
+                                                                            max=3,
+                                                                            step=1,
+                                                                            marks={1: 'Reports monthly',
+                                                                                2: 'Reports weekly',
+                                                                                3: 'Reports daily',
+                                                                                },
+                                                                            value=2,
+                                                                            vertical = True,
+                                                                            id="LAperiodSlider"
+                                                                        )
+                                                                    ],
+                                                                    width=1,
+                                                                ),
+                                                        ])
+                                                        ],
+                                                    )
+                                                )
                                             ],
                                             label="Large Animal Reports",
                                             tab_id="ReportsLATab",
                                         ),
                                         dbc.Tab(
                                             [
-                                                dbc.Row(dcc.Graph(id="ReportsP")),
-                                                dbc.Row(dcc.Graph(id="SickP")),
-                                                dbc.Row(dcc.Graph(id="DeadP")),
+                                                dbc.Card(
+                                                    dbc.CardBody(
+                                                        [
+                                                            dbc.Row([
+                                                                dbc.Col(
+                                                                    [
+                                                                        dbc.Row(dcc.Graph(id="ReportsP")),
+                                                                        dbc.Row(dcc.Graph(id="SickP")),
+                                                                        dbc.Row(dcc.Graph(id="DeadP")),
+                                                                    ]
+                                                                ),
+                                                                dbc.Col(
+                                                                    [
+                                                                        dcc.Slider(
+                                                                            min=1,
+                                                                            max=3,
+                                                                            step=1,
+                                                                            marks={1: 'Reports monthly',
+                                                                                2: 'Reports weekly',
+                                                                                3: 'Reports daily',
+                                                                                },
+                                                                            value=2,
+                                                                            vertical = True,
+                                                                            id="PperiodSlider"
+                                                                        )
+                                                                    ],
+                                                                    width=1,
+                                                                ),
+                                                        ])
+                                                        ],
+                                                    )
+                                                )
+
                                             ],
                                             label="Poultry Reports",
                                             tab_id="ReportsPTab",
@@ -312,12 +371,6 @@ layout = html.Div(
                                                             dcc.Graph(id="Livestock")
                                                         ],
                                                     ),
-                                                    # dbc.Col(
-                                                    #     [
-                                                    #         html.Label("Top 10 Des"),
-                                                    #         dcc.Graph(id="hu")
-                                                    #     ]
-                                                    # ),
                                                     ]
                                                 ),
                                                 dbc.Row(
@@ -431,7 +484,8 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("Upazila", "value"),
     Input("daterange", "start_date"),  # make state to prevent upate before submitting
     Input("daterange", "end_date"),  # make state to prevent upate before submitting
-    Input("periodSlider", "value"),
+    Input("LAperiodSlider", "value"),
+    Input("PperiodSlider", "value"),
     Input("Diseaselist", "value"),
     Input("tabs", "active_tab"),
     Input("Completeness", "clickData"),
@@ -444,7 +498,8 @@ def update_whatever(
     SelUpa,
     start_date,
     end_date,
-    periodClick,
+    LAperiodClick,
+    PperiodClick,
     diseaselist,
     tabs,
     Completeness,
@@ -645,7 +700,8 @@ def update_whatever(
         starttime_tab1 = datetime.now()
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates, periodClick)
+        figheight = 175
+        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates, LAperiodClick, figheight)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
@@ -681,7 +737,8 @@ def update_whatever(
         starttime_tab1 = datetime.now()
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates, periodClick)
+        figheight = 175
+        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates, PperiodClick, figheight)
         endtime_tab1 = datetime.now()
         print("tab1 : " + str(endtime_tab1 - starttime_tab1))
         return (
