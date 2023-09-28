@@ -26,11 +26,11 @@ def yearlyComp(bahis_data, diseaselist):
                       'July', 'August', 'September', 'October', 'November', 'December']
         ),
         title={
-            'text':"Disease dynamics for \"" + str(diseaselist) + "\"",
-            'y':0.95,
-            'x':0.5,
+            'text': "Disease dynamics for \"" + str(diseaselist) + "\"",
+            'y': 0.95,
+            'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top'
-            }
+        }
     )
     return figYearlyComp
