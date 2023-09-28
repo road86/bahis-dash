@@ -238,45 +238,46 @@ layout = html.Div(
                 ),
                 dbc.Col(
                     [
-                        dbc.Row(
-                            [
-                                dbc.Col(
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                dbc.Row(                            
                                     [
-                                        dcc.DatePickerRange(
-                                            id="daterange",
-                                            min_date_allowed=start_date,
-                                            start_date=date(2023, 1, 1),
-                                            max_date_allowed=end_date,
-                                            # start_date=date(end_date.year-1, end_date.month, end_date.day),
-                                            # initial_visible_month=end_date,
-                                            end_date=date(2023, 12, 31)
-                                            # end_date=end_date
+                                        dbc.Col(
+                                            dcc.DatePickerRange(
+                                                id="daterange",
+                                                min_date_allowed=start_date,
+                                                start_date=date(2023, 1, 1),
+                                                max_date_allowed=end_date,
+                                                end_date=date(2023, 12, 31)
+                                            ),
                                         ),
-                                    ],
-                                    # width=5,
-                                ),
-                                dbc.Col(
-                                    [
-                                        dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
-                                    ],
-                                    # width=4,
-                                ),
-                                dbc.Col(
-                                    [
-                                        dcc.Dropdown(
-                                            ddDList,
-                                            "All Diseases",
-                                            id="Diseaselist",
-                                            multi=False,
-                                            clearable=False,
+                                        dbc.Col(
+                                            [
+                                                dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
+                                            ],
+                                            # width=4,
                                         ),
-                                    ],
-                                    # width=3,
-                                ),
-                            ]
+                                        dbc.Col(
+                                            [
+                                                dcc.Dropdown(
+                                                    ddDList,
+                                                    "All Diseases",
+                                                    id="Diseaselist",
+                                                    multi=False,
+                                                    clearable=False,
+                                                ),
+                                            ],
+                                            # width=3,
+                                        )
+                                    ]
+                                )
+                                ]
+                            )
                         ),
-                        dbc.Row(
-                            [
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
                                 dbc.Tabs(
                                     [
                                         dbc.Tab(
@@ -376,8 +377,9 @@ layout = html.Div(
                                     ],
                                     id="tabs",
                                 )
-                            ]
-                        ),
+                                ]
+                            ),
+                        )
                     ],
                     width=8,
                 ),
@@ -922,7 +924,7 @@ def update_whatever(
     if tabs == "YearCompTab":
         starttime_tab5 = datetime.now()
 
-        figMonthly = yearly_comparison.yearlyComp(sub_bahis_sourcedata4yc)
+        figMonthly = yearly_comparison.yearlyComp(sub_bahis_sourcedata4yc, diseaselist)
 
         endtime_tab5 = datetime.now()
         print("tab5 : " + str(endtime_tab5 - starttime_tab5))
