@@ -383,12 +383,14 @@ layout = html.Div(
                                                                             html.Label("Top 10 Large Animal Diseases"),
                                                                             dcc.Graph(id="LATop10")
                                                                         ],
+                                                                        width=6,
                                                                     ),
                                                                     dbc.Col(
                                                                         [
                                                                             html.Label("Top 10 Poultry Diseases"),
                                                                             dcc.Graph(id="PTop10")
                                                                         ],
+                                                                        width=6,
                                                                     ),
                                                                 ])
                                                             ]

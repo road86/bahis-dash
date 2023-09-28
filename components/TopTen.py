@@ -20,8 +20,8 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
     tmp = tmp.rename({"species": "counts"}, axis=1)
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    fpoul = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Poultry Diseases")
-    fpoul.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fpoul = px.bar(tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts", "top_diagnosis": ""}, title="")  # Top10 Poultry Diseases")
+    fpoul.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     # figg.append_trace(px.bar(tmp, x='counts', y='top_diagnosis',title='Top10 Poultry Diseases'), row=1, col=1)
     # , labels={'counts': 'Values', 'top_diagnosis': 'Disease'})#, orientation='h')
 
@@ -39,10 +39,11 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
 
     tmp = tmp.sort_values(by="species", ascending=False)
     tmp = tmp.rename({"species": "counts"}, axis=1)
+    tmp['counts']=tmp['counts']/1000
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    flani = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Large Animal Diseases")
-    flani.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    flani = px.bar(tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts in Thousands", "top_diagnosis": ""}, title="")  # Top10 Large Animal Diseases")
+    flani.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     subpl = [fpoul, flani]
     figgLiveS = make_subplots(rows=2, cols=1)
     for i, figure in enumerate(subpl):
@@ -63,8 +64,8 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
     tmp = tmp.rename({"species": "counts"}, axis=1)
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    fpoul = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Poultry Diseases")
-    fpoul.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fp = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Poultry Diseases")
+    fp.update_layout(height=150, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
     sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
@@ -77,8 +78,8 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, to_replace, replace_with):
     tmp = tmp.rename({"species": "counts"}, axis=1)
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    flani = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Ruminant Diseases")
-    flani.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fla = px.bar(tmp, x="counts", y="top_diagnosis", title="Top10 Ruminant Diseases")
+    fla.update_layout(height=150, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     subpl = [fpoul, flani]
     figgZoon = make_subplots(rows=2, cols=1)
     for i, figure in enumerate(subpl):
