@@ -25,7 +25,6 @@ def yearlyComp(bahis_data, diseaselist):
             ticktext=['January', 'February', 'March', 'April', 'May', 'June',
                       'July', 'August', 'September', 'October', 'November', 'December'],
             title=""
-            
         ),
         title={
             'text': "Disease dynamics for \"" + str(diseaselist) + "\"",

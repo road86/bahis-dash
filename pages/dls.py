@@ -241,195 +241,194 @@ layout = html.Div(
                         dbc.Card(
                             dbc.CardBody(
                                 [
-                                dbc.Row(                            
-                                    [
-                                        dbc.Col(
-                                            dcc.DatePickerRange(
-                                                id="daterange",
-                                                min_date_allowed=start_date,
-                                                start_date=date(2023, 1, 1),
-                                                max_date_allowed=end_date,
-                                                end_date=date(2023, 12, 31)
-                                            ),
-                                        ),
-                                        # dbc.Col(
-                                        #     [
-                                        #         dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
-                                        #     ],
-                                        #     # width=4,
-                                        # ),
-                                        dbc.Col(
-                                            [
-                                                dcc.Dropdown(
-                                                    ddDList,
-                                                    "All Diseases",
-                                                    id="Diseaselist",
-                                                    multi=False,
-                                                    clearable=False,
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                dcc.DatePickerRange(
+                                                    id="daterange",
+                                                    min_date_allowed=start_date,
+                                                    start_date=date(2023, 1, 1),
+                                                    max_date_allowed=end_date,
+                                                    end_date=date(2023, 12, 31)
                                                 ),
-                                            ],
-                                            # width=3,
-                                        )
-                                    ]
-                                )
+                                            ),
+                                            # dbc.Col(
+                                            #     [
+                                            #         dcc.Slider(min=1, max=3, step=1, marks={1: 'Reports monthly', 2: 'Reports weekly', 3: 'Reports daily', }, value=2, id="periodSlider")
+                                            #     ],
+                                            #     # width=4,
+                                            # ),
+                                            dbc.Col(
+                                                [
+                                                    dcc.Dropdown(
+                                                        ddDList,
+                                                        "All Diseases",
+                                                        id="Diseaselist",
+                                                        multi=False,
+                                                        clearable=False,
+                                                    ),
+                                                ],
+                                                # width=3,
+                                            )
+                                        ]
+                                    )
                                 ]
                             )
                         ),
                         dbc.Card(
                             dbc.CardBody(
                                 [
-                                dbc.Tabs(
-                                    [
-                                        dbc.Tab(
-                                            [dbc.Card(dbc.Col([dcc.Graph(id="Completeness")]))],
-                                            label="Completeness",
-                                            tab_id="CompletenessTab",
-                                        ),
-                                        dbc.Tab(
-                                            [
-                                                dbc.Card(
-                                                    dbc.CardBody(
-                                                        [
-                                                            dbc.Row([
-                                                                dbc.Col(
-                                                                    [
-                                                                        dbc.Row(dcc.Graph(id="ReportsLA")),
-                                                                        dbc.Row(dcc.Graph(id="SickLA")),
-                                                                        dbc.Row(dcc.Graph(id="DeadLA")),
-                                                                    ]
-                                                                ),
-                                                                dbc.Col(
-                                                                    [
-                                                                        dcc.Slider(
-                                                                            min=1,
-                                                                            max=3,
-                                                                            step=1,
-                                                                            marks={1: 'Reports monthly',
-                                                                                2: 'Reports weekly',
-                                                                                3: 'Reports daily',
-                                                                                },
-                                                                            value=2,
-                                                                            vertical = True,
-                                                                            id="LAperiodSlider"
-                                                                        )
-                                                                    ],
-                                                                    width=1,
-                                                                ),
-                                                        ])
-                                                        ],
-                                                    )
-                                                )
-                                            ],
-                                            label="Large Animal Reports",
-                                            tab_id="ReportsLATab",
-                                        ),
-                                        dbc.Tab(
-                                            [
-                                                dbc.Card(
-                                                    dbc.CardBody(
-                                                        [
-                                                            dbc.Row([
-                                                                dbc.Col(
-                                                                    [
-                                                                        dbc.Row(dcc.Graph(id="ReportsP")),
-                                                                        dbc.Row(dcc.Graph(id="SickP")),
-                                                                        dbc.Row(dcc.Graph(id="DeadP")),
-                                                                    ]
-                                                                ),
-                                                                dbc.Col(
-                                                                    [
-                                                                        dcc.Slider(
-                                                                            min=1,
-                                                                            max=3,
-                                                                            step=1,
-                                                                            marks={1: 'Reports monthly',
-                                                                                2: 'Reports weekly',
-                                                                                3: 'Reports daily',
-                                                                                },
-                                                                            value=2,
-                                                                            vertical = True,
-                                                                            id="PperiodSlider"
-                                                                        )
-                                                                    ],
-                                                                    width=1,
-                                                                ),
-                                                        ])
-                                                        ],
-                                                    )
-                                                )
-
-                                            ],
-                                            label="Poultry Reports",
-                                            tab_id="ReportsPTab",
-                                        ),
-                                        dbc.Tab(
-                                            [
-                                                dbc.Row([
-                                                    dbc.Col(
-                                                        [
-                                                            html.Label("Top 10 Diseases"),
-                                                            dcc.Graph(id="Livestock")
-                                                        ],
-                                                    ),
-                                                    ]
-                                                ),
-                                                dbc.Row(
-                                                    dbc.Col(
-                                                        [
-                                                            html.Label("Top 10 Zoonotic Diseases"),
-                                                            dcc.Graph(id="Zoonotic"),
-                                                        ]
-                                                    )
-                                                ),
-                                            ],
-                                            label="Diseases",
-                                            tab_id="DiseaseTab",
-                                        ),
-                                        dbc.Tab(
-                                            [
-                                                dbc.Card(
-                                                    dbc.Col(
-                                                        [
-                                                            dbc.Row(dcc.Graph(id="DRindicators")),
-                                                            dbc.Row(dcc.Graph(id="DRRepG1")),
-                                                            dbc.Row(
-                                                                [
-                                                                    html.Label(
-                                                                        "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)",
-                                                                        id="NRlabel",
+                                    dbc.Tabs(
+                                        [
+                                            dbc.Tab(
+                                                [dbc.Card(dbc.Col([dcc.Graph(id="Completeness")]))],
+                                                label="Completeness",
+                                                tab_id="CompletenessTab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Row([
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dbc.Row(dcc.Graph(id="ReportsLA")),
+                                                                            dbc.Row(dcc.Graph(id="SickLA")),
+                                                                            dbc.Row(dcc.Graph(id="DeadLA")),
+                                                                        ]
                                                                     ),
-                                                                    html.Div(id="AlertTable"),
-                                                                ]
-                                                            ),
-                                                        ]
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dcc.Slider(
+                                                                                min=1,
+                                                                                max=3,
+                                                                                step=1,
+                                                                                marks={1: 'Reports monthly',
+                                                                                       2: 'Reports weekly',
+                                                                                       3: 'Reports daily',
+                                                                                       },
+                                                                                value=2,
+                                                                                vertical=True,
+                                                                                id="LAperiodSlider"
+                                                                            )
+                                                                        ],
+                                                                        width=1,
+                                                                    ),
+                                                            ])
+                                                            ],
+                                                        )
                                                     )
-                                                )
-                                            ],
-                                            label="Reports per Geolocation",
-                                            tab_id="GeoRepTab",
-                                        ),
-                                        dbc.Tab(
-                                            [dbc.Card(dbc.Col([dcc.Graph(id="figMonthly")]))],
-                                            label="Yearly Comparison",
-                                            tab_id="YearCompTab",
-                                        ),
-                                        dbc.Tab(
-                                            [
-                                                dbc.Card(
+                                                ],
+                                                label="Large Animal Reports",
+                                                tab_id="ReportsLATab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Row([
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dbc.Row(dcc.Graph(id="ReportsP")),
+                                                                            dbc.Row(dcc.Graph(id="SickP")),
+                                                                            dbc.Row(dcc.Graph(id="DeadP")),
+                                                                        ]
+                                                                    ),
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dcc.Slider(
+                                                                                min=1,
+                                                                                max=3,
+                                                                                step=1,
+                                                                                marks={1: 'Reports monthly',
+                                                                                       2: 'Reports weekly',
+                                                                                       3: 'Reports daily',
+                                                                                       },
+                                                                                value=2,
+                                                                                vertical=True,
+                                                                                id="PperiodSlider"
+                                                                            )
+                                                                        ],
+                                                                        width=1,
+                                                                    ),
+                                                                ])
+                                                            ],
+                                                        )
+                                                    )
+
+                                                ],
+                                                label="Poultry Reports",
+                                                tab_id="ReportsPTab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Row([
+                                                        dbc.Col(
+                                                            [
+                                                                html.Label("Top 10 Diseases"),
+                                                                dcc.Graph(id="Livestock")
+                                                            ],
+                                                        ),
+                                                    ]),
                                                     dbc.Row(
-                                                        [
-                                                            html.Label("Export Data", id="ExportLabel"),
-                                                            html.Div(id="ExportTab"),
-                                                        ]
+                                                        dbc.Col(
+                                                            [
+                                                                html.Label("Top 10 Zoonotic Diseases"),
+                                                                dcc.Graph(id="Zoonotic"),
+                                                            ]
+                                                        )
+                                                    ),
+                                                ],
+                                                label="Diseases",
+                                                tab_id="DiseaseTab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.Col(
+                                                            [
+                                                                dbc.Row(dcc.Graph(id="DRindicators")),
+                                                                dbc.Row(dcc.Graph(id="DRRepG1")),
+                                                                dbc.Row(
+                                                                    [
+                                                                        html.Label(
+                                                                            "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)",
+                                                                            id="NRlabel",
+                                                                        ),
+                                                                        html.Div(id="AlertTable"),
+                                                                    ]
+                                                                ),
+                                                            ]
+                                                        )
                                                     )
-                                                )
-                                            ],
-                                            label="Export Data",
-                                            tab_id="ExportTab",
-                                        ),
-                                    ],
-                                    id="tabs",
-                                )
+                                                ],
+                                                label="Reports per Geolocation",
+                                                tab_id="GeoRepTab",
+                                            ),
+                                            dbc.Tab(
+                                                [dbc.Card(dbc.Col([dcc.Graph(id="figMonthly")]))],
+                                                label="Yearly Comparison",
+                                                tab_id="YearCompTab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.Row(
+                                                            [
+                                                                html.Label("Export Data", id="ExportLabel"),
+                                                                html.Div(id="ExportTab"),
+                                                            ]
+                                                        )
+                                                    )
+                                                ],
+                                                label="Export Data",
+                                                tab_id="ExportTab",
+                                            ),
+                                        ],
+                                        id="tabs",
+                                    )
                                 ]
                             ),
                         )
