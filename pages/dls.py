@@ -369,22 +369,40 @@ layout = html.Div(
                                             ),
                                             dbc.Tab(
                                                 [
-                                                    dbc.Row([
-                                                        dbc.Col(
+                                                    dbc.Card(
+                                                        dbc.CardBody(
                                                             [
-                                                                html.Label("Top 10 Diseases"),
-                                                                dcc.Graph(id="Livestock")
-                                                            ],
-                                                        ),
-                                                    ]),
-                                                    dbc.Row(
-                                                        dbc.Col(
-                                                            [
-                                                                html.Label("Top 10 Zoonotic Diseases"),
-                                                                dcc.Graph(id="Zoonotic"),
+                                                                dbc.Row([
+                                                                    dbc.Col(
+                                                                        [
+                                                                            html.Label("Top 10 Diseases"),
+                                                                            dcc.Graph(id="LATop10")
+                                                                        ],
+                                                                    ),
+                                                                    dbc.Col(
+                                                                        [
+                                                                            html.Label("Top 10 Diseases"),
+                                                                            dcc.Graph(id="PTop10")
+                                                                        ],
+                                                                    ),
+                                                                ])
                                                             ]
                                                         )
                                                     ),
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Row([
+                                                                    dbc.Col(
+                                                                        [
+                                                                            html.Label("Top 10 Zoonotic Diseases"),
+                                                                            dcc.Graph(id="Zoonotic"),
+                                                                        ]
+                                                                    )
+                                                                ])
+                                                            ]
+                                                        )
+                                                    )
                                                 ],
                                                 label="Diseases",
                                                 tab_id="DiseaseTab",
@@ -469,7 +487,8 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("ReportsP", "figure"),
     Output("SickP", "figure"),
     Output("DeadP", "figure"),
-    Output("Livestock", "figure"),
+    Output("LATop10", "figure"),
+    Output("PTop10", "figure"),
     Output("Zoonotic", "figure"),
     Output("DRindicators", "figure"),
     Output("DRRepG1", "figure"),
@@ -694,6 +713,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,
             Completeness,
             geoSlider,
         )
@@ -719,6 +739,7 @@ def update_whatever(
             figgLAR,
             figgLASick,
             figgLADead,
+            no_update,
             no_update,
             no_update,
             no_update,
@@ -759,6 +780,7 @@ def update_whatever(
             figgPR,
             figgPSick,
             figgPDead,
+            no_update,
             no_update,
             no_update,
             no_update,
@@ -878,7 +900,8 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
-            figgLiveS,
+            flani,
+            fpoul,
             figgZoon,
             no_update,
             no_update,
@@ -965,6 +988,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,            
             Rfindic,
             Rfigg,
             NRlabel,
@@ -1003,6 +1027,7 @@ def update_whatever(
             no_update,
             no_update,
             no_update,
+            no_update,            
             no_update,
             no_update,
             no_update,
@@ -1068,6 +1093,7 @@ def update_whatever(
             vDis,
             vUpa,
             ddDList,
+            no_update,
             no_update,
             no_update,
             no_update,
