@@ -42,7 +42,7 @@ create_date = fetchdata.create_date(sourcefilename)
 ddDList = []
 Divlist = []
 
-bahis_dgdata = fetchdata.fetchdisgroupdata(dgfilename)
+bahis_dgdata, bahis_distype = fetchdata.fetchdisgroupdata(dgfilename)
 to_replace = bahis_dgdata["name"].tolist()
 replace_with = bahis_dgdata["Disease type"].tolist()
 
