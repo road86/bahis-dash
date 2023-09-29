@@ -94,8 +94,6 @@ ddDiseaseType = html.Div(
         dcc.Dropdown(
             id="Distypes",
             clearable=False,
-#            placeholder="Select"
-#            value="Zoonotic Diseases"
         ),
     ],
     className="mb-4",
