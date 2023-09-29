@@ -20,18 +20,19 @@ dash.register_page(__name__)  # register page to main dash app
 sourcepath = "exported_data/"
 geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
-sub_bahis_sourcedata = bahis_data
-start_date = date(2019, 1, 1)
-last_date = max(bahis_data['date']).date()
-dates = [start_date, last_date]
-create_date = fetchdata.create_date(sourcefilename)
-SelUpa = 201539
+ULOsub_bahis_sourcedata = bahis_data
+ULOstart_date = date(2019, 1, 1)
+ULOlast_date = max(bahis_data['date']).date()
+ULOdates = [ULOstart_date, ULOlast_date]
+ULOcreate_date = fetchdata.create_date(sourcefilename)
+ULOSelUpa = 201539
 
-ddDList = []
+ULOddDList = []
 
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 subDist = bahis_geodata
-Upazila = bahis_geodata[bahis_geodata["value"] == SelUpa]['name'].iloc[0].capitalize()
+Upazila = bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize()
+
 
 def open_data(path):
     with open(path) as f:
@@ -56,9 +57,9 @@ layout = html.Div(
                                             dbc.Col(
                                                 [
                                                     dcc.Dropdown(
-                                                        ddDList,
+                                                        ULOddDList,
                                                         "All Diseases",
-                                                        id="Diseaselist",
+                                                        id="ULODiseaselist",
                                                         multi=False,
                                                         clearable=False,
                                                     ),
@@ -66,11 +67,11 @@ layout = html.Div(
                                             ),
                                             dbc.Col(
                                                 dcc.DatePickerRange(
-                                                    id="daterange",
-                                                    min_date_allowed=start_date,
+                                                    id="ULOdaterange",
+                                                    min_date_allowed=ULOstart_date,
                                                     start_date=date(2023, 1, 1),
-                                                    max_date_allowed=create_date,
-                                                    end_date=last_date,  # date(2023, 12, 31)
+                                                    max_date_allowed=ULOcreate_date,
+                                                    end_date=ULOlast_date,  # date(2023, 12, 31)
                                                 ),
                                             ),
                                         ]
@@ -81,7 +82,7 @@ layout = html.Div(
                         dbc.Card(
                             dbc.CardBody(
                                 [
-                                    dcc.Graph(id="figMonthly"),
+                                    dcc.Graph(id="ULOfigMonthly"),
                                 ]
                             )
                         )
@@ -104,9 +105,9 @@ layout = html.Div(
                                                                     [
                                                                         dbc.Col(
                                                                             [
-                                                                                dbc.Row(dcc.Graph(id="ReportsLA")),
-                                                                                dbc.Row(dcc.Graph(id="SickLA")),
-                                                                                dbc.Row(dcc.Graph(id="DeadLA")),
+                                                                                dbc.Row(dcc.Graph(id="ULOReportsLA")),
+                                                                                dbc.Row(dcc.Graph(id="ULOSickLA")),
+                                                                                dbc.Row(dcc.Graph(id="ULODeadLA")),
                                                                             ]
                                                                         ),
                                                                         dbc.Col(
@@ -121,7 +122,7 @@ layout = html.Div(
                                                                                            },
                                                                                     value=2,
                                                                                     vertical=True,
-                                                                                    id="LAperiodSlider"
+                                                                                    id="ULOLAperiodSlider"
                                                                                 )
                                                                             ],
                                                                             width=1,
@@ -133,7 +134,7 @@ layout = html.Div(
                                                     )
                                                 ],
                                                 label="Large Animal Reports",
-                                                tab_id="ReportsLATab",
+                                                tab_id="ULOReportsLATab",
                                             ),
                                             dbc.Tab(
                                                 [
@@ -143,9 +144,9 @@ layout = html.Div(
                                                                 dbc.Row([
                                                                     dbc.Col(
                                                                         [
-                                                                            dbc.Row(dcc.Graph(id="ReportsP")),
-                                                                            dbc.Row(dcc.Graph(id="SickP")),
-                                                                            dbc.Row(dcc.Graph(id="DeadP")),
+                                                                            dbc.Row(dcc.Graph(id="ULOReportsP")),
+                                                                            dbc.Row(dcc.Graph(id="ULOSickP")),
+                                                                            dbc.Row(dcc.Graph(id="ULODeadP")),
                                                                         ]
                                                                     ),
                                                                     dbc.Col(
@@ -160,7 +161,7 @@ layout = html.Div(
                                                                                        },
                                                                                 value=2,
                                                                                 vertical=True,
-                                                                                id="PperiodSlider"
+                                                                                id="ULOPperiodSlider"
                                                                             )
                                                                         ],
                                                                         width=1,
@@ -172,15 +173,15 @@ layout = html.Div(
 
                                                 ],
                                                 label="Poultry Reports",
-                                                tab_id="ReportsPTab",
+                                                tab_id="ULOReportsPTab",
                                             ),
                                         ],
-                                        id="tabs",
+                                        id="ULOtabs",
                                     )
                                 ]
                             ),
                         ),
-                        html.Label('Data from ' + str(create_date), style={'text-align': 'right'})
+                        html.Label('Data from ' + str(ULOcreate_date), style={'text-align': 'right'})
                     ],
                     width=6,
                 ),
@@ -197,94 +198,91 @@ print("initialize : " + str(endtime_start - starttime_start))
 
 @callback(
     # dash cleintsied callback with js
-    Output("Diseaselist", "options"),
-    Output("ReportsLA", "figure"),
-    Output("SickLA", "figure"),
-    Output("DeadLA", "figure"),
-    Output("ReportsP", "figure"),
-    Output("SickP", "figure"),
-    Output("DeadP", "figure"),
-    Output("figMonthly", "figure"),
-    Input("daterange", "start_date"),  # make state to prevent upate before submitting
-    Input("daterange", "end_date"),  # make state to prevent upate before submitting
-    Input("LAperiodSlider", "value"),
-    Input("PperiodSlider", "value"),
-    Input("Diseaselist", "value"),
-    Input("tabs", "active_tab"),
+    Output("ULODiseaselist", "options"),
+    Output("ULOReportsLA", "figure"),
+    Output("ULOSickLA", "figure"),
+    Output("ULODeadLA", "figure"),
+    Output("ULOReportsP", "figure"),
+    Output("ULOSickP", "figure"),
+    Output("ULODeadP", "figure"),
+    Output("ULOfigMonthly", "figure"),
+    Input("ULOdaterange", "start_date"),  # make state to prevent upate before submitting
+    Input("ULOdaterange", "end_date"),  # make state to prevent upate before submitting
+    Input("ULOLAperiodSlider", "value"),
+    Input("ULOPperiodSlider", "value"),
+    Input("ULODiseaselist", "value"),
+    Input("ULOtabs", "active_tab"),
 )
 def update_whatever(
-    start_date,
-    end_date,
-    LAperiodClick,
-    PperiodClick,
-    diseaselist,
-    tabs,
+    ULOstart_date,
+    ULOend_date,
+    ULOLAperiodClick,
+    ULOPperiodClick,
+    ULOdiseaselist,
+    ULOtabs,
 ):
     starttime_general = datetime.now()
 
     global firstrun, \
-        ddDList, \
-        path, \
-        variab, \
-        subDistM, \
-        title, \
-        sub_bahis_sourcedata, \
-        subDist
+        ULOddDList, \
+        ULOpath, \
+        ULOvariab, \
+        ULOsubDistM, \
+        ULOtitle, \
+        ULOsub_bahis_sourcedata, \
+        ULOsubDist
 
     if firstrun is True:  # inital settings
-        ddDList = fetchdata.fetchdiseaselist(sub_bahis_sourcedata)
-        path = path3
-        title = "upazila"
-        variab = "upazila"
-        subDistM = subDist[subDist["loc_type"] == 3]
+        ULOddDList = fetchdata.fetchdiseaselist(ULOsub_bahis_sourcedata)
         firstrun = False
 
-    subDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(SelUpa))]
-    sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
-    sub_bahis_sourcedata4yc = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
+    ULOsubDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(ULOSelUpa))]
+    ULOsub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == ULOSelUpa]
+    ULOsub_bahis_sourcedata4yc = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
 
-    dates = [start_date, end_date]
-    sub_bahis_sourcedata = fetchdata.date_subset(dates, sub_bahis_sourcedata)
-    sub_bahis_sourcedata = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
+    ULOdates = [ULOstart_date, ULOend_date]
+    ULOsub_bahis_sourcedata = fetchdata.date_subset(ULOdates, ULOsub_bahis_sourcedata)
+    ULOsub_bahis_sourcedata = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
 
-    figMonthly = yearly_comparison.yearlyComp(sub_bahis_sourcedata4yc, diseaselist)
+    ULOfigMonthly = yearly_comparison.yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
 
     endtime_general = datetime.now()
     print("general callback : " + str(endtime_general - starttime_general))
 
-    if tabs == "ReportsLATab":
+    if ULOtabs == "ULOReportsLATab":
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
-        figheight = 175
-        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA,
-                                                                          dates, LAperiodClick, figheight)
+        ULOsub_bahis_sourcedataLA = ULOsub_bahis_sourcedata[ULOsub_bahis_sourcedata["species"].isin(lanimal)]
+        ULOfigheight = 175
+        ULOfiggLAR, ULOfiggLASick, ULOfiggLADead = ReportsSickDead.ReportsSickDead(ULOsub_bahis_sourcedataLA,
+                                                                                   ULOdates, ULOLAperiodClick,
+                                                                                   ULOfigheight)
         return (
-            ddDList,
-            figgLAR,
-            figgLASick,
-            figgLADead,
+            ULOddDList,
+            ULOfiggLAR,
+            ULOfiggLASick,
+            ULOfiggLADead,
             no_update,
             no_update,
             no_update,
-            figMonthly,
+            ULOfigMonthly,
         )
 
-    if tabs == "ReportsPTab":
+    if ULOtabs == "ULOReportsPTab":
         starttime_tab1 = datetime.now()
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
-        figheight = 175
-        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates,
-                                                                       PperiodClick, figheight)
+        ULOsub_bahis_sourcedataP = ULOsub_bahis_sourcedata[ULOsub_bahis_sourcedata["species"].isin(poultry)]
+        ULOfigheight = 175
+        ULOfiggPR, ULOfiggPSick, ULOfiggPDead = ReportsSickDead.ReportsSickDead(ULOsub_bahis_sourcedataP, ULOdates,
+                                                                                ULOPperiodClick, ULOfigheight)
         endtime_tab1 = datetime.now()
         print("tabLA : " + str(endtime_tab1 - starttime_tab1))
         return (
-            ddDList,
+            ULOddDList,
             no_update,
             no_update,
             no_update,
-            figgPR,
-            figgPSick,
-            figgPDead,
-            figMonthly,
+            ULOfiggPR,
+            ULOfiggPSick,
+            ULOfiggPDead,
+            ULOfigMonthly,
         )
