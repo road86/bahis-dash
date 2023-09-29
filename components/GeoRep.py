@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from dash import dash_table
 
+
 def natNo(sub_bahis_sourcedata):
     mask = (sub_bahis_sourcedata["date"] >= datetime.now() - timedelta(days=7)) & (
         sub_bahis_sourcedata["date"] <= datetime.now()
@@ -17,6 +18,7 @@ def natNo(sub_bahis_sourcedata):
     tmp_sub_data = sub_bahis_sourcedata["dead"].loc[mask]
     diffdead = int(tmp_sub_data.sum().item())
     return [diff, diffsick, diffdead]
+
 
 def fIndicator(sub_bahis_sourcedata):
     [diff, diffsick, diffdead] = natNo(sub_bahis_sourcedata)
@@ -59,7 +61,6 @@ def fIndicator(sub_bahis_sourcedata):
         # ?template=template_from_url(theme),
     )
     return RfigIndic
-
 
 
 def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):

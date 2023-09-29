@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 from dash import callback, ctx, dash_table, dcc, html
 from dash.dash import no_update
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 # from plotly.subplots import make_subplots
 from components import yearly_comparison
 from components import ReportsSickDead
@@ -637,7 +637,8 @@ def update_whatever(
             subDistM = subDist[subDist["loc_type"] == 3]
             # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-        Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
+        Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title,
+                                                            subDistM, pnumber, pname, variab, labl)
 
     Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
@@ -660,7 +661,9 @@ def update_whatever(
         #         reset = True
         #     if prop_id == "division-select":
 
-        Completeness = CompletenessReport.generate_reports_heatmap(bahis_data, bahis_geodata, start, end, SelDiv, SelDis, Completeness, diseaselist, reset)
+        Completeness = CompletenessReport.generate_reports_heatmap(bahis_data,
+                                                                   bahis_geodata, start, end, SelDiv,
+                                                                   SelDis, Completeness, diseaselist, reset)
 
         endtime_tab0 = datetime.now()
         print("tabCompleteness : " + str(endtime_tab0 - starttime_tab0))
@@ -702,7 +705,8 @@ def update_whatever(
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
         figheight = 175
-        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA, dates, LAperiodClick, figheight)
+        figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA,
+                                                                          dates, LAperiodClick, figheight)
         endtime_tab1 = datetime.now()
         print("tabCompleteness : " + str(endtime_tab1 - starttime_tab1))
         return (
@@ -743,7 +747,8 @@ def update_whatever(
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
         figheight = 175
-        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates, PperiodClick, figheight)
+        figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates,
+                                                                       PperiodClick, figheight)
         endtime_tab1 = datetime.now()
         print("tabLA : " + str(endtime_tab1 - starttime_tab1))
         return (
@@ -783,7 +788,8 @@ def update_whatever(
         starttime_tab2 = datetime.now()
 
         # preprocess groupdata ?
-        flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata, SelDistypes, to_replace, replace_with)
+        flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata,
+                                                  SelDistypes, to_replace, replace_with)
         endtime_tab2 = datetime.now()
         print("tabP : " + str(endtime_tab2 - starttime_tab2))
         return (
@@ -821,7 +827,8 @@ def update_whatever(
     if tabs == "GeoRepTab":
         starttime_tab3 = datetime.now()
 
-        Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
+        Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata,
+                                                            title, subDistM, pnumber, pname, variab, labl)
 
         endtime_tab3 = datetime.now()
         print("tabGeo : " + str(endtime_tab3 - starttime_tab3))
@@ -974,64 +981,3 @@ def update_whatever(
             no_update,
             geoSlider,
         )
-
-
-# @callback(
-#     Output("Map", "figure"),
-#     #    Output ('geoSlider', 'value'),
-#     Input("geoSlider", "value"),
-#     State("Division", "value"),
-#     State("District", "value"),
-#     State("Upazila", "value"),
-#     prevent_initial_call=True,
-# )
-# def export(geoSlider, Division, District, Upazila):
-#     #    if ctx.triggered_id=='geoSlider':
-#     if geoSlider == 1:
-#         if not Division:
-#             path = path1
-#             loc = geoSlider
-#             title = "division"
-#             pnumber = "divnumber"
-#             pname = "divisionname"
-#             splace = " Division"
-#             variab = "division"
-#             subDistM = subDist[subDist["loc_type"] == geoSlider]
-#         else:
-#             path = path1
-#             loc = geoSlider
-#             title = "division"
-#             pnumber = "divnumber"
-#             pname = "divisionname"
-#             splace = " Division"
-#             variab = "division"
-#             subDistM = subDist[subDist["loc_type"] == geoSlider]
-#     if geoSlider == 2:
-#         if not District:
-#             path = path2
-#             loc = geoSlider
-#             title = "district"
-#             pnumber = "districtnumber"
-#             pname = "districtname"
-#             splace = " District"
-#             variab = "district"
-#             subDistM = subDist[subDist["loc_type"] == geoSlider]
-#         else:
-#             geoSlider = 3
-
-#     if geoSlider == 3:
-#         path = path3
-#         loc = geoSlider
-#         title = "upazila"
-#         pnumber = "upazilanumber"
-#         pname = "upazilaname"
-#         splace = " Upazila"
-#         variab = "upazila"
-#         subDistM = subDist[subDist["loc_type"] == geoSlider]
-
-#     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
-#     Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
-#     return Rfindic, Rfigg, NRlabel, AlertTable,Rfig,   # , geoSlider
-
-
-# make callback for tabs
