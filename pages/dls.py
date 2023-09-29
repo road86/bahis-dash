@@ -474,7 +474,8 @@ layout = html.Div(
                                     )
                                 ]
                             ),
-                        )
+                        ),
+                        html.Label('Data from ' + str(create_date), style={'text-align': 'right'})
                     ],
                     width=8,
                 ),
