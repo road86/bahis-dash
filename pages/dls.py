@@ -90,11 +90,12 @@ ddUpazila = html.Div(
 
 ddDiseaseType = html.Div(
     [
-        dbc.Label("DiseaseTypes"),
+        dbc.Label("Select Disease Type"),
         dcc.Dropdown(
             id="Distypes",
-            clearable=True,
-            placeholder="Select DiseaseType"
+            clearable=False,
+#            placeholder="Select"
+#            value="Zoonotic Diseases"
         ),
     ],
     className="mb-4",
@@ -413,7 +414,7 @@ layout = html.Div(
                                                         dbc.CardBody(
                                                             [
                                                                 dbc.Row([
-                                                                    dbc.Col(ddDiseaseType, width=3,),
+                                                                    dbc.Col(ddDiseaseType, width=2,),
                                                                     dbc.Col(
                                                                         [
                                                                             html.Label("Top 10 Disease Types"),
@@ -497,6 +498,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("Division", "value"),
     Output("District", "value"),
     Output("Upazila", "value"),
+    Output("Distypes", "value"),
     Output("Division", "options"),
     Output("District", "options"),
     Output("Upazila", "options"),
@@ -532,7 +534,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("LAperiodSlider", "value"),
     Input("PperiodSlider", "value"),
     Input("Diseaselist", "value"),
-    Input("Distypes", "options"),
+    Input("Distypes", "value"),
     Input("tabs", "active_tab"),
     Input("Completeness", "clickData"),
     State("geoSlider", "value"),
@@ -571,7 +573,6 @@ def update_whatever(
         sub_bahis_sourcedata, \
         subDist
     #    print(geoclick)
-
     # print(clkRep)
     # print(clkSick)
     labl = "Reports"
@@ -582,6 +583,7 @@ def update_whatever(
         #        ddDList.insert(0, 'All Diseases')
         Divlist = fetchdata.fetchDivisionlist(bahis_geodata)
         vDistypes = bahis_distypes['Disease type']
+        SelDistypes = vDistypes.iloc[0]
         vDiv = [{"label": i["Division"], "value": i["value"]} for i in Divlist]
         vDis = []
         vUpa = []
@@ -720,6 +722,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -759,6 +762,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -798,6 +802,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -829,15 +834,14 @@ def update_whatever(
         starttime_tab2 = datetime.now()
 
         # preprocess groupdata ?
-
-        flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata, ddDistypes, to_replace, replace_with)
-
+        flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata, SelDistypes, to_replace, replace_with)
         endtime_tab2 = datetime.now()
         print("tabP : " + str(endtime_tab2 - starttime_tab2))
         return (
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -925,6 +929,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -967,6 +972,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
@@ -1040,6 +1046,7 @@ def update_whatever(
             SelDiv,
             SelDis,
             SelUpa,
+            SelDistypes,
             vDiv,
             vDis,
             vUpa,
