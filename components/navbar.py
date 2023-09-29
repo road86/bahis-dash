@@ -34,7 +34,8 @@ def Navbar():
                     [
                         dbc.Col(html.Img(src=img_logo, height="30px")),
                         dbc.Col(
-                            dbc.NavbarBrand("BAHIS Dashboard", className="ml-5")
+                            #dbc.NavbarBrand("BAHIS Dashboard", className="ml-auto")
+                            html.Label("BAHIS dashboard", style={"font-weight": "bold", "font-size": "200%", "text-align": "center"})
                         ),
                     ],
                     align="center",
