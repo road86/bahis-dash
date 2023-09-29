@@ -101,65 +101,6 @@ ddDiseaseType = html.Div(
 )
 
 
-# def natNo(sub_bahis_sourcedata):
-#     mask = (sub_bahis_sourcedata["date"] >= datetime.now() - timedelta(days=7)) & (
-#         sub_bahis_sourcedata["date"] <= datetime.now()
-#     )
-#     # print(mask.value_counts(True])
-#     tmp_sub_data = sub_bahis_sourcedata["date"].loc[mask]
-#     diff = tmp_sub_data.shape[0]
-
-#     tmp_sub_data = sub_bahis_sourcedata["sick"].loc[mask]
-#     diffsick = int(tmp_sub_data.sum().item())
-
-#     tmp_sub_data = sub_bahis_sourcedata["dead"].loc[mask]
-#     diffdead = int(tmp_sub_data.sum().item())
-#     return [diff, diffsick, diffdead]
-
-
-# def fIndicator(sub_bahis_sourcedata):
-#     [diff, diffsick, diffdead] = natNo(sub_bahis_sourcedata)
-
-#     RfigIndic = go.Figure()
-
-#     RfigIndic.add_trace(
-#         go.Indicator(
-#             mode="number+delta",
-#             title="Total Reports",
-#             value=sub_bahis_sourcedata.shape[0],  # f"{bahis_sourcedata.shape[0]:,}"),
-#             delta={"reference": sub_bahis_sourcedata.shape[0] - diff},  # 'f"{diff:,}"},
-#             domain={"row": 0, "column": 0},
-#         )
-#     )
-
-#     RfigIndic.add_trace(
-#         go.Indicator(
-#             mode="number+delta",
-#             title="Sick Animals",
-#             value=sub_bahis_sourcedata["sick"].sum(),  # f"{int(bahis_sourcedata['sick'].sum()):,}",
-#             delta={"reference": sub_bahis_sourcedata["sick"].sum() - diffsick},  # f"{diffsick:,}",
-#             domain={"row": 0, "column": 1},
-#         )
-#     )
-
-#     RfigIndic.add_trace(
-#         go.Indicator(
-#             mode="number+delta",
-#             title="Dead Animals",
-#             value=sub_bahis_sourcedata["dead"].sum(),  # f"{int(bahis_sourcedata['dead'].sum()):,}",
-#             delta={"reference": sub_bahis_sourcedata["dead"].sum() - diffdead},  # f"{diffdead:,}",
-#             domain={"row": 0, "column": 2},
-#         )
-#     )
-
-#     RfigIndic.update_layout(
-#         height=100,
-#         grid={"rows": 1, "columns": 3},  # 'pattern': "independent"},
-#         # ?template=template_from_url(theme),
-#     )
-#     return RfigIndic
-
-
 def open_data(path):
     with open(path) as f:
         data = json.load(f)
@@ -505,7 +446,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Output("Upazila", "options"),
     Output("Diseaselist", "options"),
     Output("Distypes", "options"),
-    #    Output ('Map', 'figure'),
+    Output('Map', 'figure'),
     Output("ReportsLA", "figure"),
     Output("SickLA", "figure"),
     Output("DeadLA", "figure"),
@@ -538,7 +479,7 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("Distypes", "value"),
     Input("tabs", "active_tab"),
     Input("Completeness", "clickData"),
-    State("geoSlider", "value"),
+    Input("geoSlider", "value"),
     # Input ('Map', 'clickData'),
 )
 def update_whatever(
@@ -565,6 +506,7 @@ def update_whatever(
         vDistypes, \
         path, \
         variab, \
+        subDistM, \
         labl, \
         splace, \
         pname, \
@@ -595,6 +537,7 @@ def update_whatever(
         pname = "upazilaname"
         splace = " Upazila"
         variab = "upazila"
+        subDistM = subDist[subDist["loc_type"] == 3]
         firstrun = False
 
     if ctx.triggered_id == "Division":
@@ -653,48 +596,50 @@ def update_whatever(
 
 #    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata4yc)
 
-    #    if ctx.triggered_id=='geoSlider':
-    if geoSlider == 1:
-        path = path1
-        loc = geoSlider
-        title = "division"
-        pnumber = "divnumber"
-        pname = "divisionname"
-        splace = " Division"
-        variab = "division"
-        subDistM = subDist[subDist["loc_type"] == geoSlider]
-        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+    if ctx.triggered_id == 'geoSlider':
+        if geoSlider == 1:
+            path = path1
+            loc = geoSlider
+            title = "division"
+            pnumber = "divnumber"
+            pname = "divisionname"
+            splace = " Division"
+            variab = "division"
+            subDistM = subDist[subDist["loc_type"] == geoSlider]
+            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-    #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
-    # if geoTile is not None:
-    #     print(geoTile['points'][0]['location'])
-    #     cU2Division=geoTile['points'][0]['location']
-    #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
-    #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-    if geoSlider == 2:
-        path = path2
-        loc = geoSlider
-        title = "district"
-        pnumber = "districtnumber"
-        pname = "districtname"
-        splace = " District"
-        variab = "district"
-        subDistM = subDist[subDist["loc_type"] == geoSlider]
-        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+        #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
+        # if geoTile is not None:
+        #     print(geoTile['points'][0]['location'])
+        #     cU2Division=geoTile['points'][0]['location']
+        #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
+        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+        if geoSlider == 2:
+            path = path2
+            loc = geoSlider
+            title = "district"
+            pnumber = "districtnumber"
+            pname = "districtname"
+            splace = " District"
+            variab = "district"
+            subDistM = subDist[subDist["loc_type"] == geoSlider]
+            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-    if geoSlider == 3:
-        path = path3
-        loc = geoSlider
-        loc = 3
-        title = "upazila"
-        pnumber = "upazilanumber"
-        pname = "upazilaname"
-        splace = " Upazila"
-        variab = "upazila"
-        subDistM = subDist[subDist["loc_type"] == 3]
-        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+        if geoSlider == 3:
+            path = path3
+            loc = geoSlider
+            loc = 3
+            title = "upazila"
+            pnumber = "upazilanumber"
+            pname = "upazilaname"
+            splace = " Upazila"
+            variab = "upazila"
+            subDistM = subDist[subDist["loc_type"] == 3]
+            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
-    #    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+        Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
+
+    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
     endtime_general = datetime.now()
     print("general callback : " + str(endtime_general - starttime_general))
 
@@ -729,6 +674,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -769,6 +715,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             figgLAR,
             figgLASick,
             figgLADead,
@@ -809,6 +756,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -848,6 +796,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -867,64 +816,12 @@ def update_whatever(
             no_update,
             geoSlider,
         )
- 
+
 # tab3 geolocation
     if tabs == "GeoRepTab":
         starttime_tab3 = datetime.now()
 
         Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
-
-        # geoSlider "if" can be included to accumulate over different resolution
-
-        # reports = sub_bahis_sourcedata[title].value_counts().to_frame()
-
-        # reports["cases"] = reports[title]
-        # reports[title] = reports.index
-        # reports = reports.loc[reports[title] != "nan"]
-
-        # for i in range(reports.shape[0]):
-        #     reports[title].iloc[i] = subDistM.loc[subDistM["value"] == int(reports[title].iloc[i]), "name"].iloc[0]
-
-        # reports = reports.sort_values(title)
-        # reports[title] = reports[title].str.capitalize()
-
-        # tmp = subDistM[["value", "name"]]
-        # tmp = tmp.rename(columns={"value": pnumber, "name": pname})
-        # tmp[pname] = tmp[pname].str.title()
-        # tmp["Index"] = tmp[pnumber]
-        # tmp = tmp.set_index("Index")
-        # aaa = reports.combine_first(tmp)
-        # aaa[pname] = tmp[pname]
-        # alerts = aaa[aaa.isna().any(axis=1)]
-        # alerts = alerts[[pname, pnumber]]
-        # del tmp
-        # del aaa
-
-        # Rfindic = fIndicator(sub_bahis_sourcedata)
-        # Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
-
-        # Rfigg = px.bar(reports, x=title, y="cases", labels={variab: labl, "cases": "Reports"})  # ,color='division')
-        # Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-
-        # NRlabel = f"Regions with no data in the current database: {len(alerts)} \
-        #     (Please handle with care as geoshape files and geolocations have issues)"
-
-        # AlertTable = (
-        #     dash_table.DataTable(
-        #         # columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
-        #         style_header={
-        #             "overflow": "hidden",
-        #             "maxWidth": 0,
-        #             "fontWeight": "bold",
-        #         },
-        #         style_cell={"textAlign": "left"},
-        #         export_format="csv",
-        #         style_table={"height": "220px", "overflowY": "auto"},
-        #         style_as_list_view=True,
-        #         fixed_rows={"headers": True},
-        #         data=alerts.to_dict("records"),
-        #     ),
-        # )
 
         endtime_tab3 = datetime.now()
         print("tabGeo : " + str(endtime_tab3 - starttime_tab3))
@@ -938,6 +835,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -981,6 +879,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -1055,6 +954,7 @@ def update_whatever(
             vUpa,
             ddDList,
             vDistypes,
+            Rfig,
             no_update,
             no_update,
             no_update,
@@ -1076,61 +976,62 @@ def update_whatever(
         )
 
 
-@callback(
-    Output("Map", "figure"),
-    #    Output ('geoSlider', 'value'),
-    Input("geoSlider", "value"),
-    State("Division", "value"),
-    State("District", "value"),
-    State("Upazila", "value"),
-    prevent_initial_call=True,
-)
-def export(geoSlider, Division, District, Upazila):
-    #    if ctx.triggered_id=='geoSlider':
-    if geoSlider == 1:
-        if not Division:
-            path = path1
-            loc = geoSlider
-            title = "division"
-            pnumber = "divnumber"
-            pname = "divisionname"
-            splace = " Division"
-            variab = "division"
-            subDistM = subDist[subDist["loc_type"] == geoSlider]
-        else:
-            path = path1
-            loc = geoSlider
-            title = "division"
-            pnumber = "divnumber"
-            pname = "divisionname"
-            splace = " Division"
-            variab = "division"
-            subDistM = subDist[subDist["loc_type"] == geoSlider]
-    if geoSlider == 2:
-        if not District:
-            path = path2
-            loc = geoSlider
-            title = "district"
-            pnumber = "districtnumber"
-            pname = "districtname"
-            splace = " District"
-            variab = "district"
-            subDistM = subDist[subDist["loc_type"] == geoSlider]
-        else:
-            geoSlider = 3
+# @callback(
+#     Output("Map", "figure"),
+#     #    Output ('geoSlider', 'value'),
+#     Input("geoSlider", "value"),
+#     State("Division", "value"),
+#     State("District", "value"),
+#     State("Upazila", "value"),
+#     prevent_initial_call=True,
+# )
+# def export(geoSlider, Division, District, Upazila):
+#     #    if ctx.triggered_id=='geoSlider':
+#     if geoSlider == 1:
+#         if not Division:
+#             path = path1
+#             loc = geoSlider
+#             title = "division"
+#             pnumber = "divnumber"
+#             pname = "divisionname"
+#             splace = " Division"
+#             variab = "division"
+#             subDistM = subDist[subDist["loc_type"] == geoSlider]
+#         else:
+#             path = path1
+#             loc = geoSlider
+#             title = "division"
+#             pnumber = "divnumber"
+#             pname = "divisionname"
+#             splace = " Division"
+#             variab = "division"
+#             subDistM = subDist[subDist["loc_type"] == geoSlider]
+#     if geoSlider == 2:
+#         if not District:
+#             path = path2
+#             loc = geoSlider
+#             title = "district"
+#             pnumber = "districtnumber"
+#             pname = "districtname"
+#             splace = " District"
+#             variab = "district"
+#             subDistM = subDist[subDist["loc_type"] == geoSlider]
+#         else:
+#             geoSlider = 3
 
-    if geoSlider == 3:
-        path = path3
-        loc = geoSlider
-        title = "upazila"
-        pnumber = "upazilanumber"
-        pname = "upazilaname"
-        splace = " Upazila"
-        variab = "upazila"
-        subDistM = subDist[subDist["loc_type"] == geoSlider]
+#     if geoSlider == 3:
+#         path = path3
+#         loc = geoSlider
+#         title = "upazila"
+#         pnumber = "upazilanumber"
+#         pname = "upazilaname"
+#         splace = " Upazila"
+#         variab = "upazila"
+#         subDistM = subDist[subDist["loc_type"] == geoSlider]
 
-    Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
-    return Rfig  # , geoSlider
+#     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl)
+#     Rfig = plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, splace, variab, labl)
+#     return Rfindic, Rfigg, NRlabel, AlertTable,Rfig,   # , geoSlider
 
 
 # make callback for tabs
