@@ -8,7 +8,6 @@ import plotly.express as px
 from dash import callback, ctx, dash_table, dcc, html
 from dash.dash import no_update
 from dash.dependencies import Input, Output
-# from plotly.subplots import make_subplots
 from components import yearly_comparison
 from components import ReportsSickDead
 from components import CompletenessReport
@@ -708,7 +707,7 @@ def update_whatever(
         figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataLA,
                                                                           dates, LAperiodClick, figheight)
         endtime_tab1 = datetime.now()
-        print("tabCompleteness : " + str(endtime_tab1 - starttime_tab1))
+        print("tabLA : " + str(endtime_tab1 - starttime_tab1))
         return (
             SelDiv,
             SelDis,
@@ -750,7 +749,7 @@ def update_whatever(
         figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(sub_bahis_sourcedataP, dates,
                                                                        PperiodClick, figheight)
         endtime_tab1 = datetime.now()
-        print("tabLA : " + str(endtime_tab1 - starttime_tab1))
+        print("tabP : " + str(endtime_tab1 - starttime_tab1))
         return (
             SelDiv,
             SelDis,
@@ -791,7 +790,7 @@ def update_whatever(
         flani, fpoul, figDistypes = TopTen.TopTen(sub_bahis_sourcedata, bahis_dgdata,
                                                   SelDistypes, to_replace, replace_with)
         endtime_tab2 = datetime.now()
-        print("tabP : " + str(endtime_tab2 - starttime_tab2))
+        print("tabTop10 : " + str(endtime_tab2 - starttime_tab2))
         return (
             SelDiv,
             SelDis,
