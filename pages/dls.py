@@ -293,6 +293,7 @@ layout = html.Div(
                                                     dbc.Card(
                                                         dbc.CardBody(
                                                             [
+                                                                html.Label("Weekly Completeness"),
                                                                 dbc.Col(
                                                                     [
                                                                         dcc.Graph(id="Completeness")
