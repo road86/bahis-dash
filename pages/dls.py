@@ -913,7 +913,7 @@ def update_whatever(
 
         ExportTable = sub_bahis_sourcedata.copy()
         ExportTable["date"] = ExportTable["date"].dt.strftime("%Y-%m-%d")
-        del ExportTable["Unnamed: 0.1"]
+        # del ExportTable["Unnamed: 0.1"]
         ExportTable.drop("species_no", inplace=True, axis=1)
         ExportTable.drop("tentative_diagnosis", inplace=True, axis=1)
         ExportTable.rename(columns={"top_diagnosis": "Diagnosis"}, inplace=True)
