@@ -433,7 +433,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
-                        print(z[upazila])
                         z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,

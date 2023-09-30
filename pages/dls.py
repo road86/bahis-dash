@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import dash
 import dash_bootstrap_components as dbc
@@ -137,7 +137,6 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     reports.set_index(pnumber)  # 1
 
     custolor = [[0, "black"], [1 / reports[title].max(), "lightgray"], [1, "red"]]
-
     fig = px.choropleth_mapbox(
         reports,
         geojson=data,
@@ -203,7 +202,7 @@ layout = html.Div(
                                                 dcc.DatePickerRange(
                                                     id="daterange",
                                                     min_date_allowed=start_date,
-                                                    start_date=date(2023, 1, 1),
+                                                    start_date=last_date - timedelta(weeks=6),  # date(2023, 1, 1),
                                                     max_date_allowed=create_date,
                                                     end_date=last_date,  # date(2023, 12, 31)
                                                 ),
@@ -595,47 +594,47 @@ def update_whatever(
 
 #    sub_bahis_sourcedata = date_subset(dates, sub_bahis_sourcedata4yc)
 
+    if geoSlider == 1:
+        path = path1
+        loc = geoSlider
+        title = "division"
+        pnumber = "divnumber"
+        pname = "divisionname"
+        splace = " Division"
+        variab = "division"
+        subDistM = subDist[subDist["loc_type"] == geoSlider]
+        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+    #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
+    # if geoTile is not None:
+    #     print(geoTile['points'][0]['location'])
+    #     cU2Division=geoTile['points'][0]['location']
+    #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
+    #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
+    if geoSlider == 2:
+        path = path2
+        loc = geoSlider
+        title = "district"
+        pnumber = "districtnumber"
+        pname = "districtname"
+        splace = " District"
+        variab = "district"
+        subDistM = subDist[subDist["loc_type"] == geoSlider]
+        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
+    if geoSlider == 3:
+        path = path3
+        loc = geoSlider
+        loc = 3
+        title = "upazila"
+        pnumber = "upazilanumber"
+        pname = "upazilaname"
+        splace = " Upazila"
+        variab = "upazila"
+        subDistM = subDist[subDist["loc_type"] == 3]
+        # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
+
     if ctx.triggered_id == 'geoSlider':
-        if geoSlider == 1:
-            path = path1
-            loc = geoSlider
-            title = "division"
-            pnumber = "divnumber"
-            pname = "divisionname"
-            splace = " Division"
-            variab = "division"
-            subDistM = subDist[subDist["loc_type"] == geoSlider]
-            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
-
-        #        bahis_sourcedata = pd.to_numeric(bahis_data['division']).dropna().astype(int)
-        # if geoTile is not None:
-        #     print(geoTile['points'][0]['location'])
-        #     cU2Division=geoTile['points'][0]['location']
-        #     Dislist=fetchDistrictlist(geoTile['points'][0]['location'])
-        #     vDistrict = [{'label': i['District'], 'value': i['value']} for i in Dislist]
-        if geoSlider == 2:
-            path = path2
-            loc = geoSlider
-            title = "district"
-            pnumber = "districtnumber"
-            pname = "districtname"
-            splace = " District"
-            variab = "district"
-            subDistM = subDist[subDist["loc_type"] == geoSlider]
-            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
-
-        if geoSlider == 3:
-            path = path3
-            loc = geoSlider
-            loc = 3
-            title = "upazila"
-            pnumber = "upazilanumber"
-            pname = "upazilaname"
-            splace = " Upazila"
-            variab = "upazila"
-            subDistM = subDist[subDist["loc_type"] == 3]
-            # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
-
         Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title,
                                                             subDistM, pnumber, pname, variab, labl)
 
