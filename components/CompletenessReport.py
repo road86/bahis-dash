@@ -300,7 +300,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             tst = bahis_geodata[bahis_geodata["loc_type"] == 2].loc[
                 bahis_geodata[bahis_geodata["loc_type"] == 2]["value"] == int(district), "name"
             ]
-            y_axis.append("Σ " + tst.values[0].capitalize())
+            y_axis.append("Σ " + tst.values[0].capitalize() + " in %")
             y_axis_no.append(int(district))
 
             week = ""
@@ -351,10 +351,10 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                                 annotation_dict.update(size=15, font=dict(color="#ff6347"))
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
-                        z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
+                        z.loc[x_val, upazila] = round(z.loc[x_val].sum(),2) / (z.shape[1] - 1)  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
+                            text="<b>" + "{:.0f}".format((round(z.loc[x_val].iloc[:-1].sum(),2) / (z.shape[1] - 1)) * 100),  # + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
