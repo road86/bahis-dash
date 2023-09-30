@@ -476,7 +476,6 @@ print("initialize : " + str(endtime_start - starttime_start))
     Input("Diseaselist", "value"),
     Input("Distypes", "value"),
     Input("tabs", "active_tab"),
-    Input("Completeness", "clickData"),
     Input("geoSlider", "value"),
     # Input ('Map', 'clickData'),
 )
@@ -491,7 +490,7 @@ def update_whatever(
     diseaselist,
     SelDistypes,
     tabs,
-    Completeness,
+#    Completeness,
     geoSlider,
 ):
     starttime_general = datetime.now()
@@ -545,14 +544,14 @@ def update_whatever(
             Dislist = ""
             vUpa = []
             Upalist = []
-            SelDis = ""
-            SelUpa = ""
+            SelDis = None
+            SelUpa = None
         else:
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
             Dislist = fetchdata.fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
             vUpa = []
-            SelUpa = ""
+            SelUpa = None
 
     if ctx.triggered_id == "District":
         if not SelDis:
@@ -561,7 +560,7 @@ def update_whatever(
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
             Upalist = ""
             vUpa = []
-            SelUpa = ""
+            SelUpa = None
         else:
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
@@ -661,7 +660,7 @@ def update_whatever(
 
         Completeness = CompletenessReport.generate_reports_heatmap(bahis_data,
                                                                    bahis_geodata, start, end, SelDiv,
-                                                                   SelDis, Completeness, diseaselist, reset)
+                                                                   SelDis, diseaselist, reset)
 
         endtime_tab0 = datetime.now()
         print("tabCompleteness : " + str(endtime_tab0 - starttime_tab0))

@@ -12,7 +12,7 @@ def find_weeks(start, end):
     return sorted(set(list_of_weeks))
 
 
-def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, district, Completeness, disease, reset):
+def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, district, disease, reset):
     """
     :param: start: start date from selection.
     :param: end: end date from selection.
@@ -23,6 +23,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
     :return: Patient volume annotated heatmap.
     """
+
     start = datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
     end = datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
     compcols = False
@@ -348,7 +349,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                         if x_val == week and upazila == region:
                             if not reset:
                                 annotation_dict.update(size=15, font=dict(color="#ff6347"))
-
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
                         z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
