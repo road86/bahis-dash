@@ -490,7 +490,6 @@ def update_whatever(
     diseaselist,
     SelDistypes,
     tabs,
-#    Completeness,
     geoSlider,
 ):
     starttime_general = datetime.now()
