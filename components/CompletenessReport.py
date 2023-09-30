@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 import pandas as pd
-
+from components import fetchdata
 
 def find_weeks(start, end):
     list_of_weeks = []
@@ -288,6 +288,8 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             x_axis = [str(x) for x in x_axis]
 
             y_axis_no = list(set([str(x)[:6] for x in filtered_bd["upazila"]]))
+#            print(y_axis_no)
+#            print(fetchdata.fetchUpazilalist(district, bahis_geodata))
             y_axis = y_axis_no.copy()
 
             for i, value in enumerate(y_axis_no):
@@ -300,7 +302,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             tst = bahis_geodata[bahis_geodata["loc_type"] == 2].loc[
                 bahis_geodata[bahis_geodata["loc_type"] == 2]["value"] == int(district), "name"
             ]
-            y_axis.append("Σ " + tst.values[0].capitalize() + " in %")
+            y_axis.append("Σ " + tst.values[0].capitalize())
             y_axis_no.append(int(district))
 
             week = ""
@@ -313,7 +315,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                 filtered_upazila = filtered_bd[
                     pd.Series([str(x)[:6] == y_axis_no[ind_y] for x in filtered_bd["upazila"]]).values
                 ]
-
                 if upazila[:1] != "Σ":  # for upazila
                     compcols = True
                     tmp = filtered_upazila.index.value_counts()
@@ -354,7 +355,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                         z.loc[x_val, upazila] = round(z.loc[x_val].sum(),2) / (z.shape[1] - 1)  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.0f}".format((round(z.loc[x_val].iloc[:-1].sum(),2) / (z.shape[1] - 1)) * 100),  # + " %<b>",
+                            text="<b>" + "{:.0f}".format((round(z.loc[x_val].iloc[:-1].sum(),2) / (z.shape[1] - 1)) * 100) + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,

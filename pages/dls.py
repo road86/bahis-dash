@@ -656,7 +656,6 @@ def update_whatever(
         #     if prop_id == "reset-btn":
         #         reset = True
         #     if prop_id == "division-select":
-
         Completeness = CompletenessReport.generate_reports_heatmap(bahis_data,
                                                                    bahis_geodata, start, end, SelDiv,
                                                                    SelDis, diseaselist, reset)
