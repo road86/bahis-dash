@@ -26,7 +26,7 @@ create_date = fetchdata.create_date(sourcefilename)
 def Navbar():
     img_logo = "assets/Logo.png"
 
-    withlinks = True
+    withlinks = False
 
     if withlinks:
         surf = dbc.Navbar(
