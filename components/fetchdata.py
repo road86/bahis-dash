@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 from datetime import datetime
 
 
@@ -58,6 +59,12 @@ def sne_date(bahis_data):
     return dates
 
 
+def create_date(sourcefilename):
+    create_time = os.path.getmtime(sourcefilename)
+    create_date = datetime.fromtimestamp(create_time).date()
+    return create_date
+
+
 def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups
     bahis_dgdata = pd.read_csv(dgfilename)
     # bahis_dgdata= bahis_dgdata[['species', 'name', 'id', 'Disease type']]
@@ -67,7 +74,8 @@ def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups
     # bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])
     # can you change object to string and does it make a memory difference?
     bahis_dgdata = bahis_dgdata.drop_duplicates(subset="name", keep="first")
-    return bahis_dgdata
+    bahis_distype= bahis_dgdata.drop_duplicates(subset="Disease type", keep="first")
+    return bahis_dgdata, bahis_distype
 
 
 def fetchDivisionlist(bahis_geodata):  # division lsit is always the same, caching possible

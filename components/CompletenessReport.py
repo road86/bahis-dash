@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import pandas as pd
+from components import fetchdata
 
 
 def find_weeks(start, end):
@@ -12,7 +13,7 @@ def find_weeks(start, end):
     return sorted(set(list_of_weeks))
 
 
-def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, district, Completeness, disease, reset):
+def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, district, disease, reset):
     """
     :param: start: start date from selection.
     :param: end: end date from selection.
@@ -23,6 +24,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
     :return: Patient volume annotated heatmap.
     """
+
     start = datetime.strptime(str(start), "%Y-%m-%d %H:%M:%S")
     end = datetime.strptime(str(end), "%Y-%m-%d %H:%M:%S")
     compcols = False
@@ -67,30 +69,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
         week = ""
         region = ""
-        shapes = []  # when selected red rectangle
 
-        if Completeness is not None:
-            week = Completeness["points"][0]["x"]
-            region = Completeness["points"][0]["y"]
-            if region in y_axis:
-                # Add shapes
-                x0 = x_axis.index(week) / len(x_axis)
-                x1 = x0 + 1 / len(x_axis)
-                y0 = y_axis.index(region) / len(y_axis)
-                y1 = y0 + 1 / len(y_axis)
-
-                shapes = [
-                    dict(
-                        type="rect",
-                        xref="paper",
-                        yref="paper",
-                        x0=x0,
-                        x1=x1,
-                        y0=y0,
-                        y1=y1,
-                        line=dict(color="#ff6347"),
-                    )
-                ]
         z = pd.DataFrame(index=x_axis, columns=y_axis)
         annotations = []
 
@@ -210,31 +189,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
             week = ""
             region = ""
-            shapes = []  # when selected red rectangle
-
-            if Completeness is not None:
-                week = Completeness["points"][0]["x"]
-                region = Completeness["points"][0]["y"]
-                if region in y_axis:
-                    # Add shapes
-                    if y_axis.index(region):
-                        x0 = x_axis.index(week) / len(x_axis)
-                        x1 = x0 + 1 / len(x_axis)
-                        y0 = y_axis.index(region) / len(y_axis)
-                        y1 = y0 + 1 / len(y_axis)
-
-                        shapes = [
-                            dict(
-                                type="rect",
-                                xref="paper",
-                                yref="paper",
-                                x0=x0,
-                                x1=x1,
-                                y0=y0,
-                                y1=y1,
-                                line=dict(color="#ff6347"),
-                            )
-                        ]
 
             # Get z value : sum(number of records) based on x, y,
 
@@ -322,15 +276,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             Dislist = Dislist.rename(columns={"name": "District"})
             Dislist = Dislist.sort_values(by=["District"])
             Dislist = Dislist.to_dict("records")
-            # vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
-
-            # Upalist=bahis_geodata[bahis_geodata['parent']==district][['value','name']]
-            # Upalist['name']=Upalist['name'].str.capitalize()
-            # Upalist=Upalist.rename(columns={'name':'Upazila'})
-            # Upalist=Upalist.sort_values(by=['Upazila'])
-            # Upalist=Upalist.to_dict('records')
-            # vUpa = [{'label': i['Upazila'], 'value': i['value']} for i in Upalist]
-
             if "All Diseases" in disease:
                 filtered_bd = filtered_bd
             else:
@@ -344,6 +289,8 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
             x_axis = [str(x) for x in x_axis]
 
             y_axis_no = list(set([str(x)[:6] for x in filtered_bd["upazila"]]))
+#            print(y_axis_no)
+#            print(fetchdata.fetchUpazilalist(district, bahis_geodata))
             y_axis = y_axis_no.copy()
 
             for i, value in enumerate(y_axis_no):
@@ -361,31 +308,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
             week = ""
             region = ""
-            shapes = []  # when selected red rectangle
-
-            if Completeness is not None:
-                week = Completeness["points"][0]["x"]
-                region = Completeness["points"][0]["y"]
-                if region in y_axis:
-                    # Add shapes
-                    if y_axis.index(region):
-                        x0 = x_axis.index(week) / len(x_axis)
-                        x1 = x0 + 1 / len(x_axis)
-                        y0 = y_axis.index(region) / len(y_axis)
-                        y1 = y0 + 1 / len(y_axis)
-
-                        shapes = [
-                            dict(
-                                type="rect",
-                                xref="paper",
-                                yref="paper",
-                                x0=x0,
-                                x1=x1,
-                                y0=y0,
-                                y1=y1,
-                                line=dict(color="#ff6347"),
-                            )
-                        ]
 
             z = pd.DataFrame(index=x_axis, columns=y_axis)
             annotations = []
@@ -394,7 +316,6 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                 filtered_upazila = filtered_bd[
                     pd.Series([str(x)[:6] == y_axis_no[ind_y] for x in filtered_bd["upazila"]]).values
                 ]
-
                 if upazila[:1] != "Σ":  # for upazila
                     compcols = True
                     tmp = filtered_upazila.index.value_counts()
@@ -412,13 +333,11 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                             ) in pd.to_datetime(tmp["date"]):
                                 daysub = daysub + 1
 
-                        z[upazila][x_val] = daysub / 5
+                        z[upazila][x_val] = (daysub / 5) * 100
 
                         annotation_dict = dict(
                             showarrow=False,
-                            # text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
-                            # z_text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100) + " %<b>",
-                            text="<b>" + str(daysub / 5) + "<b>",
+                            text="<b>" + "{:.0f}".format((daysub / 5) * 100) + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -430,14 +349,12 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                         if x_val == week and upazila == region:
                             if not reset:
                                 annotation_dict.update(size=15, font=dict(color="#ff6347"))
-
                 if upazila[:1] == "Σ":  # for upazila
                     for ind_x, x_val in enumerate(x_axis):
-                        print(z[upazila])
-                        z.loc[x_val, upazila] = sum(z.loc[x_val]) / z.shape[1]  # sum_of_record
+                        z.loc[x_val, upazila] = round(z.loc[x_val].sum(), 2) / (z.shape[1] - 1)  # sum_of_record
                         annotation_dict = dict(
                             showarrow=False,
-                            text="<b>" + "{:.0f}".format(sum(z.loc[x_val] == 1) / (z.shape[1] - 1) * 100),  # + " %<b>",
+                            text="<b>" + "{:.0f}".format(round(z.loc[x_val].iloc[:-1].sum(), 2) / (z.shape[1] - 1)) + " %<b>",
                             xref="x",
                             yref="y",
                             x=x_val,
@@ -493,7 +410,7 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
         modebar={"orientation": "v"},
         font=dict(family="Open Sans"),
         annotations=annotations,
-        shapes=shapes,
+        # shapes=shapes,
         xaxis=dict(
             type="category",
             side="top",

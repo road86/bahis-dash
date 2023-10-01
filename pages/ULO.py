@@ -1,617 +1,288 @@
-import glob
-import os
+import json
 from datetime import date, datetime
 
 import dash
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
-import plotly.express as px
-from dash import callback, ctx, dcc, html
+from dash import callback, dcc, html
 from dash.dash import no_update
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
+from components import yearly_comparison
+from components import ReportsSickDead
+from components import pathnames
+from components import fetchdata
 
+
+starttime_start = datetime.now()
 pd.options.mode.chained_assignment = None
-
 dash.register_page(__name__)  # register page to main dash app
 
-# sourcepath='C:/Users/yoshka/Documents/GitHub/bahis-dash/exported_data/'    #for local debugging purposes
 sourcepath = "exported_data/"
-sourcefilename = os.path.join(sourcepath, "preped_data2.csv")
-geofilename = glob.glob(sourcepath + "newbahis_geo_cluster*.csv")[-1]
+geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+bahis_data = fetchdata.fetchsourcedata(sourcefilename)
+ULOsub_bahis_sourcedata = bahis_data
+ULOstart_date = date(2019, 1, 1)
+ULOlast_date = max(bahis_data['date']).date()
+ULOdates = [ULOstart_date, ULOlast_date]
+ULOcreate_date = fetchdata.create_date(sourcefilename)
+ULOSelUpa = 201539
 
-firstrun = True
-vDis = []
-vUpa = []
-dislis = []
-maxdates = []
-startDate = None
-endDate = None
-Diseases = None
-maxrep = 0
-maxsick = 0
-maxdead = 0
+ULOddDList = []
 
-
-def fetchgeodata():  # fetch geodata from bahis, delete mouzas and unions
-    geodata = pd.read_csv(geofilename)
-    geodata = geodata.drop(
-        geodata[(geodata["loc_type"] == 4) | (geodata["loc_type"] == 5)].index
-    )  # drop mouzas and unions
-    geodata = geodata.drop(["id", "longitude", "latitude", "updated_at"], axis=1)
-    geodata["parent"] = geodata[["parent"]].astype(np.uint16)  # assuming no mouza and union is taken into
-    geodata[["value"]] = geodata[["value"]].astype(np.uint32)
-    geodata[["loc_type"]] = geodata[["loc_type"]].astype(np.uint8)
-    return geodata
+bahis_geodata = fetchdata.fetchgeodata(geofilename)
+subDist = bahis_geodata
+Upazila = bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize()
 
 
-bahis_geodata = fetchgeodata()
-
-
-def fetchDivisionlist(bahis_geodata):  # division lsit is always the same, caching possible
-    Divlist = bahis_geodata[(bahis_geodata["loc_type"] == 1)][["value", "name"]]
-    Divlist["name"] = Divlist["name"].str.capitalize()
-    Divlist = Divlist.rename(columns={"name": "Division"})
-    Divlist = Divlist.sort_values(by=["Division"])
-    return Divlist.to_dict("records")
-
-
-Divlist = fetchDivisionlist(bahis_geodata)
-
-
-def fetchDistrictlist(SelDiv, bahis_geodata):  # district list is dependent on selected division
-    Dislist = bahis_geodata[bahis_geodata["parent"] == SelDiv][["value", "name"]]
-    Dislist["name"] = Dislist["name"].str.capitalize()
-    Dislist = Dislist.rename(columns={"name": "District"})
-    Dislist = Dislist.sort_values(by=["District"])
-    return Dislist.to_dict("records")
-
-
-def fetchUpazilalist(SelDis, bahis_geodata):  # upazila list is dependent on selected district
-    Upalist = bahis_geodata[bahis_geodata["parent"] == SelDis][["value", "name"]]  # .str.capitalize()
-    Upalist["name"] = Upalist["name"].str.capitalize()
-    Upalist = Upalist.rename(columns={"name": "Upazila"})
-    Upalist = Upalist.sort_values(by=["Upazila"])
-    return Upalist.to_dict("records")
-
-
-def resetvalues():
-    global maxrep, maxsick, maxdead
-    figULORep = {}
-    figULOSick = {}
-    figULODead = {}
-    minSelDate = ""
-    maxSelDate = ""
-    startDate = None
-    endDate = None
-    disabSelDate = True
-    Diseases = None
-    dislis = []
-    maxrep = 0
-    maxsick = 0
-    maxdead = 0
-    return figULORep, figULOSick, figULODead, minSelDate, maxSelDate, startDate, endDate, disabSelDate, Diseases, dislis
-
-
-def updateFig(bahis_data, startDate, endDate):
-    global maxrep, maxsick, maxdead
-    fulldaterange = pd.date_range(startDate, endDate, freq="D")
-    tmpR = bahis_data["date"].value_counts()
-    tmpR = tmpR.to_frame()
-    tmpR["counts"] = tmpR["count"]
-    tmpR["date"] = pd.to_datetime(tmpR.index)
-    #    timediff=maxdates[1]- maxdates[0]
-
-    #    if timediff <= timedelta(days=30):
-    tmpR = tmpR["counts"].groupby(tmpR["date"]).sum().astype(int)
-    tmpR = tmpR.resample("D").sum().fillna(0)
-    tmpSD = bahis_data[["sick", "dead"]].groupby(bahis_data["date"]).sum().astype(int)
-    tmpSD = tmpSD.resample("D").sum().fillna(0)
-    # elif timediff > timedelta(days=30):
-    #     tmpR=tmpR['counts'].groupby(tmpR['date'].dt.to_period('W-SAT')).sum().astype(int)
-    #     tmpSD=bahis_data[['sick','dead']].groupby(bahis_data['date'].dt.to_period('W-SAT')).sum().astype(int)
-
-    tmpR = tmpR.to_frame()
-    tmpR["date"] = tmpR.index
-    tmpR = tmpR.reindex(fulldaterange, fill_value=0)
-    tmpR["date"] = tmpR.index
-
-    tmpSD = tmpSD.reset_index()
-    tmpSD.index = tmpSD["date"]
-    print(tmpSD)
-    tmpSD = tmpSD.rename(columns={"date": "date"})
-    tmpSD = tmpSD.reindex(fulldaterange, fill_value=0)
-
-    tmpSD["date"] = tmpSD.index
-
-    if maxrep == 0:
-        maxrep = max(tmpR["counts"])
-        maxsick = max(tmpSD["sick"])
-        maxdead = max(tmpSD["dead"])
-
-    figULORep = {}
-    # if timediff <= timedelta(days=30):
-    figULORep = px.bar(
-        tmpR, x="date", y="counts", labels={"date": "Date", "counts": "No. of Reports"}
-    )  # , markers=True)
-    figULORep.update_layout(
-        height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0}, xaxis_tickformat="%d %b <br>%Y"
-    )  # , xaxis_ticklabelmode='period')
-    #    figULORep.update_yaxes(rangemode="nonnegative")
-    figULORep.update_yaxes(range=[0, maxrep])
-    figULORep.add_annotation(
-        x=maxdates[1],
-        y=max(tmpR),
-        text="total reports " + str("{:,}".format(bahis_data["date"].dt.date.value_counts().sum())),
-        showarrow=False,
-        font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-        align="center",
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8,
-    )
-
-    figULOSick = {}
-    # if timediff <= timedelta(days=30):
-
-    figULOSick = px.bar(
-        tmpSD, x="date", y="sick", labels={"date": "Date", "sick": "No. of Sick Animals"}
-    )  # , markers=True)
-    figULOSick.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0}, xaxis_tickformat="%d %b <br>%Y")
-    #    figULOSick.update_yaxes(rangemode="nonnegative")
-    figULOSick.update_yaxes(range=[0, maxsick])
-    figULOSick.add_annotation(
-        x=maxdates[1],
-        y=max(tmpSD),
-        text="total sick " + str("{:,}".format(int(bahis_data["sick"].sum()))),  # realy outlyer
-        showarrow=False,
-        font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-        align="center",
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8,
-    )
-    figULOSick.update_yaxes(rangemode="tozero")
-
-    figULODead = {}
-    # if timediff <= timedelta(days=30):
-    figULODead = px.bar(
-        tmpSD, x="date", y="dead", labels={"date": "Date", "dead": "No. of Dead Animals"}
-    )  # , markers=True)
-    # figULODead= px.line(tmpSD, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'}, markers=True)
-    # figULODead.update_traces(marker=dict(size=15, symbol='diamond'), mode='lines+markers')
-    # elif timediff > timedelta(days=30):
-    #     figULODead= px.bar(tmpSD, x='date', y='dead', labels={'date':'Date', 'dead':'No. of Dead Animals'})
-    figULODead.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0}, xaxis_tickformat="%d %b <br>%Y")
-    #    figULODead.update_yaxes(rangemode="nonnegative")
-    figULODead.update_yaxes(range=[0, maxdead])
-    figULODead.add_annotation(
-        x=maxdates[1],
-        y=max(tmpSD),
-        text="total dead " + str("{:,}".format(int(bahis_data["dead"].sum()))),  # really
-        showarrow=False,
-        font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-        align="center",
-        bordercolor="#c7c7c7",
-        borderwidth=2,
-        borderpad=4,
-        bgcolor="#ff7f0e",
-        opacity=0.8,
-    )
-    return figULORep, figULOSick, figULODead
+def open_data(path):
+    with open(path) as f:
+        data = json.load(f)
+    return data
 
 
 layout = html.Div(
     [
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle("Alert")),
-                dbc.ModalBody("No data available for this selection"),
-            ],
-            id="modal",
-            is_open=False,
-        ),
         dbc.Row(
             [
                 dbc.Col(
                     [
                         dbc.Card(
-                            [
-                                dcc.Dropdown(
-                                    options=[{"label": i["Division"], "value": i["value"]} for i in Divlist],
-                                    id="ULO_Division",
-                                    placeholder="Select Division",
-                                    clearable=True,
-                                ),
-                            ]
-                        )
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        dbc.Card(
-                            [
-                                dcc.Dropdown(
-                                    id="ULO_District",
-                                    placeholder="Select District",
-                                    clearable=True,
-                                ),
-                            ]
-                        )
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        dbc.Card(
-                            [
-                                dcc.Dropdown(
-                                    id="ULO_Upazila",
-                                    placeholder="Select Upazila",
-                                    clearable=True,
-                                )
-                            ]
-                        )
-                    ]
-                ),
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dcc.Dropdown(
-                            id="ULO_dislis",
-                            placeholder="Select Disease",
-                            multi=True,
-                            clearable=True,
-                        )
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        dcc.DatePickerRange(
-                            id="ULO_SelDate",
-                            display_format="D MMM, YYYY",
-                            updatemode="singledate",
-                            number_of_months_shown=3,
-                            clearable=True,
+                            dbc.CardBody(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                html.Label(Upazila, style={"font-weight": "bold", "font-size": "150%"})
+                                            ),
+                                            dbc.Col(
+                                                [
+                                                    dcc.Dropdown(
+                                                        ULOddDList,
+                                                        "All Diseases",
+                                                        id="ULODiseaselist",
+                                                        multi=False,
+                                                        clearable=False,
+                                                    ),
+                                                ],
+                                            ),
+                                            dbc.Col(
+                                                dcc.DatePickerRange(
+                                                    id="ULOdaterange",
+                                                    min_date_allowed=ULOstart_date,
+                                                    start_date=date(2023, 1, 1),
+                                                    max_date_allowed=ULOcreate_date,
+                                                    end_date=ULOlast_date,  # date(2023, 12, 31)
+                                                ),
+                                            ),
+                                        ]
+                                    )
+                                ]
+                            )
                         ),
-                    ]
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    dcc.Graph(id="ULOfigMonthly"),
+                                ]
+                            )
+                        )
+                    ],
+                    width=6,
                 ),
                 dbc.Col(
                     [
-                        html.Button("Export Data to CSV", id="btn_csv", disabled=True),
-                        dcc.Download(id="ULO_export"),
-                    ]
+                        dbc.Card(
+                            dbc.CardBody(
+                                [
+                                    dbc.Tabs(
+                                        [
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Row(
+                                                                    [
+                                                                        dbc.Col(
+                                                                            [
+                                                                                dbc.Row(dcc.Graph(id="ULOReportsLA")),
+                                                                                dbc.Row(dcc.Graph(id="ULOSickLA")),
+                                                                                dbc.Row(dcc.Graph(id="ULODeadLA")),
+                                                                            ]
+                                                                        ),
+                                                                        dbc.Col(
+                                                                            [
+                                                                                dcc.Slider(
+                                                                                    min=1,
+                                                                                    max=3,
+                                                                                    step=1,
+                                                                                    marks={1: 'Reports monthly',
+                                                                                           2: 'Reports weekly',
+                                                                                           3: 'Reports daily',
+                                                                                           },
+                                                                                    value=2,
+                                                                                    vertical=True,
+                                                                                    id="ULOLAperiodSlider"
+                                                                                )
+                                                                            ],
+                                                                            width=1,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ],
+                                                        )
+                                                    )
+                                                ],
+                                                label="Large Animal Reports",
+                                                tab_id="ULOReportsLATab",
+                                            ),
+                                            dbc.Tab(
+                                                [
+                                                    dbc.Card(
+                                                        dbc.CardBody(
+                                                            [
+                                                                dbc.Row([
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dbc.Row(dcc.Graph(id="ULOReportsP")),
+                                                                            dbc.Row(dcc.Graph(id="ULOSickP")),
+                                                                            dbc.Row(dcc.Graph(id="ULODeadP")),
+                                                                        ]
+                                                                    ),
+                                                                    dbc.Col(
+                                                                        [
+                                                                            dcc.Slider(
+                                                                                min=1,
+                                                                                max=3,
+                                                                                step=1,
+                                                                                marks={1: 'Reports monthly',
+                                                                                       2: 'Reports weekly',
+                                                                                       3: 'Reports daily',
+                                                                                       },
+                                                                                value=2,
+                                                                                vertical=True,
+                                                                                id="ULOPperiodSlider"
+                                                                            )
+                                                                        ],
+                                                                        width=1,
+                                                                    ),
+                                                                ])
+                                                            ],
+                                                        )
+                                                    )
+
+                                                ],
+                                                label="Poultry Reports",
+                                                tab_id="ULOReportsPTab",
+                                            ),
+                                        ],
+                                        id="ULOtabs",
+                                    )
+                                ]
+                            ),
+                        ),
+                        html.Label('Data from ' + str(ULOcreate_date), style={'text-align': 'right'})
+                    ],
+                    width=6,
                 ),
             ]
-        ),
-        dbc.Row(
-            [
-                (dcc.Graph(id="ULO_Reports")),
-            ]
-        ),
-        dbc.Row(
-            [
-                (dcc.Graph(id="ULO_Sick")),
-            ]
-        ),
-        dbc.Row(
-            [
-                (dcc.Graph(id="ULO_Dead")),
-            ]
-        ),
+        )
     ]
 )
 
+firstrun = True
 
-@callback(  # splitting callbacks to prevent updates?
-    # dash clientsied callback with js
-    Output("ULO_Division", "value"),
-    Output("ULO_District", "value"),
-    Output("ULO_Upazila", "value"),
-    Output("ULO_District", "options"),
-    Output("ULO_Upazila", "options"),
-    Output("ULO_dislis", "options"),
-    Output("ULO_dislis", "value"),
-    Output("ULO_SelDate", "min_date_allowed"),
-    Output("ULO_SelDate", "max_date_allowed"),
-    Output("ULO_SelDate", "start_date"),
-    Output("ULO_SelDate", "end_date"),
-    Output("ULO_SelDate", "disabled"),
-    Output("ULO_Reports", "figure"),
-    Output("ULO_Sick", "figure"),
-    Output("ULO_Dead", "figure"),
-    Output("modal", "is_open"),
-    Output("btn_csv", "disabled"),
-    Input("ULO_Division", "value"),
-    Input("ULO_District", "value"),
-    Input("ULO_Upazila", "value"),
-    Input("ULO_dislis", "value"),
-    Input("ULO_SelDate", "start_date"),
-    Input("ULO_SelDate", "end_date"),
-    State("modal", "is_open"),
-)
-def selectULO(SelDiv, SelDis, SelUpa, SelDiseases, sdate, edate, is_open):  # , alert):
-    global bahis_data, \
-        bahis_subdata, \
-        bahis_geodata, \
-        vDis, \
-        vUpa, \
-        dislis, \
-        Diseases, \
-        firstrun, \
-        maxdates, \
-        startDate, \
-        endDate, \
-        disabSelDate, \
-        UpaSelected, \
-        maxrep, \
-        maxsick, \
-        maxdead  # , end_date
-
-    starttime_tab1 = datetime.now()
-
-    minSelDate = ""
-    maxSelDate = ""
-    figULORep = {}
-    figULOSick = {}
-    figULODead = {}
-    exportbutton = True
-
-    if firstrun is True:
-        disabSelDate = True
-        SelDiv = ""
-        SelDiseases = ""
-        vDis = []
-        vUpa = []
-        dislis = []
-        firstrun = False
-        UpaSelected = False
-
-    if ctx.triggered_id == "ULO_dislis" or ctx.triggered_id == "ULO_SelDate":
-        if edate is not None:
-            startDate = sdate
-            endDate = edate
-            bahis_subdata = bahis_data[(bahis_data["date"] >= sdate) & (bahis_data["date"] <= edate)]
-            maxdates = [min(bahis_data["date"]), max(bahis_data["date"])]
-            minSelDate = maxdates[0]
-            maxSelDate = maxdates[1]
-            maxdates = [pd.Timestamp(sdate), pd.Timestamp(edate)]
-
-            if SelDiseases:
-                if "All Diseases" in SelDiseases:
-                    bahis_subdata = bahis_subdata
-                else:
-                    bahis_subdata = bahis_subdata[bahis_subdata["top_diagnosis"].isin(SelDiseases)]
-
-            figULORep, figULOSick, figULODead = updateFig(bahis_subdata, startDate, endDate)
-        else:
-            startDate = None
-            endDate = None
-            bahis_subdata = bahis_data
-            maxdates = [min(bahis_data["date"]), max(bahis_data["date"])]
-            minSelDate = maxdates[0]
-            maxSelDate = maxdates[1]
-            startDate = minSelDate
-            endDate = maxSelDate
-            if SelDiseases:
-                if "All Diseases" in SelDiseases:
-                    bahis_subdata = bahis_subdata
-                else:
-                    bahis_subdata = bahis_subdata[bahis_subdata["top_diagnosis"].isin(SelDiseases)]
-            figULORep, figULOSick, figULODead = updateFig(bahis_subdata, startDate, endDate)
-        Diseases = SelDiseases
-        if bahis_subdata.shape[0] > 1:
-            exportbutton = False
-
-    if ctx.triggered_id == "ULO_Division":
-        if not SelDiv:
-            vDis = []
-            SelDis = ""
-            SelUpa = ""
-            vUpa = []
-            dislis = []
-            (
-                figULORep,
-                figULOSick,
-                figULODead,
-                minSelDate,
-                maxSelDate,
-                startDate,
-                endDate,
-                disabSelDate,
-                Diseases,
-                dislis,
-            ) = resetvalues()
-        else:
-            Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
-            vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
-            SelUpa = ""
-            vUpa = ("",)
-            (
-                figULORep,
-                figULOSick,
-                figULODead,
-                minSelDate,
-                maxSelDate,
-                startDate,
-                endDate,
-                disabSelDate,
-                Diseases,
-                dislis,
-            ) = resetvalues()
-
-    if ctx.triggered_id == "ULO_District":
-        if not SelDis:
-            (
-                figULORep,
-                figULOSick,
-                figULODead,
-                minSelDate,
-                maxSelDate,
-                startDate,
-                endDate,
-                disabSelDate,
-                Diseases,
-                dislis,
-            ) = resetvalues()
-            Dislist = fetchDistrictlist(SelDiv, bahis_geodata)
-            vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
-            vUpa = ("",)
-            SelUpa = ""
-        else:
-            Upalist = fetchUpazilalist(SelDis, bahis_geodata)
-            vUpa = [{"label": i["Upazila"], "value": i["value"]} for i in Upalist]
-
-    if ctx.triggered_id == "ULO_Upazila":
-        if SelUpa:
-            maxrep = 0
-            maxsick = 0
-            maxdead = 0
-            UpaSelected = True
-            minSelDate = ""
-            maxSelDate = ""
-            disabSelDate = True
-            SelDiseases = ""
-            dislis = []
-            bahis_data = pd.read_csv(sourcefilename)
-            bahis_data = bahis_data.loc[bahis_data["basic_info_upazila"] == SelUpa]
-            bahis_data["from_static_bahis"] = bahis_data["basic_info_date"].str.contains(
-                "/"
-            )  # new data contains -, old data contains /
-            bahis_data["basic_info_date"] = pd.to_datetime(
-                bahis_data["basic_info_date"], errors="coerce", format="mixed"
-            )
-            del bahis_data["Unnamed: 0"]
-            bahis_data = bahis_data.rename(
-                columns={
-                    "basic_info_date": "date",
-                    "basic_info_division": "division",
-                    "basic_info_district": "district",
-                    "basic_info_upazila": "upazila",
-                    "patient_info_species": "species_no",
-                    "diagnosis_treatment_top_diagnosis": "top_diagnosis",
-                    "patient_info_sick_number": "sick",
-                    "patient_info_dead_number": "dead",
-                }
-            )
-            bahis_data[["division", "district", "species_no"]] = bahis_data[
-                ["division", "district", "species_no"]
-            ].astype(np.uint16)
-            bahis_data[["upazila", "sick", "dead"]] = bahis_data[["upazila", "sick", "dead"]].astype(np.int32)
-            bahis_data["dead"] = bahis_data["dead"].clip(lower=0)
-            bahis_data = bahis_data[bahis_data["date"].dt.year == 2023]  # max(bahis_data['date']).year]
-            if not bahis_data.shape[0] == 0:
-                maxdates = [min(bahis_data["date"]), max(bahis_data["date"])]
-                disabSelDate = False
-                minSelDate = maxdates[0]
-                startDate = minSelDate
-                maxSelDate = maxdates[1]
-                endDate = maxSelDate
-
-                dislis = bahis_data["top_diagnosis"].unique()
-                dislis = pd.DataFrame(dislis, columns=["Disease"])
-                dislis = dislis["Disease"].sort_values().tolist()
-                dislis.insert(0, "All Diseases")
-
-                figULORep, figULOSick, figULODead = updateFig(bahis_data, startDate, endDate)
-            else:
-                return (
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    no_update,
-                    not is_open,
-                    exportbutton,
-                )
-
-            dislis = bahis_data["top_diagnosis"].unique()
-            dislis = pd.DataFrame(dislis, columns=["Disease"])
-            dislis = dislis["Disease"].sort_values().tolist()
-            dislis.insert(0, "All Diseases")
-
-            figULORep, figULOSick, figULODead = updateFig(bahis_data, startDate, endDate)
-            bahis_subdata = bahis_data
-            if bahis_data.shape[0] > 1:
-                exportbutton = False
-        else:
-            (
-                figULORep,
-                figULOSick,
-                figULODead,
-                minSelDate,
-                maxSelDate,
-                startDate,
-                endDate,
-                disabSelDate,
-                Diseases,
-                dislis,
-            ) = resetvalues()
-            exportbutton = True
-
-    # if ctx.triggered_id=='btn_csv':
-    #     print('click')
-    #     return dcc.send_data_frame(bahis_data.to_csv, "ulo_export.csv")
-    # else:
-    #     print('Clock')
-    #     return dash.no_update
-
-    endtime_tab1 = datetime.now()
-    print("ULO timing : " + str(endtime_tab1 - starttime_tab1))
-
-    return (
-        SelDiv,
-        SelDis,
-        SelUpa,
-        vDis,
-        vUpa,
-        dislis,
-        Diseases,
-        minSelDate,
-        maxSelDate,
-        startDate,
-        endDate,
-        disabSelDate,
-        figULORep,
-        figULOSick,
-        figULODead,
-        no_update,
-        exportbutton,
-    )
+endtime_start = datetime.now()
+print("initialize : " + str(endtime_start - starttime_start))
 
 
 @callback(
-    Output("ULO_export", "data"),
-    Input("btn_csv", "n_clicks"),
-    State("ULO_Upazila", "value"),
-    State("ULO_Upazila", "options"),
-    prevent_initial_call=True,
+    # dash cleintsied callback with js
+    Output("ULODiseaselist", "options"),
+    Output("ULOReportsLA", "figure"),
+    Output("ULOSickLA", "figure"),
+    Output("ULODeadLA", "figure"),
+    Output("ULOReportsP", "figure"),
+    Output("ULOSickP", "figure"),
+    Output("ULODeadP", "figure"),
+    Output("ULOfigMonthly", "figure"),
+    Input("ULOdaterange", "start_date"),  # make state to prevent upate before submitting
+    Input("ULOdaterange", "end_date"),  # make state to prevent upate before submitting
+    Input("ULOLAperiodSlider", "value"),
+    Input("ULOPperiodSlider", "value"),
+    Input("ULODiseaselist", "value"),
+    Input("ULOtabs", "active_tab"),
 )
-def export(btn_csv, SelUpaNo, SelUpaOpt):
-    if btn_csv and SelUpaNo:  # <--- correct the condition
-        label_string = str([x["label"] for x in SelUpaOpt if x["value"] == SelUpaNo])[2:-2]
-        return dcc.send_data_frame(
-            bahis_subdata.to_csv,
-            f"{SelUpaNo}-{label_string}_export_{date.today()}.csv",
+def update_whatever(
+    ULOstart_date,
+    ULOend_date,
+    ULOLAperiodClick,
+    ULOPperiodClick,
+    ULOdiseaselist,
+    ULOtabs,
+):
+    starttime_general = datetime.now()
+
+    global firstrun, \
+        ULOddDList, \
+        ULOpath, \
+        ULOvariab, \
+        ULOsubDistM, \
+        ULOtitle, \
+        ULOsub_bahis_sourcedata, \
+        ULOsubDist
+
+    if firstrun is True:  # inital settings
+        ULOddDList = fetchdata.fetchdiseaselist(ULOsub_bahis_sourcedata)
+        firstrun = False
+
+    ULOsubDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(ULOSelUpa))]
+    ULOsub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == ULOSelUpa]
+    ULOsub_bahis_sourcedata4yc = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
+
+    ULOdates = [ULOstart_date, ULOend_date]
+    ULOsub_bahis_sourcedata = fetchdata.date_subset(ULOdates, ULOsub_bahis_sourcedata)
+    ULOsub_bahis_sourcedata = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
+
+    ULOfigMonthly = yearly_comparison.yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
+
+    endtime_general = datetime.now()
+    print("general callback : " + str(endtime_general - starttime_general))
+
+    if ULOtabs == "ULOReportsLATab":
+        lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
+        ULOsub_bahis_sourcedataLA = ULOsub_bahis_sourcedata[ULOsub_bahis_sourcedata["species"].isin(lanimal)]
+        ULOfigheight = 175
+        ULOfiggLAR, ULOfiggLASick, ULOfiggLADead = ReportsSickDead.ReportsSickDead(ULOsub_bahis_sourcedataLA,
+                                                                                   ULOdates, ULOLAperiodClick,
+                                                                                   ULOfigheight)
+        return (
+            ULOddDList,
+            ULOfiggLAR,
+            ULOfiggLASick,
+            ULOfiggLADead,
+            no_update,
+            no_update,
+            no_update,
+            ULOfigMonthly,
         )
-    else:
-        return dash.no_update
 
-
-# todo: check if UpaSelcted can be deleted
+    if ULOtabs == "ULOReportsPTab":
+        starttime_tab1 = datetime.now()
+        poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+        ULOsub_bahis_sourcedataP = ULOsub_bahis_sourcedata[ULOsub_bahis_sourcedata["species"].isin(poultry)]
+        ULOfigheight = 175
+        ULOfiggPR, ULOfiggPSick, ULOfiggPDead = ReportsSickDead.ReportsSickDead(ULOsub_bahis_sourcedataP, ULOdates,
+                                                                                ULOPperiodClick, ULOfigheight)
+        endtime_tab1 = datetime.now()
+        print("tabLA : " + str(endtime_tab1 - starttime_tab1))
+        return (
+            ULOddDList,
+            no_update,
+            no_update,
+            no_update,
+            ULOfiggPR,
+            ULOfiggPSick,
+            ULOfiggPDead,
+            ULOfigMonthly,
+        )

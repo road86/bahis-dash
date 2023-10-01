@@ -1,7 +1,7 @@
 import plotly.express as px
 
 
-def yearlyComp(bahis_data):
+def yearlyComp(bahis_data, diseaselist):
     monthly = bahis_data.groupby(
         [bahis_data["date"].dt.year.rename("Year"), bahis_data["date"].dt.month.rename("Month")]
     )["date"].agg({"count"})
@@ -13,7 +13,7 @@ def yearlyComp(bahis_data):
         data_frame=monthly,
         x="Month",
         y="reports",
-        labels={"Month": "Month", "reports": "Reports in Thousands"},
+        labels={"reports": "Reports in Thousands"},
         color="Year",
         barmode="group",
     )
@@ -23,7 +23,15 @@ def yearlyComp(bahis_data):
             tickmode='array',
             tickvals=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             ticktext=['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December']
-        )
+                      'July', 'August', 'September', 'October', 'November', 'December'],
+            title=""
+        ),
+        title={
+            'text': "Disease dynamics for \"" + str(diseaselist) + "\"",
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        }
     )
     return figYearlyComp
