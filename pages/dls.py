@@ -21,7 +21,8 @@ starttime_start = datetime.now()
 
 pd.options.mode.chained_assignment = None
 
-dash.register_page(__name__)  # register page to main dash app
+dash.register_page(__name__, path="/")
+#dash.register_page(__name__)  # register page to main dash app
 
 # #1 Nation # reminder: found shapefiles from the data.humdata.org
 sourcepath = "exported_data/"
