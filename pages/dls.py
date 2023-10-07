@@ -546,12 +546,14 @@ def update_whatever(
             Upalist = []
             SelDis = None
             SelUpa = None
+            sub_bahis_sourcedata = bahis_data
         else:
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
             Dislist = fetchdata.fetchDistrictlist(SelDiv, bahis_geodata)
             vDis = [{"label": i["District"], "value": i["value"]} for i in Dislist]
             vUpa = []
             SelUpa = None
+            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
 
     if ctx.triggered_id == "District":
         if not SelDis:
@@ -561,29 +563,33 @@ def update_whatever(
             Upalist = ""
             vUpa = []
             SelUpa = None
+            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
         else:
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
             Upalist = fetchdata.fetchUpazilalist(SelDis, bahis_geodata)
             vUpa = [{"label": i["Upazila"], "value": i["value"]} for i in Upalist]
+            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
 
     if ctx.triggered_id == "Upazila":
         if not SelUpa:
             # from basic data in case on switches districts in current way, switching leads to zero data but speed
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDis))]
-        else:
-            subDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(SelUpa))]
-
-    if SelUpa:
-        sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
-    else:
-        if SelDis:
             sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
         else:
-            if SelDiv:
-                sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
-            else:
-                sub_bahis_sourcedata = bahis_data
+            subDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(SelUpa))]
+            sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
+
+    # if SelUpa:
+    #     sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelUpa]
+    # else:
+    #     if SelDis:
+    #         sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelDis]  # DivNo]
+    #     else:
+    #         if SelDiv:
+    #             sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelDiv]  # DivNo]
+    #         else:
+    #             sub_bahis_sourcedata = bahis_data
 
     sub_bahis_sourcedata4yc = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
 
