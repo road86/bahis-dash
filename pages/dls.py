@@ -137,7 +137,7 @@ def plot_map(path, loc, subDistM, sub_bahis_sourcedata, title, pnumber, pname, s
     reports[pname] = reports[pname].str.title()
     reports.set_index(pnumber)  # 1
 
-    custolor = [[0, "black"], [1 / reports[title].max(), "lightgray"], [1, "red"]]
+    custolor = [[0, "white"], [1 / reports[title].max(), "lightgray"], [1, "red"]]
     fig = px.choropleth_mapbox(
         reports,
         geojson=data,

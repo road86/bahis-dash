@@ -290,7 +290,9 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
 
             y_axis_no = list(set([str(x)[:6] for x in filtered_bd["upazila"]]))
 #            print(y_axis_no)
-#            print(fetchdata.fetchUpazilalist(district, bahis_geodata))
+#            print(pd.DataFrame(fetchdata.fetchUpazilalist(district, bahis_geodata))['value'].astype(str).tolist())
+            y_axis_no = pd.DataFrame(fetchdata.fetchUpazilalist(district, bahis_geodata))['value'].astype(str).tolist()
+
             y_axis = y_axis_no.copy()
 
             for i, value in enumerate(y_axis_no):
@@ -299,6 +301,8 @@ def generate_reports_heatmap(bahis_data, bahis_geodata, start, end, division, di
                 ]
                 if not tst.empty:
                     y_axis[i] = tst.values[0].capitalize()
+
+
 
             tst = bahis_geodata[bahis_geodata["loc_type"] == 2].loc[
                 bahis_geodata[bahis_geodata["loc_type"] == 2]["value"] == int(district), "name"
