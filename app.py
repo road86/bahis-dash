@@ -1,7 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from components import navbar
-from dash import Dash, Input, Output, dcc, html
+from dash import Dash, Input, Output, dcc, html, State
 
 # Connect to your app pages
 # from pages import dls, ulo, reports #,bahisdashpltOLD
@@ -31,6 +31,21 @@ app.layout = html.Div(
         dcc.Location(id="url", refresh=False),
         nav,
         html.Div([]),
+        html.Div(
+            [
+                dbc.Button("Open Offcanvas", id="open-offcanvas", n_clicks=0),
+                dbc.Offcanvas(
+                    html.P(
+                        "This is the content of the Offcanvas. "
+                        "Close it by clicking on the close button, or "
+                        "the backdrop."
+                    ),
+                    id="offcanvas",
+                    title="Title",
+                    is_open=False,
+                ),
+            ]
+        ),
         html.Div(id="page-1-display-value"),
         dash.page_container,
         dcc.Store(id="cache_bahis_data", storage_type="memory"),
@@ -40,9 +55,17 @@ app.layout = html.Div(
 )
 
 
-@app.callback(Output("page-1-display-value", "children"), Input("nav", "value"))
-def display_value(value):
-    return f"You have selected {value}"
+@app.callback(
+        Output("page-1-display-value", "children"), 
+        Output("offcanvas", "is_open"),
+        Input("nav", "value"),
+        Input("open-offcanvas", "n_clicks"),
+        [State("offcanvas", "is_open")],
+)
+def display_valueNtoggle_offcanvas(value, n1, is_open):
+    if n1:
+        return not is_open
+    return f"You have selected {value}", is_open
 
 
 # "complete" layout
