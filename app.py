@@ -22,11 +22,20 @@ offcanvas = html.Div(
     [
         dbc.Button("Open Offcanvas", id="open-offcanvas", n_clicks=0),
         dbc.Offcanvas(
-            html.P(
-                "This is the content of the Offcanvas. "
-                "Close it by clicking on the close button, or "
-                "the backdrop."
+            # html.P(
+            #     "This is the content of the Offcanvas. "
+            #     "Close it by clicking on the close button, or "
+            #     "the backdrop."
+            # ),
+            dbc.Nav(
+                [
+                    dbc.NavLink("Home", href="/", active="exact"),
+                    dbc.NavLink("ULO", href="/ulo", active="exact"),
+                ],
+                vertical=True,
+                pills=True,
             ),
+
             id="offcanvas",
             title="Title",
             is_open=False,
