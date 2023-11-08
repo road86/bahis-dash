@@ -20,24 +20,51 @@ nav = navbar.Navbar()
 
 offcanvas = html.Div(
     [
-        dbc.Button("Open Offcanvas", id="open-offcanvas", n_clicks=0),
+        dbc.Button("Menu", id="open-offcanvas", n_clicks=0),
         dbc.Offcanvas(
             # html.P(
             #     "This is the content of the Offcanvas. "
             #     "Close it by clicking on the close button, or "
             #     "the backdrop."
             # ),
-            dbc.Nav(
-                [
-                    dbc.NavLink("Home", href="/", active="exact"),
-                    dbc.NavLink("ULO", href="/ulo", active="exact"),
-                ],
-                vertical=True,
-                pills=True,
-            ),
+            dbc.Accordion(
+                    [
+                        dbc.AccordionItem(
+                            [
+                                html.P("This is the content of the first section"),
+                                dbc.Button("Click here"),
+                            ],
+                            title="Item 1",
+                        ),
+                        dbc.AccordionItem(
+                            [
+                                dbc.Nav(
+                                    [
+                                        dbc.NavLink("Home", href="/", active="exact"),
+                                        dbc.NavLink("ULO", href="/ulo", active="exact"),
+                                    ],
+                                    vertical=True,
+                                    pills=True,
+                                ),
+                            ],
+                            title="Item 2",
+                        ),
+                        dbc.AccordionItem(
+                            [
+                                dcc.Dropdown(
+                                options=["Option 1", "Option 2"],
+                                # id="DropOptions",
+                                clearable=True,
+                                placeholder="Select Option",
+                            ),
+
+                            ]                        
+                        ),
+                    ],
+                ),
 
             id="offcanvas",
-            title="Title",
+            title="Menu",
             is_open=False,
         ),
     ]
