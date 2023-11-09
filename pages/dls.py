@@ -537,6 +537,10 @@ def update_whatever(
         subDistM = subDist[subDist["loc_type"] == 3]
         firstrun = False
 
+    dates = [start_date, end_date]
+    sub_bahis_sourcedata = fetchdata.date_subset(dates, bahis_data)
+    sub_bahis_sourcedata = fetchdata.disease_subset(diseaselist, sub_bahis_sourcedata)
+
     if ctx.triggered_id == "Division":
         if not SelDiv:
             subDist = bahis_geodata
@@ -546,7 +550,7 @@ def update_whatever(
             Upalist = []
             SelDis = None
             SelUpa = None
-            sub_bahis_sourcedata = bahis_data
+            # sub_bahis_sourcedata = bahis_data
         else:
             subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelDiv))]
             Dislist = fetchdata.fetchDistrictlist(SelDiv, bahis_geodata)
