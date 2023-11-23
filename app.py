@@ -1,11 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from components import navbar
-from dash import Dash, Input, Output, dcc, html
-
-# Connect to your app pages
-# from pages import dls, ulo, reports #,bahisdashpltOLD
-
+from dash import Dash, Input, Output, dcc, html, State
 
 app = Dash(
     __name__,
@@ -15,17 +11,7 @@ app = Dash(
     suppress_callback_exceptions=True,
 )
 
-# Define the navbar
 nav = navbar.Navbar()
-
-# Define the index page layout
-# app.layout = html.Div([
-# #    dcc.Location(id='url', refresh=False),
-# #    nav,
-#     #dash.page_container,
-#     #html.Div(id='page-content', children=[]),
-# ]) #, fluid=True,)
-
 app.layout = html.Div(
     [
         dcc.Location(id="url", refresh=False),
@@ -40,40 +26,18 @@ app.layout = html.Div(
 )
 
 
-@app.callback(Output("page-1-display-value", "children"), Input("nav", "value"))
-def display_value(value):
-    return f"You have selected {value}"
-
-
-# "complete" layout
-app.validation_layout = html.Div(
-    [
-        #     dls.layout,
-        #     ulo,
-        #     report,m
-        #     #app,
-        #     #navbar,
-        #     #index.layout,
-        #     #bahisdashpltOLD,
-        #     #page2,
-    ]
+@app.callback(
+    Output("sidemenu", "is_open"),
+    Input("open-sidemenu", "n_clicks"),
+    [State("sidemenu", "is_open")],
 )
+def display_valueNtoggle_offcanvas(n1, is_open):
+    if n1:
+        return not is_open
+    return is_open
 
 
-# Create the callback to handle mutlipage inputs
-# @app.callback(Output('page-content', 'children'),
-#               [Input('url', 'pathname')])
-# def display_page(pathname):
-#     if pathname == '/dls':
-#         return dls.layout
-#     if pathname == '/ulo':
-#         return ulo.layout
-#     if pathname == '/reports':
-#         return reports.layout
-#     else: # if redirected to unknown link
-#         return "404 Page Error! Please choose a link"
-
-# Run the app on localhost:8050
+# Run the app on localhost:80
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=80)
 else:
