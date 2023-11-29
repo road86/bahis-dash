@@ -36,7 +36,7 @@ app.layout = html.Div(
         html.Br(),
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
-        dcc.Store(data = bahis_data.to_json(date_format='iso', orient='split'), id="cache_bahis_data", storage_type="memory"),
+        dcc.Store(id="cache_bahis_data", storage_type="memory"),
         dcc.Store(data = bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
         dcc.Store(data = bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
         dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
@@ -44,12 +44,13 @@ app.layout = html.Div(
 )
 
 @app.callback(
+        Output("cache_bahis_data", "data"),
         Output("cache_bahis_geodata", "data"),
         Input("dummy", "id")
 )
 
 def store2cache(dummy):
-    return bahis_geodata.to_json(date_format='iso', orient='split')
+    return bahis_data.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
 
 @app.callback(
     Output("sidemenu", "is_open"),
