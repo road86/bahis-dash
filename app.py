@@ -13,6 +13,7 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     meta_tags=[{"name": "viewport", "content": "width=device-width"}],
     suppress_callback_exceptions=True,
+    prevent_initial_callbacks="initial_duplicate",
 )
 
 dash.register_page(__name__)  # register page to main dash app
