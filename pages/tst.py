@@ -12,7 +12,7 @@ layout = html.Div([
     # dcc.Store(id="cache_bahis_data", storage_type="memory"),
     # dcc.Store(id="cache_bahis_dgdata", storage_type="memory"),
     # dcc.Store(id="cache_bahis_distypes", storage_type="memory"),
-    dcc.Store(id="cache_bahis_geodata"),
+    # dcc.Store(id="cache_bahis_geodata"),
     dbc.Row(
         [
             dbc.Col(
@@ -30,6 +30,7 @@ layout = html.Div([
     )
 ]),
 
+
 @callback(
     Output("District", "options"),
     Output("Upazila", "options"),
@@ -46,63 +47,57 @@ layout = html.Div([
 )
 
 def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, sourcedata, geodata):
-    bahis_geodata=pd.read_json(geodata, orient="split")
-    if DistrictList == None: DistrictList = []
-    if UpazilaList == None: UpazilaList = []
+
+    reportsdata = pd.read_json(sourcedata, orient="split")
+    geoNameNNumber = pd.read_json(geodata, orient="split")
+    if DistrictList is None: 
+        DistrictList = []
+    if UpazilaList is None: 
+        UpazilaList = []
 
     if ctx.triggered_id == "Division":
         if not SelectedDivision:
-#            subDist = bahis_geodata
             DistrictList = []
             UpazilaList = []
         else:
-#            subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelectedDivision))]
-            List = fetchdata.fetchDistrictlist(SelectedDivision, bahis_geodata)
+            reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDivision))]
+            List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
             UpazilaList = []
-#            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelectedDivision]  # DivNo]
 
     if ctx.triggered_id == "District":
         if not SelectedDistrict:
-#            subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelectedDivision))]
+            reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDivision))]
             UpazilaList = []
-#            sub_bahis_sourcedata = bahis_data.loc[bahis_data["division"] == SelectedDivision]  # DivNo]
         else:
-#            subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelectedDistrict))]
-            List = fetchdata.fetchUpazilalist(SelectedDistrict, bahis_geodata)
+            reportsdata = reportsdata.loc[reportsdata["district"] == SelectedDistrict]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
+            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-#            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelectedDistrict]  # DivNo]
 
     if ctx.triggered_id == "Upazila":
         if not SelectedUpazila:
-            print("a")
-#            subDist = bahis_geodata.loc[bahis_geodata["parent"].astype("string").str.startswith(str(SelectedDistrict))]
-#            sub_bahis_sourcedata = bahis_data.loc[bahis_data["district"] == SelectedDistrict]  # DivNo]
+            reportsdata = reportsdata.loc[reportsdata["district"] == SelectedDistrict]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
         else:
-            print("b")
-#            subDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(SelectedUpazila ))]
-#            sub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == SelectedUpazila ]
+            reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedUpazila))]
 
     if geoSlider == 1:
         geoResolution = "division"
-        reportsdata = pd.read_json(sourcedata, orient="split")
-        geoNameNNumber = pd.read_json(geodata, orient="split")
         shapePath = "exported_data/processed_geodata/divdata.geojson"
-        Mapfig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
-
+    
     if geoSlider == 2:
         geoResolution = "district"
-        reportsdata = pd.read_json(sourcedata, orient="split")
-        geoNameNNumber = pd.read_json(geodata, orient="split")
         shapePath = "exported_data/processed_geodata/distdata.geojson"
-        Mapfig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
-
+    
     if geoSlider == 3:
         geoResolution = "upazila"
-        reportsdata = pd.read_json(sourcedata, orient="split")
-        geoNameNNumber = pd.read_json(geodata, orient="split")
         shapePath = "exported_data/processed_geodata/upadata.geojson"
-        Mapfig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
+    
+    Mapfig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
 
     # if ctx.triggered_id == 'geoSlider':
     #     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title,
