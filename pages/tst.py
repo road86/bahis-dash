@@ -1,5 +1,5 @@
 import dash
-from components import fetchdata, RegionSelect, MapNResolution
+from components import fetchdata, RegionSelect, MapNResolution, DiseaseSelect
 from dash import html, dcc, callback, ctx
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
@@ -15,7 +15,7 @@ layout = html.Div([
     # dcc.Store(id="cache_bahis_geodata"),
     dbc.Row(
         [
-            dbc.Col(
+            dbc.Col(            # left side
                 [
                     dbc.Card(
                         dbc.CardBody(RegionSelect.Form),
@@ -26,6 +26,48 @@ layout = html.Div([
                 ],
                 width=4,
             ),
+            dbc.Col([          # right side
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        print("a")
+                                    ),
+                                    dbc.Col(
+                                        dbc.CardBody(DiseaseSelect.Form)
+                                    )
+                                ]
+                            )
+                        ]
+                    )
+                ),
+                dbc.Card(
+                    dbc.CardBody(
+                        [
+                            dbc.Tab(
+                                [
+                                    dbc.Card(
+                                        dbc.CardBody(
+                                            [
+                                                html.Label("Weekly Completeness"),
+                                                dbc.Col(
+                                                    [
+                                                        dcc.Graph(id="Completeness")
+                                                    ]
+                                                )
+                                            ]
+                                        )
+                                    )
+                                ],
+                                label="Completeness",
+                                tab_id="CompletenessTab",
+                            ),
+                        ]
+                    ),
+                ),
+            ])
         ]
     )
 ]),

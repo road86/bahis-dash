@@ -102,7 +102,7 @@ def fetchUpazilalist(SelDis, bahis_geodata):  # upazila list is dependent on sel
     return Upalist.to_dict("records")
 
 
-def fetchdiseaselist(bahis_data):
+def fetchDiseaselist(bahis_data):
     dislis = bahis_data["top_diagnosis"].unique()
     dislis = pd.DataFrame(dislis, columns=["Disease"])
     dislis = dislis["Disease"].sort_values().tolist()
