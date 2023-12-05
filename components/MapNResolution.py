@@ -28,6 +28,9 @@ def plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePa
     if geoResolutionNo == 1:
         #reports = reports.rename(columns = {"divisionnumber": "divnumber"})
         print(reports)
+    if geoResolutionNo == 2:
+        #reports = reports.rename(columns = {"divisionnumber": "divnumber"})
+        print(reports)
 
     custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
     fig = px.choropleth_mapbox(

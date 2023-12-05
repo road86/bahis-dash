@@ -24,7 +24,7 @@ bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
-create_date = fetchdata.create_date(sourcefilename) #implement here
+create_date = fetchdata.create_date(sourcefilename)  # implement here
 
 app.layout = html.Div(
     [
@@ -37,20 +37,23 @@ app.layout = html.Div(
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
         dcc.Store(id="cache_bahis_data", storage_type="memory"),
-        dcc.Store(data = bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
-        dcc.Store(data = bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
+        dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
+        dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
         dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
     ]
 )
 
+
 @app.callback(
-        Output("cache_bahis_data", "data"),
-        Output("cache_bahis_geodata", "data"),
-        Input("dummy", "id")
+    Output("cache_bahis_data", "data"),
+    Output("cache_bahis_distypes", "data"),
+    Output("cache_bahis_geodata", "data"),
+    Input("dummy", "id")
 )
 
 def store2cache(dummy):
-    return bahis_data.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
+    return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
+
 
 @app.callback(
     Output("sidemenu", "is_open"),

@@ -145,6 +145,10 @@
 #     )  # , width=760 , height=800, ) #, coloraxis_showscale= False) #width= 1000, height=600,
 #     return fig
 
+
+
+
+
 # def Completeness():[
 #     dbc.Card(
 #         dbc.CardBody(
