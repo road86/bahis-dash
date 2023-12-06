@@ -1,6 +1,5 @@
 import dash
 from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect, CompletenessReport
-from datetime import date
 from dash import html, dcc, callback, ctx
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
@@ -34,10 +33,10 @@ layout = html.Div([
                             dbc.Row(
                                 [
                                     dbc.Col(
-                                        dbc.CardBody(DateRangeSelect.Form)
+                                        DateRangeSelect.Form
                                     ),
                                     dbc.Col(
-                                        dbc.CardBody(DiseaseSelect.Form)
+                                        DiseaseSelect.Form
                                     )
                                 ]
                             )
@@ -77,23 +76,28 @@ layout = html.Div([
 @callback(
     Output("District", "options"),
     Output("Upazila", "options"),
-    Output("Map", "figure", allow_duplicate=True),
+    Output("Map", "figure"),
     Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
     Input("District", "options"),
     Input("Upazila", "options"),
-    State("geoSlider", "value"),
+    Input("geoSlider", "value"),
+    Input("Diseaselist", "value"),
     State("cache_bahis_data", "data"),
     State("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
 
-def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, sourcedata, geodata):
+def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, sourcedata, geodata, SelectedDisease):
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
+    geoResolution = "upazila"
+    shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later furterh 3 instances
+    print(SelectedDisease)
+
     if DistrictList is None: 
         DistrictList = []
     if UpazilaList is None: 
@@ -109,7 +113,6 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
             UpazilaList = []
-
     if ctx.triggered_id == "District":
         if not SelectedDistrict:
             reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
@@ -155,35 +158,6 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
     reset = False
     
     CompletenessFig = CompletenessReport.generate_reports_heatmap(reportsdata,
-                                                                geoNameNNumber, start, end, SelectedDivision,
-                                                                SelectedDistrict, diseaselist, reset)
-
+        geoNameNNumber, start, end, SelectedDivision, SelectedDistrict, diseaselist, reset)
+    
     return DistrictList, UpazilaList, MapFig, CompletenessFig
-
-@callback(
-    Output("Map", "figure", allow_duplicate=True),
-    Input("geoSlider", "value"),
-    State("cache_bahis_data", "data"),
-    State("cache_bahis_geodata", "data"),
-    prevent_initial_call=True
-)
-
-def RegionResolution(geoSlider, sourcedata, geodata):
-    reportsdata = pd.read_json(sourcedata, orient="split")
-    geoNameNNumber = pd.read_json(geodata, orient="split")
-    
-    if geoSlider == 1:
-        geoResolution = "division"
-        shapePath = "exported_data/processed_geodata/divdata.geojson"
-    
-    if geoSlider == 2:
-        geoResolution = "district"
-        shapePath = "exported_data/processed_geodata/distdata.geojson"
-    
-    if geoSlider == 3:
-        geoResolution = "upazila"
-        shapePath = "exported_data/processed_geodata/upadata.geojson"
-    
-    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
-
-    return MapFig

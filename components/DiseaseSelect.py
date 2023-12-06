@@ -1,4 +1,5 @@
 from components import fetchdata
+import dash_bootstrap_components as dbc
 from dash import html, dcc, callback
 from dash.dependencies import Input, Output
 import pandas as pd
@@ -7,6 +8,7 @@ ddDList=[]
 
 Form = html.Div([
     dcc.Store(id="cache_bahis_data"),
+#    dbc.Label("Select Disease"),
     dcc.Dropdown(
         ddDList,
         "All Diseases",
