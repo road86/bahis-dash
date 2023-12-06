@@ -20,12 +20,10 @@ Form = html.Div([
     #     max_date_allowed = last_date,   # create_date,
     #     end_date = last_date,  # date(2023, 12, 31)
     # )
-    dmc.DateRangePickerconda install(
-        id="daterange",
-        min_date_allowed=start_date,
-        start_date=last_date - timedelta(weeks=6),  # date(2023, 1, 1),
-        max_date_allowed = last_date,   # create_date,
-        end_date = last_date,  # date(2023, 12, 31)
+    dmc.DateRangePicker(
+        id="DateRange",
+        minDate =start_date,
+        value=[last_date - timedelta(weeks=6), last_date],
     )
 
 ])

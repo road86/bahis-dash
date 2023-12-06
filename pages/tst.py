@@ -84,18 +84,20 @@ layout = html.Div([
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
-    Input("Diseaselist", "value"),
+    Input("DateRange", "value"),
+    Input("Disease", "value"),
     State("cache_bahis_data", "data"),
     State("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
 
-def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, sourcedata, geodata, SelectedDisease):
+def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata):
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
     geoResolution = "upazila"
-    shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later furterh 3 instances
+    shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
+    print(DateRange)
     print(SelectedDisease)
 
     if DistrictList is None: 
