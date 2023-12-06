@@ -3,7 +3,7 @@ from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect,
 from datetime import date
 from dash import html, dcc, callback, ctx
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import pandas as pd
 
 
@@ -77,16 +77,16 @@ layout = html.Div([
 @callback(
     Output("District", "options"),
     Output("Upazila", "options"),
-    Output("Map", "figure"),
+    Output("Map", "figure", allow_duplicate=True),
     Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
     Input("District", "options"),
     Input("Upazila", "options"),
-    Input("geoSlider", "value"),
-    Input("cache_bahis_data", "data"),
-    Input("cache_bahis_geodata", "data"),
+    State("geoSlider", "value"),
+    State("cache_bahis_data", "data"),
+    State("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
 
@@ -159,3 +159,31 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
                                                                 SelectedDistrict, diseaselist, reset)
 
     return DistrictList, UpazilaList, MapFig, CompletenessFig
+
+@callback(
+    Output("Map", "figure", allow_duplicate=True),
+    Input("geoSlider", "value"),
+    State("cache_bahis_data", "data"),
+    State("cache_bahis_geodata", "data"),
+    prevent_initial_call=True
+)
+
+def RegionResolution(geoSlider, sourcedata, geodata):
+    reportsdata = pd.read_json(sourcedata, orient="split")
+    geoNameNNumber = pd.read_json(geodata, orient="split")
+    
+    if geoSlider == 1:
+        geoResolution = "division"
+        shapePath = "exported_data/processed_geodata/divdata.geojson"
+    
+    if geoSlider == 2:
+        geoResolution = "district"
+        shapePath = "exported_data/processed_geodata/distdata.geojson"
+    
+    if geoSlider == 3:
+        geoResolution = "upazila"
+        shapePath = "exported_data/processed_geodata/upadata.geojson"
+    
+    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
+
+    return MapFig

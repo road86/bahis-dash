@@ -25,12 +25,9 @@ def plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePa
     reports = reports.combine_first(geoNameNNumber)
 
     shapedata = open_data(shapePath)  
+    geoResolutionDiv = geoResolution    # exception of shapefile names in division resolution
     if geoResolutionNo == 1:
-        #reports = reports.rename(columns = {"divisionnumber": "divnumber"})
-        print(reports)
-    if geoResolutionNo == 2:
-        #reports = reports.rename(columns = {"divisionnumber": "divnumber"})
-        print(reports)
+        geoResolutionDiv = "div"
 
     custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
     fig = px.choropleth_mapbox(
@@ -38,7 +35,7 @@ def plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePa
         geojson=shapedata,
         locations=geoResolution + "number",
         color="Reports",
-        featureidkey="properties." + geoResolution + "number",
+        featureidkey="properties." + geoResolutionDiv + "number",
         color_continuous_scale=custolor,
         range_color=(1, reports["Reports"].max()),
         mapbox_style="carto-positron",
