@@ -8,7 +8,7 @@ Form = html.Div([
     dcc.Store(id="cache_bahis_geodata"),
     dbc.Row([
             dbc.Col([
-                dbc.Label("Division"),
+#                dbc.Label("Division"),
                 dcc.Dropdown(
                     id="Division",
                     clearable=True,
@@ -16,7 +16,7 @@ Form = html.Div([
                 ),
             ]),
             dbc.Col([
-                dbc.Label("District"),
+#                dbc.Label("District"),
                 dcc.Dropdown(
                     id="District",
                     clearable=True,
@@ -24,7 +24,7 @@ Form = html.Div([
                 ),
             ]),
             dbc.Col([
-                dbc.Label("Upazila"),
+#                dbc.Label("Upazila"),
                 dcc.Dropdown(
                     id="Upazila",
                     clearable=True,

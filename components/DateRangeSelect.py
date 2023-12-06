@@ -1,5 +1,7 @@
 from datetime import timedelta, date
 from components import fetchdata
+import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from dash import html, dcc, callback
 from dash.dependencies import Input, Output
 import pandas as pd
@@ -10,13 +12,22 @@ last_date = date(2023, 1, 1)  #max(bahis_data['date']).date()
 # fetchdata.create_date(sourcefilename)
 
 Form = html.Div([
-    dcc.DatePickerRange(
+#    dbc.Label("Select Daterange"),
+    # dcc.DatePickerRange(
+    #     id="daterange",
+    #     min_date_allowed=start_date,
+    #     start_date=last_date - timedelta(weeks=6),  # date(2023, 1, 1),
+    #     max_date_allowed = last_date,   # create_date,
+    #     end_date = last_date,  # date(2023, 12, 31)
+    # )
+    dmc.DateRangePickerconda install(
         id="daterange",
         min_date_allowed=start_date,
         start_date=last_date - timedelta(weeks=6),  # date(2023, 1, 1),
         max_date_allowed = last_date,   # create_date,
         end_date = last_date,  # date(2023, 12, 31)
     )
+
 ])
 
 # @callback(
