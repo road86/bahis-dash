@@ -23,13 +23,19 @@ def plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePa
     geoNameNNumber[geoResolution + "name"] = geoNameNNumber[geoResolution + "name"].str.title()
 
     reports = reports.combine_first(geoNameNNumber)
-
+    reports[geoResolution + "number"] = reports.index
+   
     shapedata = open_data(shapePath)  
     geoResolutionDiv = geoResolution    # exception of shapefile names in division resolution
     if geoResolutionNo == 1:
         geoResolutionDiv = "div"
 
-    custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
+
+    if pd.notna(reports['Reports']).any():
+       custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
+    else:
+       custolor = [[0, "white"]]
+
     fig = px.choropleth_mapbox(
         reports,
         geojson=shapedata,
