@@ -74,9 +74,9 @@ layout = html.Div([
 
 
 @callback(
-    Output("District", "options", allow_duplicate=True),
-    Output("Upazila", "options", allow_duplicate=True),
-    Output("Map", "figure", allow_duplicate=True),
+    Output("District", "options"),
+    Output("Upazila", "options"),
+    Output("Map", "figure"),
     Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
