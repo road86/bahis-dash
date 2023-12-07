@@ -1,8 +1,8 @@
 import dash
-from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect, CompletenessReport
+from components import fetchdata, RegionSelect, MapNResolution
 from dash import html, dcc, callback, ctx
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 import pandas as pd
 
 
@@ -15,7 +15,7 @@ layout = html.Div([
     # dcc.Store(id="cache_bahis_geodata"),
     dbc.Row(
         [
-            dbc.Col(            # left side
+            dbc.Col(
                 [
                     dbc.Card(
                         dbc.CardBody(RegionSelect.Form),
@@ -26,48 +26,6 @@ layout = html.Div([
                 ],
                 width=4,
             ),
-            dbc.Col([          # right side
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        DateRangeSelect.Form
-                                    ),
-                                    dbc.Col(
-                                        DiseaseSelect.Form
-                                    )
-                                ]
-                            )
-                        ]
-                    )
-                ),
-                dbc.Card(
-                    dbc.CardBody(
-                        [
-                            dbc.Tab(
-                                [
-                                    dbc.Card(
-                                        dbc.CardBody(
-                                            [
-                                                html.Label("Weekly Completeness"),
-                                                dbc.Col(
-                                                    [
-                                                        dcc.Graph(id="Completeness")
-                                                    ]
-                                                )
-                                            ]
-                                        )
-                                    )
-                                ],
-                                label="Completeness",
-                                tab_id="CompletenessTab",
-                            ),
-                        ]
-                    ),
-                ),
-            ])
         ]
     )
 ]),
@@ -77,31 +35,21 @@ layout = html.Div([
     Output("District", "options", allow_duplicate=True),
     Output("Upazila", "options", allow_duplicate=True),
     Output("Map", "figure", allow_duplicate=True),
-    Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
-    Input("DateRange", "value"),
-    Input("Disease", "value"),
-    State("Completeness", "figure"),
-    State("cache_bahis_data", "data"),
-    State("cache_bahis_geodata", "data"),
+    Input("cache_bahis_data", "data"),
+    Input("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
 
-def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, CompletenessFig, sourcedata, geodata):
+def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, sourcedata, geodata):
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
-    geoResolution = "upazila"
-    shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
-
-    reportsdata = fetchdata.date_subset(DateRange, reportsdata)
-    reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
-
     if DistrictList is None: 
         DistrictList = []
     if UpazilaList is None: 
@@ -117,6 +65,7 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
             UpazilaList = []
+
     if ctx.triggered_id == "District":
         if not SelectedDistrict:
             reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
@@ -134,7 +83,7 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
             geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
         else:
             reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedUpazila))]
 
     if geoSlider == 1:
         geoResolution = "division"
@@ -148,19 +97,12 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
         geoResolution = "upazila"
         shapePath = "exported_data/processed_geodata/upadata.geojson"
     
-    # if UpazilaList =  []
-    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
+    Mapfig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
 
     # if ctx.triggered_id == 'geoSlider':
     #     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title,
     #                                                         subDistM, pnumber, pname, variab, labl)
 
     # Rfig = plot_map(path, subDistM, sub_bahis_sourcedata, title, pnumber, pname, variab, labl)
-    
-    if SelectedUpazila==None:
-        CompletenessFig = CompletenessReport.generate_reports_heatmap(reportsdata,
-            geoNameNNumber, DateRange[0], DateRange[1], SelectedDivision, SelectedDistrict)
-    else:
-        CompletenessFig = CompletenessFig
-    
-    return DistrictList, UpazilaList, MapFig, CompletenessFig
+
+    return DistrictList, UpazilaList, Mapfig
