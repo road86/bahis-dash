@@ -233,7 +233,7 @@ def update_whatever(
         ULOsubDist
 
     if firstrun is True:  # inital settings
-        ULOddDList = fetchdata.fetchdiseaselist(ULOsub_bahis_sourcedata)
+        ULOddDList = fetchdata.fetchDiseaselist(ULOsub_bahis_sourcedata)
         firstrun = False
 
     ULOsubDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(ULOSelUpa))]
