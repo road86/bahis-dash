@@ -97,8 +97,9 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
     geoNameNNumber = pd.read_json(geodata, orient="split")
     geoResolution = "upazila"
     shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
-    print(DateRange)
-    print(SelectedDisease)
+
+    reportsdata = fetchdata.date_subset(DateRange, reportsdata)
+    reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
 
     if DistrictList is None: 
         DistrictList = []
@@ -146,6 +147,7 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
         geoResolution = "upazila"
         shapePath = "exported_data/processed_geodata/upadata.geojson"
     
+    if UpazilaList =[]
     MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
 
     # if ctx.triggered_id == 'geoSlider':
@@ -154,12 +156,9 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
 
     # Rfig = plot_map(path, subDistM, sub_bahis_sourcedata, title, pnumber, pname, variab, labl)
 
-    start = "2022-12-1 0:0:0"
-    end = "2023-1-1 0:0:0" # date(2023, 1, 1)  #max(bahis_data['date']).date()
-    diseaselist = "All Diseases"
     reset = False
     
     CompletenessFig = CompletenessReport.generate_reports_heatmap(reportsdata,
-        geoNameNNumber, start, end, SelectedDivision, SelectedDistrict, diseaselist, reset)
+        geoNameNNumber, DateRange[0], DateRange[1], SelectedDivision, SelectedDistrict, SelectedDisease, reset)
     
     return DistrictList, UpazilaList, MapFig, CompletenessFig
