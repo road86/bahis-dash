@@ -77,8 +77,21 @@ def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups
     bahis_distype= bahis_dgdata.drop_duplicates(subset="Disease type", keep="first")
     return bahis_dgdata, bahis_distype
 
+def fetchGeoName(bahis_geodata, geonumber):  ########to be done
+    geoname=""
+    if len(str(geonumber)) == 2:
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 1) & (bahis_geodata["division"] == geonumber)][["value", "name"]]
+        print(geonumber)
+        print(geoname)
+    if len(str(geonumber)) == 4:
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 2) & (bahis_geodata["district"] == geonumber)][["value", "name"]]
+    if len(str(geonumber)) == 6:
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 3) & (bahis_geodata["upazila"] == geonumber)][["value", "name"]]
 
-def fetchDivisionlist(bahis_geodata):  # division lsit is always the same, caching possible
+    return geoname
+
+
+def fetchDivisionlist(bahis_geodata):  # division list is always the same, caching possible
     Divlist = bahis_geodata[(bahis_geodata["loc_type"] == 1)][["value", "name"]]
     Divlist["name"] = Divlist["name"].str.capitalize()
     Divlist = Divlist.rename(columns={"name": "Division"})
