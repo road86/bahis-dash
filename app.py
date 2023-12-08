@@ -16,7 +16,7 @@ app = Dash(
     prevent_initial_callbacks="initial_duplicate",
 )
 
-dash.register_page(__name__)  # register page to main dash app
+dash.register_page(__name__,)  # register page to main dash app
 
 sourcepath = "exported_data/"
 geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
