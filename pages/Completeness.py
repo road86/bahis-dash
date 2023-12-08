@@ -9,10 +9,10 @@ import pandas as pd
 dash.register_page(__name__,)  # register page to main dash app
 
 layout = html.Div([
-    # dcc.Store(id="cache_bahis_data", storage_type="memory"),
+    dcc.Store(id="cache_bahis_data", storage_type="memory"),
     # dcc.Store(id="cache_bahis_dgdata", storage_type="memory"),
     # dcc.Store(id="cache_bahis_distypes", storage_type="memory"),
-    # dcc.Store(id="cache_bahis_geodata"),
+    dcc.Store(id="cache_bahis_geodata"),
     dbc.Row(
         [
             dbc.Col(            # left side
@@ -45,26 +45,18 @@ layout = html.Div([
                 ),
                 dbc.Card(
                     dbc.CardBody(
-                        [
-                            dbc.Tab(
+                        [dbc.Card(
+                            dbc.CardBody(
                                 [
-                                    dbc.Card(
-                                        dbc.CardBody(
-                                            [
-                                                html.Label("Weekly Completeness"),
-                                                dbc.Col(
-                                                    [
-                                                        dcc.Graph(id="Completeness")
-                                                    ]
-                                                )
-                                            ]
-                                        )
+                                    html.Label("Weekly Completeness"),
+                                    dbc.Col(
+                                        [
+                                            dcc.Graph(id="Completeness")
+                                        ]
                                     )
-                                ],
-                                label="Completeness",
-                                tab_id="CompletenessTab",
-                            ),
-                        ]
+                                ]
+                            )
+                        )]
                     ),
                 ),
             ])
@@ -74,9 +66,9 @@ layout = html.Div([
 
 
 @callback(
-    Output("District", "options"),
-    Output("Upazila", "options"),
-    Output("Map", "figure"),
+    Output("District", "options", allow_duplicate=True),
+    Output("Upazila", "options", allow_duplicate=True),
+    Output("Map", "figure", allow_duplicate=True),
     Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
@@ -92,7 +84,7 @@ layout = html.Div([
     prevent_initial_call=True
 )
 
-def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, CompletenessFig, sourcedata, geodata):
+def Completeness(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, CompletenessFig, sourcedata, geodata):
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
@@ -117,6 +109,7 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
             UpazilaList = []
+    
     if ctx.triggered_id == "District":
         if not SelectedDistrict:
             reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
@@ -134,11 +127,11 @@ def RegionSelect(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictLi
             geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
         else:
             reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]
+            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]     # check if valid for other "tabs"
 
     if geoSlider == 1:
         geoResolution = "division"
-        shapePath = "exported_data/processed_geodata/divdata.geojson"
+        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
     
     if geoSlider == 2:
         geoResolution = "district"

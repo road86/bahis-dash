@@ -77,10 +77,10 @@ Form = html.Div([
 
 
 @callback(
-    Output("Map", "figure", allow_duplicate=True),
+    Output("Map", "figure"), #, allow_duplicate=True),
     Input("cache_bahis_data", "data"),
     Input("cache_bahis_geodata", "data"),
-    prevent_initial_call=True
+#    prevent_initial_call=True
 )
 
 def mapPrep(sourcedata, geodata):
