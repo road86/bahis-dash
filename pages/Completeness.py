@@ -31,7 +31,6 @@ def Completeness(CompletenessFig, sourcedata, geodata, settings):
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
-    print(settings)
     if SelectedUpazila==None:
         CompletenessFig = CompletenessReport.generate_reports_heatmap(reportsdata,
             geoNameNNumber, DateRange[0], DateRange[1], SelectedDivision, SelectedDistrict)
