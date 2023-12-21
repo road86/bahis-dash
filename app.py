@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from components import navbar, pathnames, fetchdata
 from dash import Dash, Input, Output, dcc, html, State, ctx
 
-from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect 
+from components import RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect
 import pandas as pd
 import json
 
@@ -117,11 +117,13 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
-    Output("Division", "options"),  # , allow_duplicate=True),
-    Output("District", "options"),  # , allow_duplicate=True),
-    Output("Upazila", "options"),  # , allow_duplicate=True),
-    Output("Map", "figure"),  # , allow_duplicate=True),
+    Output("Division", "options"), 
+    Output("District", "options"),  
+    Output("Upazila", "options"), 
+    Output("Map", "figure"),  
+    Output("Disease", "options"),  
     Output("cache_page_settings", "data"),    
+#    Output('page-content', 'children'),
 
     Input("Division", "value"),
     Input("District", "value"),
@@ -132,23 +134,26 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("geoSlider", "value"),
     Input("DateRange", "value"),
     Input("Disease", "value"),
-    Input("cache_bahis_data", "data"),
-    Input("cache_bahis_geodata", "data"),
-#    prevent_initial_call=True
+    # Input("cache_bahis_data", "data"),
+    # Input("cache_bahis_geodata", "data"),
 )
 
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): 
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):  # , sourcedata, geodata): 
 
-    reportsdata = pd.read_json(sourcedata, orient="split")
-    geoNameNNumber = pd.read_json(geodata, orient="split")
+    # reportsdata = pd.read_json(sourcedata, orient="split")
+    # geoNameNNumber = pd.read_json(geodata, orient="split")
+    reportsdata = bahis_data
+    geoNameNNumber = bahis_geodata
+
     geoResolution = "upazila"
     shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
-
+    
     reportsdata = fetchdata.date_subset(DateRange, reportsdata)
     reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
 
     if SelectedDivision is None:
-        List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+#        List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]     
     DivisionList = DivisionList
 
@@ -215,6 +220,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             else:
                 DivisionEntry = DivisionList
 
+    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     page_settings = {  
         "division": DivisionEntry,
@@ -223,8 +229,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "disease": SelectedDisease,
         "daterange": DateRange
     }
-
-    return DivisionList, DistrictList, UpazilaList, MapFig, json.dumps(page_settings)  # page_settings.to_json(date_format='iso', orient='split') 
+    
+    return DivisionList, DistrictList, UpazilaList, MapFig, DiseaseList, json.dumps(page_settings)
 
 # Run the app on localhost:80
 if __name__ == "__main__":
