@@ -5,7 +5,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from components import navbar, pathnames, fetchdata
-from dash import Dash, Input, Output, dcc, html, State
+from dash import Dash, Input, Output, dcc, html, State, ctx
 
 from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect 
 import pandas as pd
@@ -80,7 +80,6 @@ app.layout = html.Div(
             ]
         ),
         
-#        dash.page_container,
         html.Br(),
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
@@ -117,10 +116,11 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
-    Output("District", "options", allow_duplicate=True),
-    Output("Upazila", "options", allow_duplicate=True),
-    Output("Map", "figure", allow_duplicate=True),
+    Output("District", "options"),  # , allow_duplicate=True),
+    Output("Upazila", "options"),  # , allow_duplicate=True),
+    Output("Map", "figure"),  # , allow_duplicate=True),
     Output("cache_page_settings", "data"),    
+
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -129,10 +129,9 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("geoSlider", "value"),
     Input("DateRange", "value"),
     Input("Disease", "value"),
-    State("cache_bahis_data", "data"),
-    State("cache_bahis_geodata", "data"),
-    State("cache_bahis_geodata", "data"),
-    prevent_initial_call=True
+    Input("cache_bahis_data", "data"),
+    Input("cache_bahis_geodata", "data"),
+#    prevent_initial_call=True
 )
 
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): 
@@ -212,7 +211,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
     page_settings = {  
         "division": DivisionEntry,
         "district": DistrictEntry,
-        "upazila": DistrictEntry,
+        "upazila": UpazilaEntry,
         "disease": SelectedDisease,
         "daterange": DateRange
     }
@@ -223,6 +222,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
 
 # Run the app on localhost:80
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=80)
+    app.run(debug=True, host="0.0.0.0", port=80)  # maybe debug false to prevent second loading
 else:
     server = app.server
