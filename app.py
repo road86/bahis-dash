@@ -195,15 +195,15 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
             geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]     # check if valid for other "tabs"
    
-    if SelectedUpazila != None:
+    if SelectedUpazila is not None:
         UpazilaEntry = SelectedUpazila
     else:
-        UpazilaEntry= UpazilaList
-        if SelectedDistrict != None:
+        UpazilaEntry = UpazilaList
+        if SelectedDistrict is not None:
             DistrictEntry = SelectedDistrict
         else:
             DistrictEntry = DistrictList
-            if SelectedDivision != None:
+            if SelectedDivision is not None:
                 DivisionEntry = SelectedDivision
             else:
                 DivisionEntry = DivisionList
