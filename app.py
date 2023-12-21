@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from components import navbar, pathnames, fetchdata
 from dash import Dash, Input, Output, dcc, html, State
 
-from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect # , CompletenessReport
+from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect 
 import pandas as pd
 
 
@@ -71,16 +71,7 @@ app.layout = html.Div(
                         dbc.CardBody(
                             [dbc.Card(
                                 dbc.CardBody(
-                                    # [
                                     dash.page_container,
-                                    # [
-                                    #     html.Label("Weekly Completeness"),
-                                    #     dbc.Col(
-                                    #         [
-                                    #             dcc.Graph(id="Completeness")
-                                    #         ]
-                                    #     )
-                                    # ]
                                 )
                             )]
                         ),
@@ -125,19 +116,11 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     return is_open
 
 
-# Run the app on localhost:80
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=80)
-else:
-    server = app.server
-
-
 @app.callback(
     Output("District", "options", allow_duplicate=True),
     Output("Upazila", "options", allow_duplicate=True),
     Output("Map", "figure", allow_duplicate=True),
     Output("cache_page_settings", "data"),    
-#    Output("Completeness", "figure"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -146,14 +129,13 @@ else:
     Input("geoSlider", "value"),
     Input("DateRange", "value"),
     Input("Disease", "value"),
-#    State("Completeness", "figure"),
     State("cache_bahis_data", "data"),
     State("cache_bahis_geodata", "data"),
     State("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
 
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): # CompletenessFig, sourcedata, geodata):
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): 
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
@@ -212,18 +194,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
     
     # if UpazilaList =  []
     MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
-
-    # if ctx.triggered_id == 'geoSlider':
-    #     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep.GeoRep(sub_bahis_sourcedata, title,
-    #                                                         subDistM, pnumber, pname, variab, labl)
-
-    # Rfig = plot_map(path, subDistM, sub_bahis_sourcedata, title, pnumber, pname, variab, labl)
-    
-    # if SelectedUpazila==None:
-    #     CompletenessFig = CompletenessReport.generate_reports_heatmap(reportsdata,
-    #         geoNameNNumber, DateRange[0], DateRange[1], SelectedDivision, SelectedDistrict)
-    # else:
-    #     CompletenessFig = CompletenessFig
     
     if SelectedUpazila != None:
         UpazilaEntry = SelectedUpazila
@@ -249,4 +219,10 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
 
     print(page_settings)
 
-    return DistrictList, UpazilaList, MapFig, page_settings.to_json(date_format='iso', orient='split') # , CompletenessFig
+    return DistrictList, UpazilaList, MapFig, page_settings.to_json(date_format='iso', orient='split') 
+
+# Run the app on localhost:80
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=80)
+else:
+    server = app.server
