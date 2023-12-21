@@ -9,10 +9,6 @@ import pandas as pd
 dash.register_page(__name__,)  # register page to main dash app
 
 layout = html.Div([
-    dcc.Store(id="cache_bahis_data", storage_type="memory"),
-    # dcc.Store(id="cache_bahis_dgdata", storage_type="memory"),
-    # dcc.Store(id="cache_bahis_distypes", storage_type="memory"),
-    dcc.Store(id="cache_bahis_geodata"),
     dbc.Row(
         [
             dbc.Col(

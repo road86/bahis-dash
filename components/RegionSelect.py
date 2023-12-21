@@ -5,7 +5,7 @@ from dash.dependencies import Input, Output
 import pandas as pd
 
 Form = html.Div([
-    dcc.Store(id="cache_bahis_geodata"),
+    # dcc.Store(id="cache_bahis_geodata"),
     dbc.Row([
             dbc.Col([
 #                dbc.Label("Division"),
