@@ -9,6 +9,7 @@ from dash import Dash, Input, Output, dcc, html, State, ctx
 
 from components import fetchdata, RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect 
 import pandas as pd
+import json
 
 
 app = Dash(
@@ -116,6 +117,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
+    Output("Division", "options"),  # , allow_duplicate=True),
     Output("District", "options"),  # , allow_duplicate=True),
     Output("Upazila", "options"),  # , allow_duplicate=True),
     Output("Map", "figure"),  # , allow_duplicate=True),
@@ -124,6 +126,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
+    Input("Division", "options"),
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
@@ -134,7 +137,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 #    prevent_initial_call=True
 )
 
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): 
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease, sourcedata, geodata): 
 
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
@@ -143,6 +146,11 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
 
     reportsdata = fetchdata.date_subset(DateRange, reportsdata)
     reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
+
+    if SelectedDivision is None:
+        List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]     
+    DivisionList = DivisionList
 
     if DistrictList is None: 
         DistrictList = []
@@ -216,9 +224,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DistrictList,
         "daterange": DateRange
     }
 
-    print(page_settings)
-
-    return DistrictList, UpazilaList, MapFig, page_settings.to_json(date_format='iso', orient='split') 
+    return DivisionList, DistrictList, UpazilaList, MapFig, json.dumps(page_settings)  # page_settings.to_json(date_format='iso', orient='split') 
 
 # Run the app on localhost:80
 if __name__ == "__main__":
