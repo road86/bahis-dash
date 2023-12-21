@@ -1,0 +1,2 @@
+a= {"division": [{"label": "Barisal", "value": 10}, {"label": "Chittagong", "value": 20}, {"label": "Dhaka", "value": 30}, {"label": "Khulna", "value": 40}, {"label": "Mymensingh", "value": 45}, {"label": "Rajshahi", "value": 50}, {"label": "Rangpur", "value": 55}, {"label": "Sylhet", "value": 60}], "district": [], "upazila": [], "georesolution": 3, "disease": "All Diseases", "daterange": ["2022-11-20", "2023-01-01"]}
+print(a["division"])
