@@ -197,10 +197,13 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
    
     if SelectedUpazila is not None:
         UpazilaEntry = SelectedUpazila
+        DistrictEntry = SelectedDistrict
+        DivisionEntry = SelectedDivision
     else:
         UpazilaEntry = UpazilaList
         if SelectedDistrict is not None:
             DistrictEntry = SelectedDistrict
+            DivisionEntry = SelectedDivision
         else:
             DistrictEntry = DistrictList
             if SelectedDivision is not None:
