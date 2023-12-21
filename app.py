@@ -124,7 +124,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 #    Output("Map", "figure"),  
     Output("Disease", "options"),  
     Output("cache_page_settings", "data"),    
-    Output("cache_page_data", "data"),    
+#    Output("cache_page_data", "data"),    
    
 #    Output('page-content', 'children'),
 
@@ -177,7 +177,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             UpazilaList = []
     
     if ctx.triggered_id == "District":
-        if not SelectedDistrict:
+        if not SelectedDistrict:                ######## check when jumping from upa to division #####
             reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
             geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDivision))]
             UpazilaList = []
@@ -221,21 +221,43 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "disease": SelectedDisease,
         "daterange": DateRange,
     }
-    
-    page_data= reportsdata
 
-    return DivisionList, DistrictList, UpazilaList, DiseaseList, json.dumps(page_settings), page_data.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, DiseaseList, json.dumps(page_settings) #, page_data.to_json(date_format='iso', orient='split')
+
+@app.callback(
+    Output("cache_page_data", "data"),    
+    Input("cache_page_settings", "data"),    
+)
+
+def UpdatePageData(settings):  
+
+    reportsdata = bahis_data
+    reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
+    reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
+
+    if type(json.loads(settings)["upazila"])==int:
+        reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]  
+    else:        
+        if type(json.loads(settings)["district"])==int:
+            reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]  
+        else:
+            if type(json.loads(settings)["division"])==int:
+                reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]  
+            else:
+                reportsdata = reportsdata
+
+    page_data= reportsdata 
+    return page_data.to_json(date_format='iso', orient='split')
+
 
 @app.callback(
     Output("Map", "figure"),  
 #    Output('page-content', 'children'),
-    Input("geoSlider", "value"),
-#    Input("cache_page_settings", "data"),    
+    Input("geoSlider", "value"), 
     Input("cache_page_data", "data"),    
 )
 
-def UpdateFigs(geoSlider, data):  # settings, data): 
-    #print(json.loads(settings)["georesolution"])
+def UpdateFigs(geoSlider, data): 
 
     if geoSlider == 1:
         geoResolution = "division"
@@ -252,7 +274,6 @@ def UpdateFigs(geoSlider, data):  # settings, data):
     MapFig = MapNResolution.plotMap(geoResolution, geoSlider, pd.read_json(data, orient="split"), bahis_geodata, shapePath)
     return MapFig
 
-    
 
 # Run the app on localhost:80
 if __name__ == "__main__":
