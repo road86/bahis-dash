@@ -84,24 +84,25 @@ app.layout = html.Div(
         html.Br(),
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
-        dcc.Store(id="cache_bahis_data", storage_type="memory"),
-        dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
-        dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
-        dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
+#        dcc.Store(id="cache_bahis_data", storage_type="memory"),
+#        dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
+#        dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
+#        dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
         dcc.Store(id="cache_page_settings", storage_type="memory"),
+        dcc.Store(id="cache_page_data", storage_type="memory"),
     ]
 )
 
 
-@app.callback(
-    Output("cache_bahis_data", "data"),
-    Output("cache_bahis_distypes", "data"),
-    Output("cache_bahis_geodata", "data"),
-    Input("dummy", "id")
-)
+# @app.callback(
+#     Output("cache_bahis_data", "data"),
+#     Output("cache_bahis_distypes", "data"),
+#     Output("cache_bahis_geodata", "data"),
+#     Input("dummy", "id")
+# )
 
-def store2cache(dummy):
-    return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
+# def store2cache(dummy):
+#     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
@@ -120,9 +121,11 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Division", "options"), 
     Output("District", "options"),  
     Output("Upazila", "options"), 
-    Output("Map", "figure"),  
+#    Output("Map", "figure"),  
     Output("Disease", "options"),  
     Output("cache_page_settings", "data"),    
+    Output("cache_page_data", "data"),    
+   
 #    Output('page-content', 'children'),
 
     Input("Division", "value"),
@@ -145,8 +148,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     reportsdata = bahis_data
     geoNameNNumber = bahis_geodata
 
-    geoResolution = "upazila"
-    shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
+    # geoResolution = "upazila"
+    # shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
     
     reportsdata = fetchdata.date_subset(DateRange, reportsdata)
     reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
@@ -191,22 +194,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         else:
             reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
             geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]     # check if valid for other "tabs"
-
-    if geoSlider == 1:
-        geoResolution = "division"
-        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
-    
-    if geoSlider == 2:
-        geoResolution = "district"
-        shapePath = "exported_data/processed_geodata/distdata.geojson"
-    
-    if geoSlider == 3:
-        geoResolution = "upazila"
-        shapePath = "exported_data/processed_geodata/upadata.geojson"
-    
-    # if UpazilaList =  []
-    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, reportsdata, geoNameNNumber, shapePath)
-    
+   
     if SelectedUpazila != None:
         UpazilaEntry = SelectedUpazila
     else:
@@ -226,11 +214,42 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "division": DivisionEntry,
         "district": DistrictEntry,
         "upazila": UpazilaEntry,
+        "georesolution": geoSlider,
         "disease": SelectedDisease,
-        "daterange": DateRange
+        "daterange": DateRange,
     }
     
-    return DivisionList, DistrictList, UpazilaList, MapFig, DiseaseList, json.dumps(page_settings)
+    page_data= reportsdata
+
+    return DivisionList, DistrictList, UpazilaList, DiseaseList, json.dumps(page_settings), page_data.to_json(date_format='iso', orient='split')
+
+@app.callback(
+    Output("Map", "figure"),  
+#    Output('page-content', 'children'),
+    Input("geoSlider", "value"),
+#    Input("cache_page_settings", "data"),    
+    Input("cache_page_data", "data"),    
+)
+
+def UpdateFigs(geoSlider, data):  # settings, data): 
+    #print(json.loads(settings)["georesolution"])
+
+    if geoSlider == 1:
+        geoResolution = "division"
+        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
+    
+    if geoSlider == 2:
+        geoResolution = "district"
+        shapePath = "exported_data/processed_geodata/distdata.geojson"
+    
+    if geoSlider == 3:
+        geoResolution = "upazila"
+        shapePath = "exported_data/processed_geodata/upadata.geojson"
+
+    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, pd.read_json(data, orient="split"), bahis_geodata, shapePath)
+    return MapFig
+
+    
 
 # Run the app on localhost:80
 if __name__ == "__main__":
