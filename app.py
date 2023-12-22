@@ -263,19 +263,21 @@ def UpdatePageData(settings):
 
 
 @app.callback(
-    Output("Map", "figure"), #, allow_duplicate =True),  
+    Output("Map", "figure", allow_duplicate =True),  
+    Output("Refresh", "n_clicks", allow_duplicate =True),
     #Output("url", "pathname"),
     #Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),    
+    Input("Refresh", "n_clicks"),
     #Input('page-content', 'children'),
     #State("url", "pathname"),
 )
 
-def UpdateFigs(data, geodata, settings): # , path): 
+def UpdateFigs(data, geodata, settings, click): # , path): 
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-    return MapFig # , path # , Completeness.Layout  
+    return MapFig, click+1 # , path # , Completeness.Layout  
 
 
 # Run the app on localhost:80
