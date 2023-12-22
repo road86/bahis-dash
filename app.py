@@ -11,7 +11,6 @@ from components import RegionSelect, MapNResolution, DateRangeSelect, DiseaseSel
 import pandas as pd
 import json
 
-
 app = Dash(
     __name__,
     use_pages=True,
@@ -72,7 +71,10 @@ app.layout = html.Div(
                         dbc.CardBody(
                             [dbc.Card(
                                 dbc.CardBody(
+                                    [
+                                    #html.Div(id="page-content"),
                                     dash.page_container,
+                                    ]
                                 )
                             )]
                         ),
@@ -119,12 +121,12 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
-    Output("Division", "options"), 
+    Output("Division", "options", allow_duplicate =True), 
     Output("District", "options"),  
     Output("Upazila", "options"), 
     Output("District", "value"),  
     Output("Upazila", "value"),  
-    Output("Disease", "options"),  
+    Output("Disease", "options", allow_duplicate =True),  
     Output("cache_page_settings", "data"),    
 #    Output('page-content', 'children'),
 
@@ -212,9 +214,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             else:
                 UpazilaEntry = SelectedUpazila
                 U = SelectedUpazila
-
     #     shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust in MapNResolution.py
-    
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     page_settings = {  
@@ -244,7 +244,7 @@ def UpdatePageData(settings):
 
     if type(json.loads(settings)["upazila"]) == int:
         reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]  
-        geodata = geodata.loc[geodata["parent"] == json.loads(settings)["upazila"]]
+        geodata = geodata.loc[geodata["value"] == json.loads(settings)["upazila"]]
     else:        
         if type(json.loads(settings)["district"]) == int:
             reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]  
@@ -263,18 +263,19 @@ def UpdatePageData(settings):
 
 
 @app.callback(
-    Output("Map", "figure"),  
-#    Output('page-content', 'children'),
-    #Input("geoSlider", "value"), 
+    Output("Map", "figure"), #, allow_duplicate =True),  
+    #Output("url", "pathname"),
+    #Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),    
+    #Input('page-content', 'children'),
+    #State("url", "pathname"),
 )
 
-def UpdateFigs(data, geodata, settings): 
-
+def UpdateFigs(data, geodata, settings): # , path): 
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-    return MapFig
+    return MapFig # , path # , Completeness.Layout  
 
 
 # Run the app on localhost:80
