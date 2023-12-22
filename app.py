@@ -90,6 +90,7 @@ app.layout = html.Div(
 #        dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
         dcc.Store(id="cache_page_settings", storage_type="memory"),
         dcc.Store(id="cache_page_data", storage_type="memory"),
+        dcc.Store(id="cache_page_geodata", storage_type="memory"),        
     ]
 )
 
@@ -152,6 +153,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]     
         DivisionEntry = DivisionList
+    else: 
+        DivisionEntry = SelectedDivision    
     DivisionList = DivisionList
 
     if DistrictList is None: 
@@ -181,27 +184,37 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
     if ctx.triggered_id == "District":
         DivisionEntry = SelectedDivision
-        if not SelectedDistrict:
+        if geoSlider == 1:
             DistrictEntry = DistrictList
             UpazilaList = []
             UpazilaEntry = UpazilaList
         else:
-            DistrictEntry = SelectedDistrict
-            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-            UpazilaEntry = UpazilaList
-            S = SelectedDistrict
+            if not SelectedDistrict:
+                DistrictEntry = DistrictList
+                UpazilaList = []
+                UpazilaEntry = UpazilaList
+            else:
+                DistrictEntry = SelectedDistrict
+                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+                UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+                UpazilaEntry = UpazilaList
+                S = SelectedDistrict
 
     if ctx.triggered_id == "Upazila":
         DivisionEntry = SelectedDivision
         DistrictEntry = SelectedDistrict
         S = SelectedDistrict
-        if not SelectedUpazila:
+        if geoSlider == 2:
             UpazilaEntry = UpazilaList
         else:
-            UpazilaEntry = SelectedUpazila
-            U = SelectedUpazila
+            if not SelectedUpazila:
+                UpazilaEntry = UpazilaList
+            else:
+                UpazilaEntry = SelectedUpazila
+                U = SelectedUpazila
 
+    #     shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust in MapNResolution.py
+    
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     page_settings = {  
@@ -215,54 +228,52 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
     return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings) #, page_data.to_json(date_format='iso', orient='split')
 
+
 @app.callback(
     Output("cache_page_data", "data"),    
+    Output("cache_page_geodata", "data"),    
     Input("cache_page_settings", "data"),    
 )
 
 def UpdatePageData(settings):  
 
     reportsdata = bahis_data
+    geodata = bahis_geodata
     reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
     reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
 
-    if type(json.loads(settings)["upazila"]) ==int:
+    if type(json.loads(settings)["upazila"]) == int:
         reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]  
+        geodata = geodata.loc[geodata["parent"] == json.loads(settings)["upazila"]]
     else:        
-        if type(json.loads(settings)["district"]) ==int:
+        if type(json.loads(settings)["district"]) == int:
             reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]  
+            geodata = geodata.loc[geodata["parent"] == json.loads(settings)["district"]]
         else:
-            if type(json.loads(settings)["division"]) ==int:
+            if type(json.loads(settings)["division"]) == int:
                 reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]  
+                geodata = geodata.loc[geodata["parent"] == json.loads(settings)["division"]]
             else:
                 reportsdata = reportsdata
+                geodata = geodata
 
-    page_data= reportsdata 
-    return page_data.to_json(date_format='iso', orient='split')
+    page_data = reportsdata 
+    page_geodata = geodata 
+    return page_data.to_json(date_format='iso', orient='split'), page_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
     Output("Map", "figure"),  
 #    Output('page-content', 'children'),
-    Input("geoSlider", "value"), 
-    Input("cache_page_data", "data"),    
+    #Input("geoSlider", "value"), 
+    Input("cache_page_data", "data"),
+    Input("cache_page_geodata", "data"),
+    Input("cache_page_settings", "data"),    
 )
 
-def UpdateFigs(geoSlider, data): 
+def UpdateFigs(data, geodata, settings): 
 
-    if geoSlider == 1:
-        geoResolution = "division"
-        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
-    
-    if geoSlider == 2:
-        geoResolution = "district"
-        shapePath = "exported_data/processed_geodata/distdata.geojson"
-    
-    if geoSlider == 3:
-        geoResolution = "upazila"
-        shapePath = "exported_data/processed_geodata/upadata.geojson"
-
-    MapFig = MapNResolution.plotMap(geoResolution, geoSlider, pd.read_json(data, orient="split"), bahis_geodata, shapePath)
+    MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
     return MapFig
 
 

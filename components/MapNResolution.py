@@ -11,7 +11,22 @@ def open_data(path):
     return data
 
 
-def plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePath):
+def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
+
+
+### note check, if only one of the resolution is selected, then plot only this and not the whole resolution
+    
+    if geoResolutionNo == 1:
+        geoResolution = "division"
+        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
+    
+    if geoResolutionNo == 2:
+        geoResolution = "district"
+        shapePath = "exported_data/processed_geodata/distdata.geojson"
+    
+    if geoResolutionNo == 3:
+        geoResolution = "upazila"
+        shapePath = "exported_data/processed_geodata/upadata.geojson"
 
     reports = reportsdata[geoResolution].value_counts().to_frame()
     reports[geoResolution + "number"] = reports.index       #print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
@@ -84,13 +99,10 @@ Form = html.Div([
 )
 
 def mapPrep(sourcedata, geodata):
-
-    geoResolution = "upazila"
     geoResolutionNo = 3
     reportsdata = pd.read_json(sourcedata, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
-    shapePath = "exported_data/processed_geodata/upadata.geojson"
-    fig = plotMap(geoResolution, geoResolutionNo, reportsdata, geoNameNNumber, shapePath)
+    fig = plotMap(geoResolutionNo, reportsdata, geoNameNNumber)
     return fig
 
 #     # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
