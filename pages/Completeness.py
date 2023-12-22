@@ -213,7 +213,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
 
 layout = [ 
         html.Label("Weekly Completeness"),
-        html.Button("Refresh", id="Refresh", n_clicks=0),
+        html.Button("Refresh", id="Refresh", n_clicks=0, hidden=True),
         dbc.Col(
             [
                 dcc.Graph(id="Completeness")
