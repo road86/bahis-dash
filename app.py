@@ -121,11 +121,10 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Division", "options"), 
     Output("District", "options"),  
     Output("Upazila", "options"), 
-#    Output("Map", "figure"),  
+    Output("District", "value"),  
+    Output("Upazila", "value"),  
     Output("Disease", "options"),  
     Output("cache_page_settings", "data"),    
-#    Output("cache_page_data", "data"),    
-   
 #    Output('page-content', 'children'),
 
     Input("Division", "value"),
@@ -141,75 +140,67 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     # Input("cache_bahis_geodata", "data"),
 )
 
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):  # , sourcedata, geodata): 
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):  
 
-    # reportsdata = pd.read_json(sourcedata, orient="split")
     # geoNameNNumber = pd.read_json(geodata, orient="split")
-    reportsdata = bahis_data
-    geoNameNNumber = bahis_geodata
-
     # geoResolution = "upazila"
     # shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
-    
-    reportsdata = fetchdata.date_subset(DateRange, reportsdata)
-    reportsdata = fetchdata.disease_subset(SelectedDisease, reportsdata)
+
+    geoNameNNumber = bahis_geodata
 
     if SelectedDivision is None:
         List = fetchdata.fetchDivisionlist(bahis_geodata)
-#        List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]     
+        DivisionEntry = DivisionList
     DivisionList = DivisionList
 
     if DistrictList is None: 
         DistrictList = []
+    DistrictEntry = []
+
     if UpazilaList is None: 
         UpazilaList = []
+    UpazilaEntry = []
+    S = ""    
+    U = ""
 
     if ctx.triggered_id == "Division":
         if not SelectedDivision:
+            DivisionEntry = DivisionList
             DistrictList = []
+            DistrictEntry = DistrictList
             UpazilaList = []
+            UpazilaEntry = UpazilaList
         else:
-            reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDivision))]
+            DivisionEntry = SelectedDivision
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+            DistrictEntry = DistrictList
             UpazilaList = []
-    
+            UpazilaEntry = UpazilaList
+
     if ctx.triggered_id == "District":
-        if not SelectedDistrict:                ######## check when jumping from upa to division #####
-            reportsdata = reportsdata.loc[reportsdata["division"] == SelectedDivision]
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDivision))]
+        DivisionEntry = SelectedDivision
+        if not SelectedDistrict:
+            DistrictEntry = DistrictList
             UpazilaList = []
+            UpazilaEntry = UpazilaList
         else:
-            reportsdata = reportsdata.loc[reportsdata["district"] == SelectedDistrict]
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
+            DistrictEntry = SelectedDistrict
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+            UpazilaEntry = UpazilaList
+            S = SelectedDistrict
 
     if ctx.triggered_id == "Upazila":
-        if not SelectedUpazila:
-            reportsdata = reportsdata.loc[reportsdata["district"] == SelectedDistrict]
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["parent"].astype("string").str.startswith(str(SelectedDistrict))]
-        else:
-            reportsdata = reportsdata.loc[reportsdata["upazila"] == SelectedUpazila]  
-            geoNameNNumber = geoNameNNumber.loc[geoNameNNumber["value"] == SelectedUpazila]     # check if valid for other "tabs"
-   
-    if SelectedUpazila is not None:
-        UpazilaEntry = SelectedUpazila
-        DistrictEntry = SelectedDistrict
         DivisionEntry = SelectedDivision
-    else:
-        UpazilaEntry = UpazilaList
-        if SelectedDistrict is not None:
-            DistrictEntry = SelectedDistrict
-            DivisionEntry = SelectedDivision
+        DistrictEntry = SelectedDistrict
+        S = SelectedDistrict
+        if not SelectedUpazila:
+            UpazilaEntry = UpazilaList
         else:
-            DistrictEntry = DistrictList
-            if SelectedDivision is not None:
-                DivisionEntry = SelectedDivision
-            else:
-                DivisionEntry = DivisionList
+            UpazilaEntry = SelectedUpazila
+            U = SelectedUpazila
 
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
@@ -222,7 +213,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, DiseaseList, json.dumps(page_settings) #, page_data.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings) #, page_data.to_json(date_format='iso', orient='split')
 
 @app.callback(
     Output("cache_page_data", "data"),    
@@ -235,13 +226,13 @@ def UpdatePageData(settings):
     reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
     reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
 
-    if type(json.loads(settings)["upazila"])==int:
+    if type(json.loads(settings)["upazila"]) ==int:
         reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]  
     else:        
-        if type(json.loads(settings)["district"])==int:
+        if type(json.loads(settings)["district"]) ==int:
             reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]  
         else:
-            if type(json.loads(settings)["division"])==int:
+            if type(json.loads(settings)["division"]) ==int:
                 reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]  
             else:
                 reportsdata = reportsdata
