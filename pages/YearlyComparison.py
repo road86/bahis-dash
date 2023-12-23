@@ -57,7 +57,7 @@ layout = [
     Input("dummy", "id"),
     State("cache_page_settings", "data"),
     State("cache_page_geodata", "data"),    
-#    State("cache_bahis_data", "data"),
+#    State("cache_bahis_data", "data"), caching probably too large
     prevent_initial_call=True
 )
 
