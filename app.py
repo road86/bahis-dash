@@ -22,7 +22,7 @@ app = Dash(
 
 dash.register_page(__name__,)  # register page to main dash app
 
-sourcepath = "exported_data/"
+sourcepath = "exported_data/"           ### called also in Top10, make global or settings parameter
 geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
@@ -264,9 +264,9 @@ def UpdatePageData(settings):
 
 
 @app.callback(
-    Output("Map", "figure", allow_duplicate =True),  
+    Output("Map", "figure", allow_duplicate=True),  
 ##    Output("Refresh", "n_clicks", allow_duplicate =True),
-    Output("dummy", "id", allow_duplicate =True),
+    Output("dummy", "id", allow_duplicate=True),
     #Output("url", "pathname"),
     #Output('page-content', 'children'),
     Input("cache_page_data", "data"),
