@@ -141,6 +141,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("Disease", "value"),
     # Input("cache_bahis_data", "data"),
     # Input("cache_bahis_geodata", "data"),
+    # prevent_initial_call=True,
 )
 
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):  
@@ -226,7 +227,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings) #, page_data.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)
 
 
 @app.callback(

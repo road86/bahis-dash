@@ -38,7 +38,7 @@ Form = html.Div([
 @callback(
     Output("Division", "options"), #, allow_duplicate=True),
     Input("cache_bahis_geodata", "data"),
-#    prevent_initial_call=True
+    prevent_initial_call=True
 )
 
 def DivisionList(geodata):
