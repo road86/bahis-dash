@@ -128,6 +128,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Upazila", "value"),  
     Output("Disease", "options", allow_duplicate =True),  
     Output("cache_page_settings", "data"),    
+#    Output("cache_bahis_data", "data"),
 #    Output('page-content', 'children'),
 
     Input("Division", "value"),
@@ -139,7 +140,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("geoSlider", "value"),
     Input("DateRange", "value"),
     Input("Disease", "value"),
-    # Input("cache_bahis_data", "data"),
     # Input("cache_bahis_geodata", "data"),
     # prevent_initial_call=True,
 )
@@ -227,13 +227,13 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)
+    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)   # , bahis_data.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
     Output("cache_page_data", "data"),    
-    Output("cache_page_geodata", "data"),    
-    Input("cache_page_settings", "data"),    
+    Output("cache_page_geodata", "data"),
+    Input("cache_page_settings", "data"),
 )
 
 def UpdatePageData(settings):  
@@ -281,7 +281,7 @@ def UpdatePageData(settings):
 def UpdateFigs(data, geodata, settings, dummy): # , path): 
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
 ##    return MapFig, click+1 # , path # , Completeness.Layout  
-    return MapFig, dummy # , path # , Completeness.Layout  
+    return MapFig, dummy   # , path # , Completeness.Layout  
 
 
 # Run the app on localhost:80

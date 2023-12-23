@@ -54,7 +54,6 @@ layout = [
 )
 
 def Poultry(PperiodClick, dummy, data, settings):
-
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
     Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]  
