@@ -79,7 +79,6 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     else:  # for divisional numbers
         if type(district) != int:  # is None:
             Districts = fetchdata.fetchDistrictlist(division, geoNameNNumber)
-            print(Districts)
             y_axis = [x['District'] for x in Districts]
             y_axis_no = [x['value'] for x in Districts]
             y_axis.reverse()
