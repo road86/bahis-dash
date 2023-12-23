@@ -10,7 +10,7 @@ import json
 dash.register_page(__name__,)  # register page to main dash app
 
 layout = [
-    html.Label("Poultry Report"),
+    html.Label("Regional Stats Report"),
     dbc.Row([
         dbc.Col(
             [

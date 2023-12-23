@@ -110,21 +110,18 @@ layout = [
     Input("Distypes", "value"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
-    State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
 
-def Poultry(SelDistypes, dummy, data, settings):
+def Poultry(SelDistypes, dummy, data):
 
     sourcepath = "exported_data/"       ### make global variable or in settings
     geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     vDistypes = bahis_distypes['Disease type']
-
     reportsdata = pd.read_json(data, orient="split")
     to_replace = bahis_dgdata["name"].tolist()
     replace_with = bahis_dgdata["Disease type"].tolist()
-
 
     flani, fpoul, figDistypes = TopTen(reportsdata, bahis_dgdata, SelDistypes, to_replace, replace_with)
     return flani, fpoul, figDistypes, vDistypes
