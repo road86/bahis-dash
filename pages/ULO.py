@@ -7,7 +7,7 @@ import pandas as pd
 from dash import callback, dcc, html
 from dash.dash import no_update
 from dash.dependencies import Input, Output, State
-from components import yearly_comparison
+#from components import yearly_comparison
 from components import ReportsSickDead
 from components import pathnames
 from components import fetchdata
@@ -32,6 +32,41 @@ ULOddDList = []
 
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 subDist = bahis_geodata
+
+def yearlyComp(bahis_data, diseaselist):
+    monthly = bahis_data.groupby(
+        [bahis_data["date"].dt.year.rename("Year"), bahis_data["date"].dt.month.rename("Month")]
+    )["date"].agg({"count"})
+    monthly = monthly.rename({"count": "reports"}, axis=1)
+    monthly = monthly.reset_index()
+    monthly['reports'] = monthly['reports'] / 1000
+    monthly["Year"] = monthly["Year"].astype(str)
+    figYearlyComp = px.bar(
+        data_frame=monthly,
+        x="Month",
+        y="reports",
+        labels={"reports": "Reports in Thousands"},
+        color="Year",
+        barmode="group",
+    )
+    figYearlyComp.update_xaxes(dtick="M1")  # , tickformat="%B \n%Y")
+    figYearlyComp.update_layout(
+        xaxis=dict(
+            tickmode='array',
+            tickvals=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+            ticktext=['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'],
+            title=""
+        ),
+        title={
+            'text': "Disease dynamics for \"" + str(diseaselist) + "\"",
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        }
+    )
+    return figYearlyComp
 
 def open_data(path):
     with open(path) as f:
@@ -250,7 +285,8 @@ def update_whatever(
     ULOsub_bahis_sourcedata = fetchdata.date_subset(ULOdates, ULOsub_bahis_sourcedata)
     ULOsub_bahis_sourcedata = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
 
-    ULOfigMonthly = yearly_comparison.yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
+#    ULOfigMonthly = yearly_comparison.yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
+    ULOfigMonthly = yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
 
     endtime_general = datetime.now()
     print("general callback : " + str(endtime_general - starttime_general))

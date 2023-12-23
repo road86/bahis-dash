@@ -281,7 +281,7 @@ def UpdatePageData(settings):
 def UpdateFigs(data, geodata, settings, dummy): # , path): 
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
 ##    return MapFig, click+1 # , path # , Completeness.Layout  
-    return MapFig, dummy   # , path # , Completeness.Layout  
+    return MapFig, dummy  # , path # , Completeness.Layout  
 
 
 # Run the app on localhost:80
