@@ -15,6 +15,7 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
 
 
 ### note check, if only one of the resolution is selected, then plot only this and not the whole resolution
+### check error, when none (eg, barisal and rare disease), then hover name error, but actually it is simply empty.
     
     if geoResolutionNo == 1:
         geoResolution = "division"
