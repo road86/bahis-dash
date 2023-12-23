@@ -212,7 +212,8 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
 
 layout = [ 
         html.Label("Weekly Completeness"),
-        html.Button("Refresh", id="Refresh", n_clicks=0, hidden=True),
+        html.Div(id="dummy"),
+        #html.Button("Refresh", id="Refresh", n_clicks=0, hidden=True),
         dbc.Col(
             [
                 dcc.Graph(id="Completeness")
@@ -223,7 +224,8 @@ layout = [
 @callback(
     Output("Completeness", "figure"),
     Input("Completeness", "figure"),
-    Input("Refresh", "n_clicks"),
+#    Input("Refresh", "n_clicks"),
+    Input("dummy", "id"),
     # State("cache_bahis_data", "data"),
     # State("cache_bahis_geodata", "data"),
     State("cache_page_data", "data"),
@@ -232,7 +234,7 @@ layout = [
     prevent_initial_call=True
 )
 
-def Completeness(CompletenessFig, clicks, data, geodata, settings): # CompletenessFig, sourcedata, geodata, settings): 
+def Completeness(CompletenessFig, dummy, data, geodata, settings): # CompletenessFig, sourcedata, geodata, settings): 
     reportsdata = pd.read_json(data, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")  
     if type((json.loads(settings))["upazila"]) != int:
