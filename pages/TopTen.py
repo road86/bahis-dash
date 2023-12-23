@@ -86,8 +86,8 @@ layout = [
                             dcc.Dropdown(
                                 id="Distypes",
                                 clearable=False,
-                            ),
-                    ], width=2),
+                            )],
+                            width=2),
                     dbc.Col(
                         [
                             html.Label("Top 10 Disease Types"),
