@@ -31,6 +31,7 @@ def Navbar():
                                                     dbc.NavLink("Top 10 Report", href="/topten", active="exact"),
                                                     dbc.NavLink("Regional Statistics Report", href="/regionalstats", active="exact"),
                                                     dbc.NavLink("Yearly Comparison", href="/yearlycomparison", active="exact"),
+                                                    dbc.NavLink("Export Data", href="/export", active="exact"),
                                                     dbc.NavLink("ULO", href="/ulo", active="exact"),
                                                 ],
                                                 vertical=True,

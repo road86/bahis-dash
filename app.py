@@ -129,6 +129,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Disease", "options", allow_duplicate =True),  
     Output("cache_page_settings", "data"),    
 #    Output("cache_bahis_data", "data"),
+#    Output("cache_bahis_geodata", "data"),
 #    Output('page-content', 'children'),
 
     Input("Division", "value"),
@@ -227,7 +228,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)   # , bahis_data.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)  # , bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
