@@ -78,17 +78,19 @@ app.layout = html.Div(
                 ])
             ]
         ),
-        
+
         html.Br(),
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
         # dcc.Store(id="cache_bahis_data", storage_type="memory"),
-        # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
-        # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
+        # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
+        # id="cache_bahis_dgdata", storage_type="memory"),
+        # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split')
+        # id="cache_bahis_distypes", storage_type="memory"),
         # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
         dcc.Store(id="cache_page_settings", storage_type="memory"),
         dcc.Store(id="cache_page_data", storage_type="memory"),
-        dcc.Store(id="cache_page_geodata", storage_type="memory"),        
+        dcc.Store(id="cache_page_geodata", storage_type="memory"),
     ]
 )
 
@@ -101,7 +103,8 @@ app.layout = html.Div(
 # )
 
 # def store2cache(dummy):
-#     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json(date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
+#     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json
+# (date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
@@ -112,18 +115,18 @@ app.layout = html.Div(
 def display_valueNtoggle_offcanvas(n1, is_open):
 
     if n1:
-        return not is_open, 
+        return not is_open,
     return is_open
 
 
 @app.callback(
-    Output("Division", "options", allow_duplicate=True), 
-    Output("District", "options"),  
-    Output("Upazila", "options"), 
-    Output("District", "value"),  
-    Output("Upazila", "value"),  
-    Output("Disease", "options", allow_duplicate=True),  
-    Output("cache_page_settings", "data"),    
+    Output("Division", "options", allow_duplicate=True),
+    Output("District", "options"),
+    Output("Upazila", "options"),
+    Output("District", "value"),
+    Output("Upazila", "value"),
+    Output("Disease", "options", allow_duplicate=True),
+    Output("cache_page_settings", "data"),
     #    Output("cache_bahis_data", "data"),
     #    Output("cache_bahis_geodata", "data"),
     #    Output('page-content', 'children'),
@@ -140,31 +143,32 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     # Input("cache_bahis_geodata", "data"),
     # prevent_initial_call=True,
 )
-
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
+              geoSlider, DateRange, SelectedDisease):
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
-    # shapePath = "exported_data/processed_geodata/upadata.geojson"       # change to relative path names later further 3 instances
+    # shapePath = "exported_data/processed_geodata/upadata.geojson"
+    # change to relative path names later further 3 instances
 
     geoNameNNumber = bahis_geodata
 
     if SelectedDivision is None:
         List = fetchdata.fetchDivisionlist(bahis_geodata)
-        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]     
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         DivisionEntry = DivisionList
-    else: 
-        DivisionEntry = SelectedDivision    
+    else:
+        DivisionEntry = SelectedDivision
     DivisionList = DivisionList
 
-    if DistrictList is None: 
+    if DistrictList is None:
         DistrictList = []
     DistrictEntry = []
 
-    if UpazilaList is None: 
+    if UpazilaList is None:
         UpazilaList = []
     UpazilaEntry = []
-    S = ""    
+    S = ""
     U = ""
 
     if ctx.triggered_id == "Division":
@@ -212,10 +216,11 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             else:
                 UpazilaEntry = SelectedUpazila
                 U = SelectedUpazila
-    #     shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust in MapNResolution.py
+    #     shapePath = "exported_data/processed_geodata/divdata.geojson"
+                # keep in mind to adjust in MapNResolution.py
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    page_settings = {  
+    page_settings = {
         "division": DivisionEntry,
         "district": DistrictEntry,
         "upazila": UpazilaEntry,
@@ -224,16 +229,16 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)  # , bahis_geodata.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)
+    # , bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
-    Output("cache_page_data", "data"),    
+    Output("cache_page_data", "data"),
     Output("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
 )
-
-def UpdatePageData(settings):  
+def UpdatePageData(settings):
 
     reportsdata = bahis_data
     geodata = bahis_geodata
@@ -241,41 +246,41 @@ def UpdatePageData(settings):
     reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
 
     if type(json.loads(settings)["upazila"]) == int:
-        reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]  
+        reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
         geodata = geodata.loc[geodata["value"] == json.loads(settings)["upazila"]]
-    else:        
+    else:
         if type(json.loads(settings)["district"]) == int:
-            reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]  
+            reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
             geodata = geodata.loc[geodata["parent"] == json.loads(settings)["district"]]
         else:
             if type(json.loads(settings)["division"]) == int:
-                reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]  
+                reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
                 geodata = geodata.loc[geodata["parent"] == json.loads(settings)["division"]]
             else:
                 reportsdata = reportsdata
                 geodata = geodata
 
-    page_data = reportsdata 
-    page_geodata = geodata 
+    page_data = reportsdata
+    page_geodata = geodata
     return page_data.to_json(date_format='iso', orient='split'), page_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
-    Output("Map", "figure", allow_duplicate=True),  
+    Output("Map", "figure", allow_duplicate=True),
     Output("dummy", "id", allow_duplicate=True),
     # Output("url", "pathname"),
     # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
-    Input("cache_page_settings", "data"),    
+    Input("cache_page_settings", "data"),
     Input("dummy", "id"),
     # Input('page-content', 'children'),
     # State("url", "pathname"),
 )
-
-def UpdateFigs(data, geodata, settings, dummy): 
-    MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-    return MapFig, dummy  
+def UpdateFigs(data, geodata, settings, dummy):
+    MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
+                                    pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
+    return MapFig, dummy
 
 
 # Run the app on localhost:80
