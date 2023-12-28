@@ -28,8 +28,8 @@ Form = html.Div([
                     placeholder="Select Upazila"
                 ),
             ])
-        ])
-    ])
+            ])
+])
 
 
 @callback(
@@ -37,7 +37,6 @@ Form = html.Div([
     Input("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
-
 def DivisionList(geodata):
     List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]

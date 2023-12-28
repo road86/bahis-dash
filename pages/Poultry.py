@@ -52,7 +52,6 @@ layout = [
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-
 def Poultry(PperiodClick, dummy, data, settings):
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]

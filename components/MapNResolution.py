@@ -29,11 +29,14 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
         shapePath = "exported_data/processed_geodata/upadata.geojson"
 
     reports = reportsdata[geoResolution].value_counts().to_frame()
-    reports[geoResolution + "number"] = reports.index       # print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
+    reports[geoResolution + "number"] = reports.index       
+    # print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
     reports = reports.rename(columns={geoResolution: "Reports"})
 
     geoNameNNumber = geoNameNNumber[geoNameNNumber["loc_type"] == geoResolutionNo]
-    geoNameNNumber = geoNameNNumber.rename(columns={"value": geoResolution + "number", "name": geoResolution + "name"})[[geoResolution + "number", geoResolution + "name"]]
+    geoNameNNumber = geoNameNNumber.rename(columns={"value": geoResolution + "number",
+                                                    "name": geoResolution + "name"})
+    [[geoResolution + "number", geoResolution + "name"]]
     geoNameNNumber = geoNameNNumber.set_index(geoResolution + "number")
     geoNameNNumber[geoResolution + "name"] = geoNameNNumber[geoResolution + "name"].str.title()
 
@@ -95,7 +98,6 @@ Form = html.Div([
     Input("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )
-
 def mapPrep(sourcedata, geodata):
     geoResolutionNo = 3
     reportsdata = pd.read_json(sourcedata, orient="split")

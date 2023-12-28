@@ -11,6 +11,7 @@ from dash import dash_table
 
 dash.register_page(__name__,)  # register page to main dash app
 
+
 def natNo(sub_bahis_sourcedata):
     mask = (sub_bahis_sourcedata["date"] >= datetime.now() - timedelta(days=7)) & (
         sub_bahis_sourcedata["date"] <= datetime.now()
@@ -133,7 +134,8 @@ layout = [
                     dbc.Row(
                         [
                             html.Label(
-                                "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)",
+                                "Non-Reporting Regions (Please handle with care \
+                                    as geoshape files and geolocations have issues)",
                                 id="NRlabel",
                             ),
                             html.Div(id="AlertTable"),
@@ -157,7 +159,6 @@ layout = [
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-
 def Poultry(dummy, data, geodata, settings):
 
     reportsdata = pd.read_json(data, orient="split")
@@ -174,6 +175,7 @@ def Poultry(dummy, data, geodata, settings):
     pname = str(geoResolution) + "name"
     labl = "Reports"
 
-    Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution, geolocdata, pnumber, pname, geoResolution, labl)
+    Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution,
+                                                 geolocdata, pnumber, pname, geoResolution, labl)
 
     return Rfindic, Rfigg, NRlabel, AlertTable

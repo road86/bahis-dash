@@ -9,6 +9,7 @@ from components import fetchdata, pathnames
 
 dash.register_page(__name__,)  # register page to main dash app
 
+
 def yearlyComp(bahis_data, diseaselist):
     monthly = bahis_data.groupby(
         [bahis_data["date"].dt.year.rename("Year"), bahis_data["date"].dt.month.rename("Month")]
@@ -60,7 +61,6 @@ layout = [
     # State("cache_bahis_data", "data"), caching probably too large
     prevent_initial_call=True
 )
-
 def YearlyComparison(dummy, settings, page_geodata):    # , data):
 
     sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter

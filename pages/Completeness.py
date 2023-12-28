@@ -20,6 +20,7 @@ def find_weeks(start, end):
         list_of_weeks.append(yearweek)
     return sorted(set(list_of_weeks))
 
+
 def annotatetxt(annotations, text, x_val, yvalue):
     annotation_dict = dict(
         showarrow=False,
@@ -149,7 +150,8 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
                     tmp = reportsdata.date.value_counts()
                     for ind_x, x_val in enumerate(x_axis):
                         z.loc[x_val, upazila] = round(z.loc[x_val].sum(), 2) / (z.shape[1] - 1)  # sum_of_record
-                        annotatetxt(annotations, "<b>" + "{:.0f}".format(round(z.loc[x_val].iloc[:-1].sum(), 2) / (z.shape[1] - 1)) + " %<b>", x_val, upazila)
+                        annotatetxt(annotations, "<b>" + "{:.0f}".format(round(z.loc[x_val].iloc[:-1].sum(), 2)
+                                                                         / (z.shape[1] - 1)) + " %<b>", x_val, upazila)
 
     z = z.fillna(0)
     z = z.T
@@ -235,14 +237,15 @@ layout = [
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-
 def Completeness(CompletenessFig, dummy, data, geodata, settings):
     reportsdata = pd.read_json(data, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
     if type((json.loads(settings))["upazila"]) != int:
-        CompletenessFig = generate_reports_heatmap(reportsdata,
-            geoNameNNumber, (json.loads(settings))["daterange"][0], (json.loads(settings))["daterange"][1],
-            (json.loads(settings))["division"], (json.loads(settings))["district"])
+        CompletenessFig = generate_reports_heatmap(reportsdata, geoNameNNumber, 
+                                                   (json.loads(settings))["daterange"][0], 
+                                                   (json.loads(settings))["daterange"][1],
+                                                   (json.loads(settings))["division"], 
+                                                   (json.loads(settings))["district"])
 #    else:
 #        CompletenessFig = CompletenessFig
 
