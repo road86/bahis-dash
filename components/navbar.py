@@ -2,7 +2,6 @@
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import os
 
 # sourcepath = "exported_data/"
 # sourcefilename = os.path.join(sourcepath, "preped_data2.csv")

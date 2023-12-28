@@ -9,6 +9,7 @@ from components import fetchdata, pathnames
 
 dash.register_page(__name__,)  # register page to main dash app
 
+
 def yearlyComp(bahis_data, diseaselist):
     monthly = bahis_data.groupby(
         [bahis_data["date"].dt.year.rename("Year"), bahis_data["date"].dt.month.rename("Month")]
@@ -56,14 +57,14 @@ layout = [
     Output("figMonthly", "figure"),
     Input("dummy", "id"),
     State("cache_page_settings", "data"),
-    State("cache_page_geodata", "data"),    
-#    State("cache_bahis_data", "data"), caching probably too large
+    State("cache_page_geodata", "data"),
+    # State("cache_bahis_data", "data"), caching probably too large
     prevent_initial_call=True
 )
 
-def YearlyComparison(dummy, settings, page_geodata): #, data):
+def YearlyComparison(dummy, settings, page_geodata):    # , data):
 
-    sourcepath = "exported_data/"           ### called also in Top10, make global or settings parameter
+    sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
     geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     fulldata = fetchdata.fetchsourcedata(sourcefilename)
 #    fulldata = pd.read_json(data, orient="split")
@@ -73,15 +74,15 @@ def YearlyComparison(dummy, settings, page_geodata): #, data):
     fulldata = fetchdata.disease_subset(json.loads(settings)["disease"], fulldata)
 
     if type(json.loads(settings)["upazila"]) == int:
-        fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]  
+        fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]
         geodata = geodata.loc[geodata["value"] == json.loads(settings)["upazila"]]
-    else:        
+    else:
         if type(json.loads(settings)["district"]) == int:
-            fulldata = fulldata.loc[fulldata["district"] == json.loads(settings)["district"]]  
+            fulldata = fulldata.loc[fulldata["district"] == json.loads(settings)["district"]]
             geodata = geodata.loc[geodata["parent"] == json.loads(settings)["district"]]
         else:
             if type(json.loads(settings)["division"]) == int:
-                fulldata = fulldata.loc[fulldata["division"] == json.loads(settings)["division"]]  
+                fulldata = fulldata.loc[fulldata["division"] == json.loads(settings)["division"]]
                 geodata = geodata.loc[geodata["parent"] == json.loads(settings)["division"]]
             else:
                 fulldata = fulldata
@@ -89,4 +90,3 @@ def YearlyComparison(dummy, settings, page_geodata): #, data):
 
     figMonthly = yearlyComp(fulldata, json.loads(settings)["disease"])
     return figMonthly
-    

@@ -4,19 +4,17 @@ from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import json
 import plotly.express as px
-from plotly.subplots import make_subplots
 
 dash.register_page(__name__,)  # register page to main dash app
+
 
 def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with):
 
     poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
     sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
     sub_bahis_sourcedataP["top_diagnosis"] = sub_bahis_sourcedataP.top_diagnosis.replace(
-        to_replace, replace_with, regex=True
-        )
+        to_replace, replace_with, regex=True)
     tmp = sub_bahis_sourcedataP.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
     tmp = tmp.sort_values(by="species", ascending=False)
     tmp = tmp.rename({"species": "counts"}, axis=1)
@@ -115,7 +113,7 @@ layout = [
 
 def Poultry(SelDistypes, dummy, data):
 
-    sourcepath = "exported_data/"       ### make global variable or in settings
+    sourcepath = "exported_data/"       # make global variable or in settings
     geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     vDistypes = bahis_distypes['Disease type']
@@ -125,4 +123,4 @@ def Poultry(SelDistypes, dummy, data):
 
     flani, fpoul, figDistypes = TopTen(reportsdata, bahis_dgdata, SelDistypes, to_replace, replace_with)
     return flani, fpoul, figDistypes, vDistypes
-    
+

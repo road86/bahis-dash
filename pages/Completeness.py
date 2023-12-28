@@ -1,5 +1,4 @@
 import dash
-#from components import CompletenessReport
 from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input, State
@@ -11,14 +10,16 @@ import json
 
 dash.register_page(__name__)  # register page to main dash app
 
+
 def find_weeks(start, end):
     list_of_weeks = []
-    days_to_thursday = (3 - start.weekday()) % 7
+    # days_to_thursday = (3 - start.weekday()) % 7
     for i in range((end - start).days + 1):
         d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
         yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
         list_of_weeks.append(yearweek)
     return sorted(set(list_of_weeks))
+
 
 def annotatetxt(annotations, text, x_val, yvalue):
     annotation_dict = dict(
@@ -31,21 +32,22 @@ def annotatetxt(annotations, text, x_val, yvalue):
         font=dict(family="sans-serif"),
     )
     annotations.append(annotation_dict)
-    
+
+
 def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, district):
     start = datetime.strptime(str(start), "%Y-%m-%d")
     end = datetime.strptime(str(end), "%Y-%m-%d")
     compcols = False
     x_axis = find_weeks(start, end)  # [1:] without first week
     x_axis = [str(x) for x in x_axis]
-    annotations = []   
-    if type(division) != int:  # for national numbers        
+    annotations = []
+    if type(division) is not int:  # for national numbers
         Divisions = fetchdata.fetchDivisionlist(geoNameNNumber)
         y_axis = [x['Division'] for x in Divisions]
         y_axis_no = [x['value'] for x in Divisions]
         y_axis.reverse()
         y_axis_no.reverse()
-        y_axis.append("Bangladesh")  
+        y_axis.append("Bangladesh")
         y_axis_no.append("Bangladesh")
         z = pd.DataFrame(index=x_axis, columns=y_axis)
         for ind_y, division in enumerate(y_axis):
@@ -77,13 +79,13 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
                     z.loc[x_val, division] = sum_of_record
                     annotatetxt(annotations, sum_of_record, x_val, division)
     else:  # for divisional numbers
-        if type(district) != int:  # is None:
+        if type(district) is not int:  # is None:
             Districts = fetchdata.fetchDistrictlist(division, geoNameNNumber)
             y_axis = [x['District'] for x in Districts]
             y_axis_no = [x['value'] for x in Districts]
             y_axis.reverse()
             y_axis_no.reverse()
-            y_axis.append("Σ " + "Division") 
+            y_axis.append("Σ " + "Division")
             y_axis_no.append(int(division))
             z = pd.DataFrame(index=x_axis, columns=y_axis)
             for ind_y, district in enumerate(y_axis):  # go through divisions
@@ -118,12 +120,12 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
                         z.loc[x_val, district] = sum_of_record
                         annotatetxt(annotations, sum_of_record, x_val, district)
         else:  # for district numbers
-            Upazilas= fetchdata.fetchUpazilalist(district, geoNameNNumber)
+            Upazilas = fetchdata.fetchUpazilalist(district, geoNameNNumber)
             y_axis = [x['Upazila'] for x in Upazilas]
             y_axis_no = [x['value'] for x in Upazilas]
             y_axis.reverse()
             y_axis_no.reverse()
-            y_axis.append("Σ " + "District") 
+            y_axis.append("Σ " + "District")
             y_axis_no.append(int(district))
             z = pd.DataFrame(index=x_axis, columns=y_axis)
             for ind_y, upazila in enumerate(y_axis):
@@ -210,21 +212,22 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
 
     return {"data": data, "layout": layout}  # , vDis
 
-layout = [ 
-        html.Label("Weekly Completeness"),
-        html.Div(id="dummy"),
-        #html.Button("Refresh", id="Refresh", n_clicks=0, hidden=True),
-        dbc.Col(
-            [
-                dcc.Graph(id="Completeness")
-            ]
-        )
+
+layout = [
+    html.Label("Weekly Completeness"),
+    html.Div(id="dummy"),
+    dbc.Col(
+        [
+            dcc.Graph(id="Completeness")
+        ]
+    )
 ]
+
 
 @callback(
     Output("Completeness", "figure"),
     Input("Completeness", "figure"),
-#    Input("Refresh", "n_clicks"),
+    # Input("Refresh", "n_clicks"),
     Input("dummy", "id"),
     # State("cache_bahis_data", "data"),
     # State("cache_bahis_geodata", "data"),
@@ -234,14 +237,14 @@ layout = [
     prevent_initial_call=True
 )
 
-def Completeness(CompletenessFig, dummy, data, geodata, settings): # CompletenessFig, sourcedata, geodata, settings): 
+def Completeness(CompletenessFig, dummy, data, geodata, settings):
     reportsdata = pd.read_json(data, orient="split")
-    geoNameNNumber = pd.read_json(geodata, orient="split")  
+    geoNameNNumber = pd.read_json(geodata, orient="split")
     if type((json.loads(settings))["upazila"]) != int:
         CompletenessFig = generate_reports_heatmap(reportsdata,
-            geoNameNNumber, (json.loads(settings))["daterange"][0], (json.loads(settings))["daterange"][1], 
+            geoNameNNumber, (json.loads(settings))["daterange"][0], (json.loads(settings))["daterange"][1],
             (json.loads(settings))["division"], (json.loads(settings))["district"])
 #    else:
 #        CompletenessFig = CompletenessFig
-    
-    return CompletenessFig 
+
+    return CompletenessFig

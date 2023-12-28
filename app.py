@@ -22,7 +22,7 @@ app = Dash(
 
 dash.register_page(__name__,)  # register page to main dash app
 
-sourcepath = "exported_data/"           ### called also in Top10, make global or settings parameter
+sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
 geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
@@ -34,7 +34,6 @@ app.layout = html.Div(
     [
         dcc.Location(id="url", refresh=False),
         navbar.Navbar(),
-#        html.Div(id="page-1-display-value"),
         html.Br(),
 
         dbc.Row(
@@ -70,12 +69,9 @@ app.layout = html.Div(
                     dbc.Card(
                         dbc.CardBody(
                             [dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                    #html.Div(id="page-content"),
+                                dbc.CardBody([
                                     dash.page_container,
-                                    ]
-                                )
+                                ])
                             )]
                         ),
                     ),
@@ -86,10 +82,10 @@ app.layout = html.Div(
         html.Br(),
         html.Div(id="dummy"),
         html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
-#        dcc.Store(id="cache_bahis_data", storage_type="memory"),
-#        dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
-#        dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
-#        dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
+        # dcc.Store(id="cache_bahis_data", storage_type="memory"),
+        # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split'), id="cache_bahis_dgdata", storage_type="memory"),
+        # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split'), id="cache_bahis_distypes", storage_type="memory"),
+        # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
         dcc.Store(id="cache_page_settings", storage_type="memory"),
         dcc.Store(id="cache_page_data", storage_type="memory"),
         dcc.Store(id="cache_page_geodata", storage_type="memory"),        
@@ -121,16 +117,16 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
-    Output("Division", "options", allow_duplicate =True), 
+    Output("Division", "options", allow_duplicate=True), 
     Output("District", "options"),  
     Output("Upazila", "options"), 
     Output("District", "value"),  
     Output("Upazila", "value"),  
-    Output("Disease", "options", allow_duplicate =True),  
+    Output("Disease", "options", allow_duplicate=True),  
     Output("cache_page_settings", "data"),    
-#    Output("cache_bahis_data", "data"),
-#    Output("cache_bahis_geodata", "data"),
-#    Output('page-content', 'children'),
+    #    Output("cache_bahis_data", "data"),
+    #    Output("cache_bahis_geodata", "data"),
+    #    Output('page-content', 'children'),
 
     Input("Division", "value"),
     Input("District", "value"),
@@ -145,7 +141,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     # prevent_initial_call=True,
 )
 
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):  
+def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList, geoSlider, DateRange, SelectedDisease):
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
@@ -266,23 +262,20 @@ def UpdatePageData(settings):
 
 @app.callback(
     Output("Map", "figure", allow_duplicate=True),  
-##    Output("Refresh", "n_clicks", allow_duplicate =True),
     Output("dummy", "id", allow_duplicate=True),
-    #Output("url", "pathname"),
-    #Output('page-content', 'children'),
+    # Output("url", "pathname"),
+    # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),    
-##    Input("Refresh", "n_clicks"),
     Input("dummy", "id"),
-    #Input('page-content', 'children'),
-    #State("url", "pathname"),
+    # Input('page-content', 'children'),
+    # State("url", "pathname"),
 )
 
-def UpdateFigs(data, geodata, settings, dummy): # , path): 
+def UpdateFigs(data, geodata, settings, dummy): 
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"], pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-##    return MapFig, click+1 # , path # , Completeness.Layout  
-    return MapFig, dummy  # , path # , Completeness.Layout  
+    return MapFig, dummy  
 
 
 # Run the app on localhost:80

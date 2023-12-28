@@ -26,9 +26,9 @@ layout = [
                     max=3,
                     step=1,
                     marks={1: 'Reports monthly',
-                            2: 'Reports weekly',
-                            3: 'Reports daily',
-                            },
+                           2: 'Reports weekly',
+                           3: 'Reports daily',
+                           },
                     value=2,
                     vertical=True,
                     id="LAperiodSlider"
@@ -39,7 +39,6 @@ layout = [
         html.Div(id="dummy"),
     ])
 ]
-
 
 
 @callback(
@@ -54,7 +53,6 @@ layout = [
 )
 
 def LargeAnimal(LAperiodClick, dummy, data, settings):
-
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
     LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
@@ -63,4 +61,4 @@ def LargeAnimal(LAperiodClick, dummy, data, settings):
 
     figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, LAperiodClick, figheight)
     return figgLAR, figgLASick, figgLADead
-    
+

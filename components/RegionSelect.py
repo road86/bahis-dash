@@ -8,7 +8,6 @@ Form = html.Div([
     # dcc.Store(id="cache_bahis_geodata"),
     dbc.Row([
             dbc.Col([
-#                dbc.Label("Division"),
                 dcc.Dropdown(
                     id="Division",
                     clearable=True,
@@ -16,7 +15,6 @@ Form = html.Div([
                 ),
             ]),
             dbc.Col([
-#                dbc.Label("District"),
                 dcc.Dropdown(
                     id="District",
                     clearable=True,
@@ -24,19 +22,18 @@ Form = html.Div([
                 ),
             ]),
             dbc.Col([
-#                dbc.Label("Upazila"),
                 dcc.Dropdown(
                     id="Upazila",
                     clearable=True,
                     placeholder="Select Upazila"
                 ),
-            ])  
-        ]) 
+            ])
+        ])
     ])
 
 
 @callback(
-    Output("Division", "options"), #, allow_duplicate=True),
+    Output("Division", "options"),
     Input("cache_bahis_geodata", "data"),
     prevent_initial_call=True
 )

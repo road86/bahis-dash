@@ -11,6 +11,7 @@ from dash.dependencies import Input, Output, State
 from components import ReportsSickDead
 from components import pathnames
 from components import fetchdata
+import plotly.express as px
 
 
 starttime_start = datetime.now()

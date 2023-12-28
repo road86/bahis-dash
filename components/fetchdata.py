@@ -74,10 +74,11 @@ def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups
     # bahis_dgdata[['name', 'Disease type']] = str(bahis_dgdata[['name', 'Disease type']])
     # can you change object to string and does it make a memory difference?
     bahis_dgdata = bahis_dgdata.drop_duplicates(subset="name", keep="first")
-    bahis_distype= bahis_dgdata.drop_duplicates(subset="Disease type", keep="first")
+    bahis_distype = bahis_dgdata.drop_duplicates(subset="Disease type", keep="first")
     return bahis_dgdata, bahis_distype
 
-def fetchGeoName(bahis_geodata, geonumber):  ########to be done
+
+def fetchGeoName(bahis_geodata, geonumber):  #  #######to be done
     geoname=""
     if len(str(geonumber)) == 2:
         geoname = bahis_geodata[(bahis_geodata["loc_type"] == 1) & (bahis_geodata["division"] == geonumber)][["value", "name"]]

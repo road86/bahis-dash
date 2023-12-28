@@ -13,24 +13,23 @@ def open_data(path):
 
 def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
 
+    #  note check, if only one of the resolution is selected, then plot only this and not the whole resolution
+    #  check error, when none (eg, barisal and rare disease), then hover name error, but actually it is simply empty.
 
-### note check, if only one of the resolution is selected, then plot only this and not the whole resolution
-### check error, when none (eg, barisal and rare disease), then hover name error, but actually it is simply empty.
-    
     if geoResolutionNo == 1:
         geoResolution = "division"
         shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
-    
+
     if geoResolutionNo == 2:
         geoResolution = "district"
         shapePath = "exported_data/processed_geodata/distdata.geojson"
-    
+
     if geoResolutionNo == 3:
         geoResolution = "upazila"
         shapePath = "exported_data/processed_geodata/upadata.geojson"
 
     reports = reportsdata[geoResolution].value_counts().to_frame()
-    reports[geoResolution + "number"] = reports.index       #print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
+    reports[geoResolution + "number"] = reports.index       # print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
     reports = reports.rename(columns={geoResolution: "Reports"})
 
     geoNameNNumber = geoNameNNumber[geoNameNNumber["loc_type"] == geoResolutionNo]
@@ -40,16 +39,15 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
 
     reports = reports.combine_first(geoNameNNumber)
     reports[geoResolution + "number"] = reports.index
-    shapedata = open_data(shapePath)  
+    shapedata = open_data(shapePath)
     geoResolutionDiv = geoResolution    # exception of shapefile names in division resolution
     if geoResolutionNo == 1:
         geoResolutionDiv = "div"
 
-
     if pd.notna(reports['Reports']).any():
-       custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
+        custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
     else:
-       custolor = [[0, "white"]]
+        custolor = [[0, "white"]]
 
     fig = px.choropleth_mapbox(
         reports,
@@ -69,7 +67,7 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
     )
     fig.update_layout(
         autosize=True, coloraxis_showscale=True, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550)
-    
+
     return fig
 
 
@@ -93,7 +91,7 @@ Form = html.Div([
 
 
 @callback(
-    Output("Map", "figure"), #, allow_duplicate=True),
+    Output("Map", "figure"),
     Input("cache_bahis_data", "data"),
     Input("cache_bahis_geodata", "data"),
     prevent_initial_call=True
@@ -115,4 +113,3 @@ def mapPrep(sourcedata, geodata):
 # #    Rfig = plot_map(path, subDistM, sub_bahis_sourcedata, title, pnumber, pname, variab, labl)
 #     Rfig = plot_map(path, subDistM, reportsdata, title, pnumber, pname, variab, labl)
 #     return Rfig
-

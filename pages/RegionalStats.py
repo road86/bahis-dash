@@ -11,6 +11,7 @@ from dash import dash_table
 
 dash.register_page(__name__,)  # register page to main dash app
 
+
 def natNo(sub_bahis_sourcedata):
     mask = (sub_bahis_sourcedata["date"] >= datetime.now() - timedelta(days=7)) & (
         sub_bahis_sourcedata["date"] <= datetime.now()
@@ -142,7 +143,7 @@ layout = [
                 ]
             ),
             html.Div(id="dummy"),
-        ])
+            ])
 ]
 
 
@@ -150,7 +151,7 @@ layout = [
     Output("DRindicators", "figure"),
     Output("DRRepG1", "figure"),
     Output("NRlabel", "children"),
-    Output("AlertTable", "children"),    
+    Output("AlertTable", "children"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_geodata", "data"),
@@ -167,14 +168,13 @@ def Poultry(dummy, data, geodata, settings):
     if geoResolutionNo == 1:
         geoResolution = "division"
     if geoResolutionNo == 2:
-        geoResolution = "district"   
+        geoResolution = "district"
     if geoResolutionNo == 3:
         geoResolution = "upazila"
-    pnumber = str(geoResolution)+"number"
-    pname = str(geoResolution)+"name"
+    pnumber = str(geoResolution) + "number"
+    pname = str(geoResolution) + "name"
     labl = "Reports"
 
     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution, geolocdata, pnumber, pname, geoResolution, labl)
 
     return Rfindic, Rfigg, NRlabel, AlertTable
-
