@@ -26,9 +26,9 @@ layout = [
                     max=3,
                     step=1,
                     marks={1: 'Reports monthly',
-                            2: 'Reports weekly',
-                            3: 'Reports daily',
-                            },
+                           2: 'Reports weekly',
+                           3: 'Reports daily',
+                           },
                     value=2,
                     vertical=True,
                     id="PperiodSlider"
@@ -39,7 +39,6 @@ layout = [
         html.Div(id="dummy"),
     ])
 ]
-
 
 
 @callback(
@@ -55,10 +54,9 @@ layout = [
 def Poultry(PperiodClick, dummy, data, settings):
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
-    Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]  
+    Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
     reportsdata = reportsdata[reportsdata["species"].isin(Poultry)]
     figheight = 190
 
     figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, PperiodClick, figheight)
     return figgPR, figgPSick, figgPDead
-    

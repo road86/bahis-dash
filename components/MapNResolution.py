@@ -29,7 +29,7 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
         shapePath = "exported_data/processed_geodata/upadata.geojson"
 
     reports = reportsdata[geoResolution].value_counts().to_frame()
-    reports[geoResolution + "number"] = reports.index       
+    reports[geoResolution + "number"] = reports.index
     # print(reports.loc[reports[geoResolution + "number"] == "nan"])  reports, with no geonumbers?
     reports = reports.rename(columns={geoResolution: "Reports"})
 

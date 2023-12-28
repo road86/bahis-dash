@@ -78,16 +78,19 @@ def fetchdisgroupdata(dgfilename):  # fetch and prepare disease groups
     return bahis_dgdata, bahis_distype
 
 
-def fetchGeoName(bahis_geodata, geonumber):  #  #######to be done
-    geoname=""
+def fetchGeoName(bahis_geodata, geonumber):  # to be done
+    geoname = ""
     if len(str(geonumber)) == 2:
-        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 1) & (bahis_geodata["division"] == geonumber)][["value", "name"]]
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 1) & (bahis_geodata["division"] == geonumber)]
+        [["value", "name"]]
         print(geonumber)
         print(geoname)
     if len(str(geonumber)) == 4:
-        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 2) & (bahis_geodata["district"] == geonumber)][["value", "name"]]
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 2) & (bahis_geodata["district"] == geonumber)]
+        [["value", "name"]]
     if len(str(geonumber)) == 6:
-        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 3) & (bahis_geodata["upazila"] == geonumber)][["value", "name"]]
+        geoname = bahis_geodata[(bahis_geodata["loc_type"] == 3) & (bahis_geodata["upazila"] == geonumber)]
+        [["value", "name"]]
 
     return geoname
 

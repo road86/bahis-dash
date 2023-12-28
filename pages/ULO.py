@@ -7,7 +7,7 @@ import pandas as pd
 from dash import callback, dcc, html
 from dash.dash import no_update
 from dash.dependencies import Input, Output, State
-#from components import yearly_comparison
+# from components import yearly_comparison
 from components import ReportsSickDead
 from components import pathnames
 from components import fetchdata
@@ -33,6 +33,7 @@ ULOddDList = []
 
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 subDist = bahis_geodata
+
 
 def yearlyComp(bahis_data, diseaselist):
     monthly = bahis_data.groupby(
@@ -69,13 +70,15 @@ def yearlyComp(bahis_data, diseaselist):
     )
     return figYearlyComp
 
+
 def open_data(path):
     with open(path) as f:
         data = json.load(f)
     return data
 
+
 def layout(upazilano=None):
-#    layout = html.Div(
+    #    layout = html.Div(
     ULOSelUpa = int(upazilano)
     Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
     return html.Div(
@@ -89,23 +92,20 @@ def layout(upazilano=None):
                                     [
                                         dbc.Row(
                                             [
-                                                dbc.Col(
-                                                    [
-                                                    dbc.Row(html.Label(Upazila, style={"font-weight": "bold", "font-size": "150%"})),
-                                                    dbc.Row(html.Label(ULOSelUpa, id="upazilano", hidden=True))
-                                                    ]
+                                                dbc.Col([
+                                                    dbc.Row(html.Label(Upazila, style={"font-weight":
+                                                                                       "bold", "font-size": "150%"})),
+                                                    dbc.Row(html.Label(ULOSelUpa, id="upazilano", hidden=True))]
                                                 ),
-                                                dbc.Col(
-                                                    [
+                                                dbc.Col([
                                                         dcc.Dropdown(
                                                             ULOddDList,
                                                             "All Diseases",
                                                             id="ULODiseaselist",
                                                             multi=False,
                                                             clearable=False,
+                                                        )]
                                                         ),
-                                                    ],
-                                                ),
                                                 dbc.Col(
                                                     dcc.DatePickerRange(
                                                         id="ULOdaterange",
@@ -146,9 +146,12 @@ def layout(upazilano=None):
                                                                         [
                                                                             dbc.Col(
                                                                                 [
-                                                                                    dbc.Row(dcc.Graph(id="ULOReportsLA")),
-                                                                                    dbc.Row(dcc.Graph(id="ULOSickLA")),
-                                                                                    dbc.Row(dcc.Graph(id="ULODeadLA")),
+                                                                                    dbc.Row(dcc.Graph
+                                                                                            (id="ULOReportsLA")),
+                                                                                    dbc.Row(dcc.Graph
+                                                                                            (id="ULOSickLA")),
+                                                                                    dbc.Row(dcc.Graph
+                                                                                            (id="ULODeadLA")),
                                                                                 ]
                                                                             ),
                                                                             dbc.Col(
@@ -158,9 +161,9 @@ def layout(upazilano=None):
                                                                                         max=3,
                                                                                         step=1,
                                                                                         marks={1: 'Reports monthly',
-                                                                                            2: 'Reports weekly',
-                                                                                            3: 'Reports daily',
-                                                                                            },
+                                                                                               2: 'Reports weekly',
+                                                                                               3: 'Reports daily',
+                                                                                               },
                                                                                         value=2,
                                                                                         vertical=True,
                                                                                         id="ULOLAperiodSlider"
@@ -197,9 +200,9 @@ def layout(upazilano=None):
                                                                                     max=3,
                                                                                     step=1,
                                                                                     marks={1: 'Reports monthly',
-                                                                                        2: 'Reports weekly',
-                                                                                        3: 'Reports daily',
-                                                                                        },
+                                                                                           2: 'Reports weekly',
+                                                                                           3: 'Reports daily',
+                                                                                           },
                                                                                     value=2,
                                                                                     vertical=True,
                                                                                     id="ULOPperiodSlider"
@@ -228,7 +231,8 @@ def layout(upazilano=None):
                 ]
             )
         ]
-    )#, ULOSelUpa
+    )  # , ULOSelUpa
+
 
 firstrun = True
 
@@ -264,7 +268,7 @@ def update_whatever(
     ULOSelUpa,
 ):
     starttime_general = datetime.now()
-    
+
     global firstrun, \
         ULOddDList, \
         ULOpath, \
@@ -277,7 +281,7 @@ def update_whatever(
     if firstrun is True:  # inital settings
         ULOddDList = fetchdata.fetchDiseaselist(ULOsub_bahis_sourcedata)
         firstrun = False
-    
+
     ULOsubDist = bahis_geodata.loc[bahis_geodata["value"].astype("string").str.startswith(str(ULOSelUpa))]
     ULOsub_bahis_sourcedata = bahis_data.loc[bahis_data["upazila"] == ULOSelUpa]
     ULOsub_bahis_sourcedata4yc = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)

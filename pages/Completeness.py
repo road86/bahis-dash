@@ -241,10 +241,10 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings):
     reportsdata = pd.read_json(data, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
     if type((json.loads(settings))["upazila"]) != int:
-        CompletenessFig = generate_reports_heatmap(reportsdata, geoNameNNumber, 
-                                                   (json.loads(settings))["daterange"][0], 
+        CompletenessFig = generate_reports_heatmap(reportsdata, geoNameNNumber,
+                                                   (json.loads(settings))["daterange"][0],
                                                    (json.loads(settings))["daterange"][1],
-                                                   (json.loads(settings))["division"], 
+                                                   (json.loads(settings))["division"],
                                                    (json.loads(settings))["district"])
 #    else:
 #        CompletenessFig = CompletenessFig

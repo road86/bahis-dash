@@ -334,7 +334,8 @@
 #                                                                 dbc.Row([
 #                                                                     dbc.Col(
 #                                                                         [
-#                                                                             html.Label("Top 10 Large Animal Diseases"),
+#                                                                             html.Label
+# ("Top 10 Large Animal Diseases"),
 #                                                                             dcc.Graph(id="LATop10")
 #                                                                         ],
 #                                                                         width=6,
@@ -379,7 +380,8 @@
 #                                                                 dbc.Row(
 #                                                                     [
 #                                                                         html.Label(
-#                                                                             "Non-Reporting Regions (Please handle with care as geoshape files and geolocations have issues)",
+#                                                                             "Non-Reporting Regions
+# (Please handle with care as geoshape files and geolocations have issues)",
 #                                                                             id="NRlabel",
 #                                                                         ),
 #                                                                         html.Div(id="AlertTable"),
