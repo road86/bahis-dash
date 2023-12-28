@@ -123,4 +123,3 @@ def Poultry(SelDistypes, dummy, data):
 
     flani, fpoul, figDistypes = TopTen(reportsdata, bahis_dgdata, SelDistypes, to_replace, replace_with)
     return flani, fpoul, figDistypes, vDistypes
-

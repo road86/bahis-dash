@@ -11,7 +11,6 @@ from dash import dash_table
 
 dash.register_page(__name__,)  # register page to main dash app
 
-
 def natNo(sub_bahis_sourcedata):
     mask = (sub_bahis_sourcedata["date"] >= datetime.now() - timedelta(days=7)) & (
         sub_bahis_sourcedata["date"] <= datetime.now()

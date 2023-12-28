@@ -20,7 +20,6 @@ def find_weeks(start, end):
         list_of_weeks.append(yearweek)
     return sorted(set(list_of_weeks))
 
-
 def annotatetxt(annotations, text, x_val, yvalue):
     annotation_dict = dict(
         showarrow=False,

@@ -9,7 +9,6 @@ from components import fetchdata, pathnames
 
 dash.register_page(__name__,)  # register page to main dash app
 
-
 def yearlyComp(bahis_data, diseaselist):
     monthly = bahis_data.groupby(
         [bahis_data["date"].dt.year.rename("Year"), bahis_data["date"].dt.month.rename("Month")]

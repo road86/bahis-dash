@@ -67,7 +67,6 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
     )
     fig.update_layout(
         autosize=True, coloraxis_showscale=True, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550)
-
     return fig
 
 

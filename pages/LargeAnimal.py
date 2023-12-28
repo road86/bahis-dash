@@ -61,4 +61,3 @@ def LargeAnimal(LAperiodClick, dummy, data, settings):
 
     figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, LAperiodClick, figheight)
     return figgLAR, figgLASick, figgLADead
-
