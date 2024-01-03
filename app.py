@@ -255,7 +255,7 @@ def UpdatePageData(settings):
         else:
             if type(json.loads(settings)["division"]) == int:
                 reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
-                geodata = geodata.loc[geodata["parent"] == json.loads(settings)["division"]]
+                geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int)==json.loads(settings)["division"]]
             else:
                 reportsdata = reportsdata
                 geodata = geodata

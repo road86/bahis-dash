@@ -71,7 +71,7 @@ def fIndicator(sub_bahis_sourcedata):
     return RfigIndic
 
 
-def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
+def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
 
     reports["cases"] = reports[title]
@@ -84,7 +84,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
     reports = reports.sort_values(title)
     reports[title] = reports[title].str.capitalize()
 
-    tmp = subDistM[["value", "name"]]
+    tmp = subDistM[subDistM["loc_type"]==geoResNo][["value", "name"]]
     tmp = tmp.rename(columns={"value": pnumber, "name": pname})
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
@@ -99,12 +99,12 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
     Rfindic = fIndicator(sub_bahis_sourcedata)
     Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
 
-    Rfigg = px.bar(reports, x=title, y="cases", labels={variab: labl, "cases": "Reports"})  # ,color='division')
+    Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
     Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     NRlabel = f"Regions with no data in the current database: {len(alerts)} \
         (Please handle with care as geoshape files and geolocations have issues)"
-
+    
     AlertTable = (
         dash_table.DataTable(
             # columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
@@ -159,7 +159,7 @@ layout = [
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-def Poultry(dummy, data, geodata, settings):
+def RegionalStats(dummy, data, geodata, settings):
 
     reportsdata = pd.read_json(data, orient="split")
     geolocdata = pd.read_json(geodata, orient="split")
@@ -176,6 +176,6 @@ def Poultry(dummy, data, geodata, settings):
     labl = "Reports"
 
     Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution,
-                                                 geolocdata, pnumber, pname, geoResolution, labl)
+                                                 geolocdata, pnumber, pname, geoResolutionNo, labl)
 
     return Rfindic, Rfigg, NRlabel, AlertTable
