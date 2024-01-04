@@ -84,7 +84,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
     reports = reports.sort_values(title)
     reports[title] = reports[title].str.capitalize()
 
-    tmp = subDistM[subDistM["loc_type"]==geoResNo][["value", "name"]]
+    tmp = subDistM[subDistM["loc_type"] == geoResNo][["value", "name"]]
     tmp = tmp.rename(columns={"value": pnumber, "name": pname})
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
@@ -104,7 +104,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
 
     NRlabel = f"Regions with no data in the current database: {len(alerts)} \
         (Please handle with care as geoshape files and geolocations have issues)"
-    
+
     AlertTable = (
         dash_table.DataTable(
             # columns=[{'upazilaname': i, 'upazilanumber': i} for i in alerts.loc[:,:]], #['Upazila','total']]],
