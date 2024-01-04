@@ -1,7 +1,15 @@
+import dash
+from dash import html, dcc, callback
+import dash_bootstrap_components as dbc
+from dash.dependencies import Input, Output, State
+import pandas as pd
+import json
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import plotly.express as px
 from dash import dash_table
+
+dash.register_page(__name__,)  # register page to main dash app
 
 
 def natNo(sub_bahis_sourcedata):
@@ -63,7 +71,7 @@ def fIndicator(sub_bahis_sourcedata):
     return RfigIndic
 
 
-def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
+def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
 
     reports["cases"] = reports[title]
@@ -76,7 +84,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
     reports = reports.sort_values(title)
     reports[title] = reports[title].str.capitalize()
 
-    tmp = subDistM[["value", "name"]]
+    tmp = subDistM[subDistM["loc_type"] == geoResNo][["value", "name"]]
     tmp = tmp.rename(columns={"value": pnumber, "name": pname})
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
@@ -91,7 +99,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
     Rfindic = fIndicator(sub_bahis_sourcedata)
     Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
 
-    Rfigg = px.bar(reports, x=title, y="cases", labels={variab: labl, "cases": "Reports"})  # ,color='division')
+    Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
     Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     NRlabel = f"Regions with no data in the current database: {len(alerts)} \
@@ -113,4 +121,61 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, variab, labl):
             data=alerts.to_dict("records"),
         ),
     )
+    return Rfindic, Rfigg, NRlabel, AlertTable
+
+
+layout = [
+    html.Label("Regional Stats Report"),
+    dbc.Row([
+            dbc.Col(
+                [
+                    dbc.Row(dcc.Graph(id="DRindicators")),
+                    dbc.Row(dcc.Graph(id="DRRepG1")),
+                    dbc.Row(
+                        [
+                            html.Label(
+                                "Non-Reporting Regions (Please handle with care \
+                                    as geoshape files and geolocations have issues)",
+                                id="NRlabel",
+                            ),
+                            html.Div(id="AlertTable"),
+                        ]
+                    ),
+                ]
+            ),
+            html.Div(id="dummy"),
+            ])
+]
+
+
+@callback(
+    Output("DRindicators", "figure"),
+    Output("DRRepG1", "figure"),
+    Output("NRlabel", "children"),
+    Output("AlertTable", "children"),
+    Input("dummy", "id"),
+    State("cache_page_data", "data"),
+    State("cache_page_geodata", "data"),
+    State("cache_page_settings", "data"),
+    prevent_initial_call=True
+)
+def RegionalStats(dummy, data, geodata, settings):
+
+    reportsdata = pd.read_json(data, orient="split")
+    geolocdata = pd.read_json(geodata, orient="split")
+    geoResolutionNo = json.loads(settings)["georesolution"]
+
+    if geoResolutionNo == 1:
+        geoResolution = "division"
+    if geoResolutionNo == 2:
+        geoResolution = "district"
+    if geoResolutionNo == 3:
+        geoResolution = "upazila"
+    pnumber = str(geoResolution) + "number"
+    pname = str(geoResolution) + "name"
+    labl = "Reports"
+
+    Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution,
+                                                 geolocdata, pnumber, pname, geoResolutionNo, labl)
+
     return Rfindic, Rfigg, NRlabel, AlertTable
