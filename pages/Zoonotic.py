@@ -73,29 +73,12 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
 
 
 layout = [
-    html.Label("Zoonotic Disease Trends Report"),
+    html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
     dbc.Row([
         dbc.Col(
             [
                 dbc.Row(dcc.Graph(id="TrendReports")),
             ]
-        ),
-        dbc.Col(
-            [
-                dcc.Slider(
-                    min=1,
-                    max=3,
-                    step=1,
-                    marks={1: 'Reports monthly',
-                           2: 'Reports weekly',
-                           3: 'Reports daily',
-                           },
-                    value=2,
-                    vertical=True,
-                    id="TrendsPeriodSlider"
-                )
-            ],
-            width=1,
         ),
         html.Div(id="dummy"),
     ])
@@ -104,13 +87,12 @@ layout = [
 
 @callback(
     Output("TrendReports", "figure"),
-    Input("TrendsPeriodSlider", "value"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-def ZooTrend(TrendsPeriodClick, dummy, data, settings):
+def ZooTrend(dummy, data, settings):
 
     sourcepath = "exported_data/"       # make global variable or in settings
     geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
@@ -126,85 +108,38 @@ def ZooTrend(TrendsPeriodClick, dummy, data, settings):
     Diseases = Diseases.sort_values(by="species", ascending=False)
     Diseases = Diseases.rename({"species": "counts"}, axis=1)
     Diseases = Diseases.head(10)
-#    Diseases = Diseases.iloc[::-1]
     reportsdata = reportsdata[reportsdata["top_diagnosis"].isin(Diseases["top_diagnosis"])]
-
-#    reportsdata = fetchdata.disease_subset(Diseases, reportsdata)   
-    #reportsdata = fetchdata.disease_subset(Diseases['top_diagnosis'][4], reportsdata)
-
     reportsdata['date'] = pd.to_datetime(reportsdata['date'])
     tmp = reportsdata.groupby(['date', 'top_diagnosis']).size().reset_index(name='incidences')
-    figTrend = px.line(tmp, x='date', y='incidences', color='top_diagnosis')
-
-#     tmp = reportsdata.groupby("top_diagnosis")["date"].value_counts()   # dt.date.
-# #    tmp.rename(columns={"date" : "counts"}, inplace=True)
-
-#     print(tmp)
-#     print(tmp[:2])
-#     print(tmp['top_diagnosis'])
-#     print(tmp['date'])
-#     print(tmp[::4])
-        
-#    tmp["counts"] = tmp["date"]
-
-#    tmp["date"] = pd.to_datetime(tmp.index)
-
-    # if TrendsPeriodClick == 3:
-    #     tmp = (
-    #         tmp['counts']
-    #         .groupby(tmp['date'])
-    #         .sum()
-    #         .astype(int)
-    #     )
-    # if TrendsPeriodClick == 2:
-    #     tmp = (
-    #         tmp['counts']
-    #         .groupby(tmp['date'].dt.to_period('W-SAT'))
-    #         .sum()
-    #         .astype(int)
-    #     )
-    # if TrendsPeriodClick == 1:
-    #     tmp = (
-    #         tmp['counts']
-    #         .groupby(tmp['date'].dt.to_period('M'))
-    #         .sum()
-    #         .astype(int)
-    #     )
-    # tmp = tmp.to_frame()
-    # tmp["date"] = tmp.index
-    # tmp["date"] = tmp["date"].astype("datetime64[D]")
 
     figheight = 570
-
-#    figTrend = px.line(tmp, x="top_diagnosis", y="counts", color="top_diagnosis", labels={"date": "", "counts": "No. of Reports"}, markers=True) # color="top_diagnosis", markers=True)
-#    figTrend.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-
+    figTrend = px.line(tmp, x='date', y='incidences', color='top_diagnosis', markers=True,
+                       category_orders={"top_diagnosis": Diseases['top_diagnosis']})
+    figTrend.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     # figTrend.update_xaxes(
     #     range=[
     #         datetime.strptime(DateRange[0], "%Y-%m-%d") - timedelta(days=6),
     #         datetime.strptime(DateRange[1], "%Y-%m-%d") + timedelta(days=6),
     #     ]
     # )
-    # figTrend.add_annotation(
-    #     x=datetime.strptime(DateRange[1], "%Y-%m-%d")
-    #     - timedelta(
-    #         days=int(
-    #             ((datetime.strptime(DateRange[1], "%Y-%m-%d") - datetime.strptime(DateRange[0],
-    #                                                                               "%Y-%m-%d")).days) * 0.08
-    #         )
-    #     ),
-    #     y=max(tmp),
-    #     text="total reports " + str("{:,}".format(reportsdata["date"].size)),
-    #     showarrow=False,
-    #     font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
-    #     align="center",
-    #     bordercolor="#c7c7c7",
-    #     borderwidth=2,
-    #     borderpad=4,
-    #     bgcolor="#ff7f0e",
-    #     opacity=0.8,
-    # )
-
-    # figTrend = TrendReports(reportsdata, DateRange, TrendsPeriodClick, figheight)
+    figTrend.add_annotation(
+        x=datetime.strptime(DateRange[1], "%Y-%m-%d")
+        - timedelta(
+            days=int(
+                ((datetime.strptime(DateRange[1], "%Y-%m-%d") - datetime.strptime(DateRange[0],
+                                                                                  "%Y-%m-%d")).days) * 0.08
+            )
+        ),
+        y=max(tmp),
+        text="total reports " + str("{:,}".format(reportsdata["date"].size)),
+        showarrow=False,
+        font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
+        align="center",
+        bordercolor="#c7c7c7",
+        borderwidth=0,
+        borderpad=0,
+        bgcolor="#ff7f0e",
+        opacity=0.8,
+    )
 
     return figTrend
