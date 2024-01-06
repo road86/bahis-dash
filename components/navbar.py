@@ -30,7 +30,7 @@ def Navbar():
                                                                 href="/largeanimal", active="exact"),
                                                     dbc.NavLink("Poultry Report", href="/poultry", active="exact"),
                                                     dbc.NavLink("Top 10 Report", href="/topten", active="exact"),
-                                                    dbc.NavLink("Zoonotic Reports", href="/zoonotictrend",
+                                                    dbc.NavLink("Zoonotic Reports", href="/zoonotic",
                                                                 active="exact"),
                                                     dbc.NavLink("Regional Statistics Report",
                                                                 href="/regionalstats", active="exact"),
