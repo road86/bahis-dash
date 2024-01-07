@@ -81,7 +81,7 @@ app.layout = html.Div(
 
         html.Br(),
         html.Div(id="dummy"),
-        html.Label('Data from ' + str(create_date), style={'text-align': 'right'}),
+        html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
         # dcc.Store(id="cache_bahis_data", storage_type="memory"),
         # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
         # id="cache_bahis_dgdata", storage_type="memory"),
