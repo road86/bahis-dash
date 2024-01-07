@@ -47,11 +47,11 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
         y_axis_no = [x['value'] for x in Divisions]
         y_axis.reverse()
         y_axis_no.reverse()
-        y_axis.append("Bangladesh")
+        y_axis.append("Σ " + "Bangladesh")
         y_axis_no.append("Bangladesh")
         z = pd.DataFrame(index=x_axis, columns=y_axis)
         for ind_y, division in enumerate(y_axis):
-            if division != "Bangladesh":
+            if division != "Σ " + "Bangladesh":
                 tmp = reportsdata[(reportsdata['division'] == y_axis_no[ind_y])].date.value_counts()
                 tmp = tmp.to_frame()
                 tmp["counts"] = tmp["date"]
@@ -65,7 +65,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
                     ].sum()
                     z[division][x_val] = sum_of_record
                     annotatetxt(annotations, sum_of_record, x_val, division)
-            if division == "Bangladesh":
+            if division == "Σ " + "Bangladesh":
                 tmp = reportsdata.date.value_counts()
                 tmp = tmp.to_frame()
                 tmp["counts"] = tmp["date"]
