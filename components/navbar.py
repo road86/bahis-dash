@@ -36,6 +36,8 @@ def Navbar():
                                                                 active="exact"),
                                                     dbc.NavLink("Regional Statistics Report",
                                                                 href="/regionalstats", active="exact"),
+                                                    dbc.NavLink("Regional Dynamics Report",
+                                                                href="/regionaldyn", active="exact"),
                                                     dbc.NavLink("Yearly Comparison",
                                                                 href="/yearlycomparison", active="exact"),
                                                     dbc.NavLink("Export Data", href="/export", active="exact"),
