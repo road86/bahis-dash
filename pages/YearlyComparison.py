@@ -47,7 +47,7 @@ def yearlyComp(bahis_data, diseaselist):
 
 
 layout = [
-    html.Label("Yearly Comparison"),
+    html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
     dcc.Graph(id="figMonthly"),
     html.Div(id="dummy"),
 ]

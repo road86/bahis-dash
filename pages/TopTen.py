@@ -110,7 +110,7 @@ layout = [
     State("cache_page_data", "data"),
     prevent_initial_call=True
 )
-def Poultry(SelDistypes, dummy, data):
+def TopTenView(SelDistypes, dummy, data):
 
     sourcepath = "exported_data/"       # make global variable or in settings
     geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
