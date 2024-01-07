@@ -32,9 +32,7 @@ def RegionalStats(dummy, data, geodata, settings):
     reportsdata = pd.read_json(data, orient="split")
     geolocdata = pd.read_json(geodata, orient="split")
     geoResolutionNo = json.loads(settings)["georesolution"]
-
     geolocdata = geolocdata[geolocdata["loc_type"] == geoResolutionNo]
-    
     if geoResolutionNo == 1:
         geoResolution = "division"
     if geoResolutionNo == 2:
@@ -44,9 +42,9 @@ def RegionalStats(dummy, data, geodata, settings):
     reportsdata["date"] = pd.to_datetime(reportsdata["date"])
     reportsdata = reportsdata.sort_values(by=["date"])
     reportsdata["entries"] = 1
-    reportsdata["acc"] = reportsdata.groupby(geoResolution)["entries"].cumsum() 
+    reportsdata["acc"] = reportsdata.groupby(geoResolution)["entries"].cumsum()
     reportsdata[geoResolution] = reportsdata[geoResolution].map(geolocdata.set_index("value")["name"])
-    reportsdata[geoResolution]=reportsdata[geoResolution].str.capitalize()
+    reportsdata[geoResolution] = reportsdata[geoResolution].str.capitalize()
     RegionalDynamics = px.line(reportsdata, x="date", y="acc", color=geoResolution, markers=True,
                                title="Sum of Reports over Dates by " + geoResolution)
 
