@@ -10,13 +10,13 @@ import json
 dash.register_page(__name__,)  # register page to main dash app
 
 layout = [
-    html.Label("Poultry Report"),
+    html.Label("Remaining Animals Report"),
     dbc.Row([
         dbc.Col(
             [
-                dbc.Row(dcc.Graph(id="ReportsP")),
-                dbc.Row(dcc.Graph(id="SickP")),
-                dbc.Row(dcc.Graph(id="DeadP")),
+                dbc.Row(dcc.Graph(id="ReportsR")),
+                dbc.Row(dcc.Graph(id="SickR")),
+                dbc.Row(dcc.Graph(id="DeadR")),
             ]
         ),
         dbc.Col(
@@ -31,7 +31,7 @@ layout = [
                            },
                     value=2,
                     vertical=True,
-                    id="PperiodSlider"
+                    id="RperiodSlider"
                 )
             ],
             width=1,
@@ -42,21 +42,23 @@ layout = [
 
 
 @callback(
-    Output("ReportsP", "figure"),
-    Output("SickP", "figure"),
-    Output("DeadP", "figure"),
-    Input("PperiodSlider", "value"),
+    Output("ReportsR", "figure"),
+    Output("SickR", "figure"),
+    Output("DeadR", "figure"),
+    Input("RperiodSlider", "value"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_settings", "data"),
     prevent_initial_call=True
 )
-def Poultry(PperiodClick, dummy, data, settings):
+def Poultry(RperiodClick, dummy, data, settings):
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
+    LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
+    reportsdata = reportsdata[~reportsdata["species"].isin(LargeAnimal)]
     Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-    reportsdata = reportsdata[reportsdata["species"].isin(Poultry)]
+    reportsdata = reportsdata[~reportsdata["species"].isin(Poultry)]
     figheight = 190
 
-    figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, PperiodClick, figheight)
-    return figgPR, figgPSick, figgPDead
+    figgRR, figgRSick, figgRDead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, RperiodClick, figheight)
+    return figgRR, figgRSick, figgRDead
