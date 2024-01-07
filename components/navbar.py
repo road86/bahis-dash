@@ -52,17 +52,24 @@ def Navbar():
                                             html.P("This is the content of the second section"),
                                             dbc.Button("Click here"),
                                         ],
-                                        title="Buttons",
+                                        title="Farm Assessment Data",
+                                    ),                                    
+                                    dbc.AccordionItem(
+                                        [
+                                            html.P("This is the content of the second section"),
+                                            dbc.Button("Click here"),
+                                        ],
+                                        title="Sink Surveillance",
                                     ),
                                     dbc.AccordionItem(
                                         [
                                             dcc.Dropdown(
-                                                options=["Option 1", "Option 2"],
+                                                options=["Placeholder 1", "Placeholder 2"],
                                                 clearable=True,
                                                 placeholder="Select Option",
                                             ),
                                         ],
-                                        title="Dropdown",
+                                        title="AMR",
 
                                     ),
                                 ],
