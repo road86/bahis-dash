@@ -185,17 +185,17 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         #UpazilaEntry = UpazilaList
 
     if SelectedDistrict is None:
-        DistrictEntry = []
+        DistrictEntry = None
     if SelectedUpazila is None:
-        UpazilaEntry = []
+        UpazilaEntry = None
 
     if DistrictList is None:
         DistrictList = []
-        DistrictEntry = []
+        DistrictEntry = None
 
     if UpazilaList is None:
         UpazilaList = []
-        UpazilaEntry = []
+        UpazilaEntry = None
 
     if ctx.triggered_id == "Division":
         if not SelectedDivision:
