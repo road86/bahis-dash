@@ -171,7 +171,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         DivisionEntry = SelectedDivision
         List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
         DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        #DistrictEntry = DistrictList
+        # DistrictEntry = DistrictList
 
     if len(str(urlid)) - 1 == 4:
         SelectedDivision = int(urlid[1:3])
@@ -182,7 +182,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         DistrictEntry = SelectedDistrict
         List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
         UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-        #UpazilaEntry = UpazilaList
+        # UpazilaEntry = UpazilaList
 
     if SelectedDistrict is None:
         DistrictEntry = None
@@ -198,36 +198,43 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         UpazilaEntry = None
 
     if ctx.triggered_id == "Division":
-        if not SelectedDivision:
-            DivisionEntry = DivisionList
-            DistrictList = []
-            DistrictEntry = DistrictList
-            UpazilaList = []
-            UpazilaEntry = UpazilaList
+        if len(str(urlid)) - 1 != 2:
+            if not SelectedDivision:
+                DivisionEntry = None
+                DistrictList = []
+                DistrictEntry = None
+            else:
+                DivisionEntry = SelectedDivision
+                List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+                DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+                if len(str(urlid)) - 1 != 4:
+                    DistrictEntry = SelectedDistrict
         else:
-            DivisionEntry = SelectedDivision
+            SelectedDivision = int(urlid[1:])
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-            DistrictEntry = DistrictList
-            UpazilaList = []
-            UpazilaEntry = UpazilaList
+            DistrictEntry = None
+        UpazilaList = []
+        UpazilaEntry = None
+
 
     if ctx.triggered_id == "District":
         DivisionEntry = SelectedDivision
         if geoSlider == 1:
-            DistrictEntry = DistrictList
+            if len(str(urlid)) - 1 != 4:
+                DistrictEntry = DistrictList
             UpazilaList = []
-            UpazilaEntry = UpazilaList
+            UpazilaEntry = None
         else:
             if not SelectedDistrict:
-                DistrictEntry = DistrictList
+                DistrictEntry = None
                 UpazilaList = []
-                UpazilaEntry = UpazilaList
+                UpazilaEntry = None
             else:
                 DistrictEntry = SelectedDistrict
                 List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
                 UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-                UpazilaEntry = UpazilaList
+                UpazilaEntry = None
 
     if ctx.triggered_id == "Upazila":
         DivisionEntry = SelectedDivision
@@ -236,7 +243,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             UpazilaEntry = UpazilaList
         else:
             if not SelectedUpazila:
-                UpazilaEntry = UpazilaList
+                UpazilaEntry = None
             else:
                 UpazilaEntry = SelectedUpazila
     #     shapePath = "exported_data/processed_geodata/divdata.geojson"

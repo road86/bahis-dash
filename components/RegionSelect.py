@@ -39,7 +39,6 @@ Form = html.Div([
     prevent_initial_call=True
 )
 def DivisionList(geodata, urlid):
-    print(urlid)
     List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
     return DivisionList
