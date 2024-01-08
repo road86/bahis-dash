@@ -30,6 +30,7 @@ bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
 
+
 app.layout = html.Div(
     [
         dcc.Location(id="url", refresh=False),
@@ -123,6 +124,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Division", "options", allow_duplicate=True),
     Output("District", "options"),
     Output("Upazila", "options"),
+    Output("Division", "value"),
     Output("District", "value"),
     Output("Upazila", "value"),
     Output("Disease", "options", allow_duplicate=True),
@@ -141,10 +143,11 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("DateRange", "value"),
     Input("Disease", "value"),
     # Input("cache_bahis_geodata", "data"),
+    State("url", "pathname"),
     # prevent_initial_call=True,
 )
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
-              geoSlider, DateRange, SelectedDisease):
+              geoSlider, DateRange, SelectedDisease, urlid):
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
@@ -153,23 +156,46 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
     geoNameNNumber = bahis_geodata
 
-    if SelectedDivision is None:
-        List = fetchdata.fetchDivisionlist(bahis_geodata)
-        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
-        DivisionEntry = DivisionList
-    else:
+    List = fetchdata.fetchDivisionlist(bahis_geodata)
+    DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+
+    if urlid == "/":
+        if SelectedDivision is None:
+            DivisionEntry = None
+        else:
+            DivisionEntry = SelectedDivision
+
+    if len(str(urlid)) - 1 == 2:
+        DivisionList = DivisionList
+        SelectedDivision = int(urlid[1:])
         DivisionEntry = SelectedDivision
-    DivisionList = DivisionList
+        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        #DistrictEntry = DistrictList
+
+    if len(str(urlid)) - 1 == 4:
+        SelectedDivision = int(urlid[1:3])
+        DivisionEntry = SelectedDivision
+        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        SelectedDistrict = int(urlid[1:5])
+        DistrictEntry = SelectedDistrict
+        List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+        UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+        #UpazilaEntry = UpazilaList
+
+    if SelectedDistrict is None:
+        DistrictEntry = []
+    if SelectedUpazila is None:
+        UpazilaEntry = []
 
     if DistrictList is None:
         DistrictList = []
-    DistrictEntry = []
+        DistrictEntry = []
 
     if UpazilaList is None:
         UpazilaList = []
-    UpazilaEntry = []
-    S = ""
-    U = ""
+        UpazilaEntry = []
 
     if ctx.triggered_id == "Division":
         if not SelectedDivision:
@@ -202,12 +228,10 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
                 List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
                 UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
                 UpazilaEntry = UpazilaList
-                S = SelectedDistrict
 
     if ctx.triggered_id == "Upazila":
         DivisionEntry = SelectedDivision
         DistrictEntry = SelectedDistrict
-        S = SelectedDistrict
         if geoSlider == 2:
             UpazilaEntry = UpazilaList
         else:
@@ -215,7 +239,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
                 UpazilaEntry = UpazilaList
             else:
                 UpazilaEntry = SelectedUpazila
-                U = SelectedUpazila
     #     shapePath = "exported_data/processed_geodata/divdata.geojson"
                 # keep in mind to adjust in MapNResolution.py
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
@@ -229,7 +252,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)
+    return DivisionList, DistrictList, UpazilaList, DivisionEntry, DistrictEntry, UpazilaEntry, DiseaseList, json.dumps(page_settings)
     # , bahis_geodata.to_json(date_format='iso', orient='split')
 
 
