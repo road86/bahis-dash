@@ -23,7 +23,7 @@ def Navbar():
                                         [
                                             dbc.Nav(
                                                 [
-                                                    dbc.NavLink("Home", href="/home", active="exact"),
+                                                    dbc.NavLink("Home", href="/", active="exact"),
                                                     dbc.NavLink("Completeness Report",
                                                                 href="/completeness", active="exact"),
                                                     dbc.NavLink("Large Animal Report",
@@ -55,7 +55,7 @@ def Navbar():
                                             dbc.Button("Click here"),
                                         ],
                                         title="Farm Assessment Data",
-                                    ),                                    
+                                    ),
                                     dbc.AccordionItem(
                                         [
                                             html.P("This is the content of the second section"),
