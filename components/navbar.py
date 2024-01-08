@@ -23,7 +23,7 @@ def Navbar():
                                         [
                                             dbc.Nav(
                                                 [
-                                                    dbc.NavLink("Home", href="/", active="exact"),
+                                                    dbc.NavLink("Home", href="/home", active="exact"),
                                                     dbc.NavLink("Completeness Report",
                                                                 href="/completeness", active="exact"),
                                                     dbc.NavLink("Large Animal Report",
@@ -36,6 +36,8 @@ def Navbar():
                                                                 active="exact"),
                                                     dbc.NavLink("Regional Statistics Report",
                                                                 href="/regionalstats", active="exact"),
+                                                    dbc.NavLink("Regional Dynamics Report",
+                                                                href="/regionaldyn", active="exact"),
                                                     dbc.NavLink("Yearly Comparison",
                                                                 href="/yearlycomparison", active="exact"),
                                                     dbc.NavLink("Export Data", href="/export", active="exact"),
@@ -52,17 +54,24 @@ def Navbar():
                                             html.P("This is the content of the second section"),
                                             dbc.Button("Click here"),
                                         ],
-                                        title="Buttons",
+                                        title="Farm Assessment Data",
+                                    ),                                    
+                                    dbc.AccordionItem(
+                                        [
+                                            html.P("This is the content of the second section"),
+                                            dbc.Button("Click here"),
+                                        ],
+                                        title="Sink Surveillance",
                                     ),
                                     dbc.AccordionItem(
                                         [
                                             dcc.Dropdown(
-                                                options=["Option 1", "Option 2"],
+                                                options=["Placeholder 1", "Placeholder 2"],
                                                 clearable=True,
                                                 placeholder="Select Option",
                                             ),
                                         ],
-                                        title="Dropdown",
+                                        title="AMR",
 
                                     ),
                                 ],
