@@ -127,6 +127,7 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Division", "value"),
     Output("District", "value"),
     Output("Upazila", "value"),
+    Output("geoSlider", "value"),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
     #    Output("cache_bahis_data", "data"),
@@ -174,8 +175,18 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
 
+    if ctx.triggered_id == "geoSlider":
+        if geoSlider == 2:
+            if SelectedUpazila is not None:
+                geoSlider = 3
+        if geoSlider == 1:
+            if SelectedUpazila is not None:
+                geoSlider = 3
+            elif SelectedDistrict is not None:
+                geoSlider = 2
+        
     if ctx.triggered_id == "Division":
-        if urlid !=  "/":
+        if urlid != "/":
             SelectedDivision = int(urlid[1:3])
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
@@ -205,9 +216,15 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             if not SelectedDistrict:
                 UpazilaList = []
             else:
+                if geoSlider == 1:
+                    geoSlider = 2
                 List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
                 UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
         SelectedUpazila = None
+
+    if ctx.triggered_id == "Upazila":
+        if geoSlider < 3:
+            geoSlider = 3
 
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
@@ -220,9 +237,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, SelectedDivision, SelectedDistrict, SelectedUpazila, DiseaseList, \
-        json.dumps(page_settings)
-    # , bahis_geodata.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, SelectedDivision, SelectedDistrict, SelectedUpazila, geoSlider, \
+        DiseaseList, json.dumps(page_settings)
 
 
 @app.callback(
