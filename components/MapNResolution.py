@@ -41,6 +41,7 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
     geoNameNNumber[geoResolution + "name"] = geoNameNNumber[geoResolution + "name"].str.title()
 
     reports = reports.combine_first(geoNameNNumber)
+
     reports[geoResolution + "number"] = reports.index
     shapedata = open_data(shapePath)
     geoResolutionDiv = geoResolution    # exception of shapefile names in division resolution
