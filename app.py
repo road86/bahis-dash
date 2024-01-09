@@ -255,11 +255,11 @@ def UpdatePageData(settings):
 
     if type(json.loads(settings)["upazila"]) == int:
         reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
-        geodata = geodata.loc[geodata["value"] == json.loads(settings)["upazila"]]
+        geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
     else:
         if type(json.loads(settings)["district"]) == int:
             reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-            geodata = geodata.loc[geodata["value"] == json.loads(settings)["district"]]
+            geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]]
         else:
             if type(json.loads(settings)["division"]) == int:
                 reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
