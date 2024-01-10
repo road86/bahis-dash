@@ -30,6 +30,7 @@ bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
 
+
 app.layout = html.Div(
     [
         dcc.Location(id="url", refresh=False),
@@ -123,8 +124,10 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Division", "options", allow_duplicate=True),
     Output("District", "options"),
     Output("Upazila", "options"),
+    Output("Division", "value"),
     Output("District", "value"),
     Output("Upazila", "value"),
+    Output("geoSlider", "value"),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
     #    Output("cache_bahis_data", "data"),
@@ -141,11 +144,14 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("DateRange", "value"),
     Input("Disease", "value"),
     # Input("cache_bahis_geodata", "data"),
+    State("url", "pathname"),
     # prevent_initial_call=True,
 )
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
-              geoSlider, DateRange, SelectedDisease):
+              geoSlider, DateRange, SelectedDisease, urlid):
 
+    urlid = "/" + urlid.rsplit("/", 1)[-1]
+    
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
     # shapePath = "exported_data/processed_geodata/upadata.geojson"
@@ -153,84 +159,88 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
     geoNameNNumber = bahis_geodata
 
-    if SelectedDivision is None:
-        List = fetchdata.fetchDivisionlist(bahis_geodata)
-        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
-        DivisionEntry = DivisionList
-    else:
-        DivisionEntry = SelectedDivision
-    DivisionList = DivisionList
-
+    # against node is null error
     if DistrictList is None:
         DistrictList = []
-    DistrictEntry = []
-
     if UpazilaList is None:
         UpazilaList = []
-    UpazilaEntry = []
-    S = ""
-    U = ""
+
+    List = fetchdata.fetchDivisionlist(bahis_geodata)
+    DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+
+    if urlid !=  "/":
+        SelectedDivision = int(urlid[1:3])
+        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        if len(str(urlid)) - 1 == 4:
+            SelectedDistrict = int(urlid[1:5])
+            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+
+    if ctx.triggered_id == "geoSlider":
+        if geoSlider == 2:
+            if SelectedUpazila is not None:
+                geoSlider = 3
+        if geoSlider == 1:
+            if SelectedUpazila is not None:
+                geoSlider = 3
+            elif SelectedDistrict is not None:
+                geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        if not SelectedDivision:
-            DivisionEntry = DivisionList
-            DistrictList = []
-            DistrictEntry = DistrictList
-            UpazilaList = []
-            UpazilaEntry = UpazilaList
-        else:
-            DivisionEntry = SelectedDivision
+        if urlid != "/":
+            SelectedDivision = int(urlid[1:3])
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-            DistrictEntry = DistrictList
-            UpazilaList = []
-            UpazilaEntry = UpazilaList
-
-    if ctx.triggered_id == "District":
-        DivisionEntry = SelectedDivision
-        if geoSlider == 1:
-            DistrictEntry = DistrictList
-            UpazilaList = []
-            UpazilaEntry = UpazilaList
-        else:
-            if not SelectedDistrict:
-                DistrictEntry = DistrictList
-                UpazilaList = []
-                UpazilaEntry = UpazilaList
-            else:
-                DistrictEntry = SelectedDistrict
+            SelectedDistrict = None
+            if len(str(urlid)) - 1 == 4:
+                SelectedDistrict = int(urlid[1:5])
                 List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
                 UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-                UpazilaEntry = UpazilaList
-                S = SelectedDistrict
+            else:
+                UpazilaList = []
+        else:
+            if not SelectedDivision:
+                DistrictList = []
+                SelectedDistrict = None
+            else:
+                List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+                DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+            UpazilaList = []
+        SelectedUpazila = None
+
+    if ctx.triggered_id == "District":
+        if len(str(urlid)) - 1 == 4:
+            SelectedDistrict = int(urlid[1:5])
+            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+        else:
+            if not SelectedDistrict:
+                UpazilaList = []
+            else:
+                if geoSlider == 1:
+                    geoSlider = 2
+                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+                UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+        SelectedUpazila = None
 
     if ctx.triggered_id == "Upazila":
-        DivisionEntry = SelectedDivision
-        DistrictEntry = SelectedDistrict
-        S = SelectedDistrict
-        if geoSlider == 2:
-            UpazilaEntry = UpazilaList
-        else:
-            if not SelectedUpazila:
-                UpazilaEntry = UpazilaList
-            else:
-                UpazilaEntry = SelectedUpazila
-                U = SelectedUpazila
-    #     shapePath = "exported_data/processed_geodata/divdata.geojson"
-                # keep in mind to adjust in MapNResolution.py
+        if geoSlider < 3:
+            geoSlider = 3
+
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     page_settings = {
-        "division": DivisionEntry,
-        "district": DistrictEntry,
-        "upazila": UpazilaEntry,
+        "division": SelectedDivision,
+        "district": SelectedDistrict,
+        "upazila": SelectedUpazila,
         "georesolution": geoSlider,
         "disease": SelectedDisease,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, S, U, DiseaseList, json.dumps(page_settings)
-    # , bahis_geodata.to_json(date_format='iso', orient='split')
+    return DivisionList, DistrictList, UpazilaList, SelectedDivision, SelectedDistrict, SelectedUpazila, geoSlider, \
+        DiseaseList, json.dumps(page_settings)
 
 
 @app.callback(
@@ -247,11 +257,11 @@ def UpdatePageData(settings):
 
     if type(json.loads(settings)["upazila"]) == int:
         reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
-        geodata = geodata.loc[geodata["value"] == json.loads(settings)["upazila"]]
+        geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
     else:
         if type(json.loads(settings)["district"]) == int:
             reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-            geodata = geodata.loc[geodata["parent"] == json.loads(settings)["district"]]
+            geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]]
         else:
             if type(json.loads(settings)["division"]) == int:
                 reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
