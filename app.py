@@ -150,7 +150,8 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, urlid):
 
-    urlid = "/" + urlid.rsplit("/", 1)[-1]
+    if urlid.rsplit("/", 1)[-1].isnumeric():
+        urlid = "/" + urlid.rsplit("/", 1)[-1]
     
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
