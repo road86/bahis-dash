@@ -153,9 +153,9 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     if urlid.rsplit("/", 1)[-1].isnumeric():
         urlid = "/" + urlid.rsplit("/", 1)[-1]
     else:
-        urlid = "/" 
+        urlid = "/"
     # navbar.Navbar(urlid),
-    
+
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
     # shapePath = "exported_data/processed_geodata/upadata.geojson"
