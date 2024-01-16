@@ -154,7 +154,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         urlid = "/" + urlid.rsplit("/", 1)[-1]
     else:
         urlid = "/" 
-    print(urlid)
     # navbar.Navbar(urlid),
     
     # geoNameNNumber = pd.read_json(geodata, orient="split")
