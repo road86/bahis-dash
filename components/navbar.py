@@ -51,8 +51,26 @@ def Navbar():
                                     ),
                                     dbc.AccordionItem(
                                         [
-                                            html.P("This is the content of the second section"),
-                                            dbc.Button("Click here"),
+                                            dbc.Nav(
+                                                [
+                                                    dbc.NavLink("Antibiotics Usage Poultry",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Antibiotics Usage Report AWaRe",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Antibiotics Class",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Biosecurity at entrance",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Biosecurity between loading and production",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Biosecurity personell management",
+                                                                href="/completeness", active="exact"),
+                                                    dbc.NavLink("Biosecurity equipment management",
+                                                                href="/completeness", active="exact"),
+                                                ],
+                                                vertical=True,
+                                                pills=True,
+                                            ),
                                         ],
                                         title="Farm Assessment Data",
                                     ),
