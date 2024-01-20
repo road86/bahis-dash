@@ -54,7 +54,7 @@ def Navbar():
                                             dbc.Nav(
                                                 [
                                                     dbc.NavLink("Antibiotics Usage Poultry",
-                                                                href="/completeness", active="exact"),
+                                                                href="/bsentrance", active="exact"),
                                                     dbc.NavLink("Antibiotics Usage Report AWaRe",
                                                                 href="/completeness", active="exact"),
                                                     dbc.NavLink("Antibiotics Class",

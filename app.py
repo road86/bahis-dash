@@ -23,8 +23,9 @@ app = Dash(
 dash.register_page(__name__,)  # register page to main dash app
 
 sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
-geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
+farm_data = fetchdata.fetchfarmdata(farmdatafilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
@@ -91,6 +92,7 @@ app.layout = html.Div(
         # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
         dcc.Store(id="cache_page_settings", storage_type="memory"),
         dcc.Store(id="cache_page_data", storage_type="memory"),
+        dcc.Store(id="cache_page_farmdata", storage_type="memory"),
         dcc.Store(id="cache_page_geodata", storage_type="memory"),
     ]
 )
@@ -249,6 +251,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
 @app.callback(
     Output("cache_page_data", "data"),
+    Output("cache_page_farmdata", "data"),
     Output("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
 )
@@ -275,9 +278,26 @@ def UpdatePageData(settings):
                 reportsdata = reportsdata
                 geodata = geodata
 
+    farmdata = farm_data
+    farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
+    farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
+
+    if type(json.loads(settings)["upazila"]) == int:
+        farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
+    else:
+        if type(json.loads(settings)["district"]) == int:
+            farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
+        else:
+            if type(json.loads(settings)["division"]) == int:
+                farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
+            else:
+                farmdata = farmdata
+
     page_data = reportsdata
+    page_farmdata = farmdata
     page_geodata = geodata
-    return page_data.to_json(date_format='iso', orient='split'), page_geodata.to_json(date_format='iso', orient='split')
+    return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
+        date_format='iso', orient='split'), page_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
