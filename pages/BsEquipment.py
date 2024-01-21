@@ -29,8 +29,8 @@ layout = [
 )
 def BSEntrance(dummy, data, settings):
     farmdata = pd.read_json(data, orient="split")
-    text1 = "b1. No movement of vehicles in and out of the production area"
-    text2 = "b2. Only workers enter production area"
+    text1 = "d1. No movement of vehicles in and out of the production area"
+    text2 = "d2. Only workers enter production area"
     categories = [text1, text2]
     sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
@@ -54,7 +54,7 @@ def BSEntrance(dummy, data, settings):
                 ]
 
     fig = px.Figure(data=[px.Bar(
-                    name='timeframe',
+                    name='selected timeframe',
                     x=categories,
                     y=selectedtime
                     ),

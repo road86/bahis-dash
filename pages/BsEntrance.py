@@ -67,7 +67,7 @@ def BSEntrance(dummy, data, settings):
                 ]
 
     fig = px.Figure(data=[px.Bar(
-                    name='timeframe',
+                    name='selected timeframe',
                     x=categories,
                     y=selectedtime
                     ),
