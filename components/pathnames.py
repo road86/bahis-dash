@@ -12,7 +12,11 @@ def get_pathnames(sourcepath):
     sourcefilename = os.path.join(
         sourcepath, "preped_data2.csv"
     )  # main data resource of prepared data from old and new bahis
+    farmdatafilename = glob.glob(
+        sourcepath + "bahis_farm_assessment_p2_table*.csv"
+    )[-1]
+
     path1 = os.path.join(sourcepath, "processed_geodata", "divdata.geojson")  # 8 Division
     path2 = os.path.join(sourcepath, "processed_geodata", "distdata.geojson")  # 64 District
     path3 = os.path.join(sourcepath, "processed_geodata", "upadata.geojson")  # 495 Upazila
-    return geofilename, dgfilename, sourcefilename, path1, path2, path3
+    return geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3

@@ -19,7 +19,7 @@ pd.options.mode.chained_assignment = None
 dash.register_page(__name__, path_template="ulo/<upazilano>")  # register page to main dash app
 
 sourcepath = "exported_data/"
-geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 ULOsub_bahis_sourcedata = bahis_data
 ULOstart_date = date(2019, 1, 1)

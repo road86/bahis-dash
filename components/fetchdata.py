@@ -40,6 +40,51 @@ def fetchsourcedata(sourcefilename):  # fetch and prepare source data
     return bahis_data
 
 
+def fetchfarmdata(farmfilename):
+    tmp = pd.read_csv(farmfilename)
+    farm_data = tmp[["id", "basic_info_date", "basic_info_division", "basic_info_district", "basic_info_upazila",
+                     "biosecurity_practices_outsider_vehicles_entry",
+                     "biosecurity_practices_workers_approve_visitor_entry",
+                     "biosecurity_practices_manure_collector_entry",
+                     "biosecurity_practices_fenced_and_duck_chicken_proof",
+                     "biosecurity_practices_dead_birds_disposed_safely", "biosecurity_practices_sign_posted_1st",
+                     "biosecurity_practices_vehical_movement_production_area",
+                     "biosecurity_practices_workers_entry_production_area",
+                     "biosecurity_practices_visitors_approved_production_area", "biosecurity_practices_sign_posted_2nd",
+                     "biosecurity_practices_footwear_left_outside",
+                     "biosecurity_practices_change_clothes_upon_entering_farm",
+                     "biosecurity_practices_use_dedicated_footwear", "biosecurity_practices_shower_before_enter_farm",
+                     "biosecurity_practices_materials_cleaned", "biosecurity_practices_materials_disinfect"
+                     ]]
+    farm_data = farm_data.rename(
+        columns={
+            "basic_info_date": "date",
+            "basic_info_division": "division",
+            "basic_info_district": "district",
+            "basic_info_upazila": "upazila",
+            "biosecurity_practices_outsider_vehicles_entry": "outsider_vehicles_entry",
+            "biosecurity_practices_workers_approve_visitor_entry": "workers_approve_visitor_entry",
+            "biosecurity_practices_manure_collector_entry": "manure_collector_entry",
+            "biosecurity_practices_fenced_and_duck_chicken_proof": "fenced_and_duck_chicken_proof",
+            "biosecurity_practices_dead_birds_disposed_safely": "dead_birds_disposed_safely",
+            "biosecurity_practices_sign_posted_1st": "sign_posted_1st",
+            "biosecurity_practices_vehical_movement_production_area": "vehical_movement_production_area",
+            "biosecurity_practices_workers_entry_production_area": "workers_entry_production_area",
+            "biosecurity_practices_visitors_approved_production_area": "visitors_approved_production_area",
+            "biosecurity_practices_sign_posted_2nd": "sign_posted_2nd",
+            "biosecurity_practices_footwear_left_outside": "footwear_left_outside",
+            "biosecurity_practices_change_clothes_upon_entering_farm": "change_clothes_upon_entering_farm",
+            "biosecurity_practices_use_dedicated_footwear": "use_dedicated_footwear",
+            "biosecurity_practices_shower_before_enter_farm": "shower_before_enter_farm",
+            "biosecurity_practices_materials_cleaned": "materials_cleaned",
+            "biosecurity_practices_materials_disinfect": "materials_disinfect",
+        }
+    )
+    farm_data["date"] = pd.to_datetime(farm_data["date"], errors="coerce")
+    farm_data["date"] = pd.to_datetime(farm_data.date).dt.tz_localize(None)
+    return farm_data
+
+
 def fetchgeodata(geofilename):  # fetch geodata from bahis, delete mouzas and unions
     geodata = pd.read_csv(geofilename)
     geodata = geodata.drop(
