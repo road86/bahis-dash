@@ -214,15 +214,19 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     return {"data": data, "layout": layout}  # , vDis
 
 
-layout = [
-    html.Label("Weekly Completeness"),
-    html.Div(id="dummy"),
-    dbc.Col(
-        [
-            dcc.Graph(id="Completeness")
-        ]
-    )
-]
+def layout_gen(kid=None, **other_unknown_query_strings):
+    return html.Div([
+        html.Label("Weekly Completeness" + kid),
+        html.Div(id="dummy"),
+        dbc.Col(
+            [
+                dcc.Graph(id="Completeness")
+            ]
+        )
+    ])
+
+
+layout = layout_gen
 
 
 @callback(

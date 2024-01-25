@@ -25,7 +25,7 @@ def Navbar():
                                                 [
                                                     dbc.NavLink("Home", href="/"),  # , active="exact"),
                                                     dbc.NavLink("Completeness Report",
-                                                                href="/completeness", active="exact"),
+                                                                href="/completeness/?kid=20", active="exact"),
                                                     dbc.NavLink("Large Animal Report",
                                                                 href="/largeanimal", active="exact"),
                                                     dbc.NavLink("Poultry Report", href="/poultry", active="exact"),
