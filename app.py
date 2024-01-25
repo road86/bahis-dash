@@ -152,10 +152,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, urlid):
 
-    if urlid.rsplit("/", 1)[-1].isnumeric():
-        urlid = "/" + urlid.rsplit("/", 1)[-1]
-    else:
-        urlid = "/"
     # navbar.Navbar(urlid),
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
@@ -174,14 +170,14 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     List = fetchdata.fetchDivisionlist(bahis_geodata)
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
 
-    if urlid !=  "/":
-        SelectedDivision = int(urlid[1:3])
-        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        if len(str(urlid)) - 1 == 4:
-            SelectedDistrict = int(urlid[1:5])
-            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+    # if urlid !=  "/":
+    #     SelectedDivision = int(urlid[1:3])
+    #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+    #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+    #     if len(str(urlid)) - 1 == 4:
+    #         SelectedDistrict = int(urlid[1:5])
+    #         List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+    #         UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:
@@ -194,40 +190,40 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
                 geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        if urlid != "/":
-            SelectedDivision = int(urlid[1:3])
+        # if urlid != "/":
+        #     SelectedDivision = int(urlid[1:3])
+        #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        #     SelectedDistrict = None
+        #     if len(str(urlid)) - 1 == 4:
+        #         SelectedDistrict = int(urlid[1:5])
+        #         List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+        #         UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+        #     else:
+        #         UpazilaList = []
+        # else:
+        if not SelectedDivision:
+            DistrictList = []
+            SelectedDistrict = None
+        else:
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-            SelectedDistrict = None
-            if len(str(urlid)) - 1 == 4:
-                SelectedDistrict = int(urlid[1:5])
-                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-                UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-            else:
-                UpazilaList = []
-        else:
-            if not SelectedDivision:
-                DistrictList = []
-                SelectedDistrict = None
-            else:
-                List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-                DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-            UpazilaList = []
+        UpazilaList = []
         SelectedUpazila = None
 
     if ctx.triggered_id == "District":
-        if len(str(urlid)) - 1 == 4:
-            SelectedDistrict = int(urlid[1:5])
+        # if len(str(urlid)) - 1 == 4:
+        #     SelectedDistrict = int(urlid[1:5])
+        #     List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+        #     UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+        # else:
+        if not SelectedDistrict:
+            UpazilaList = []
+        else:
+            if geoSlider == 1:
+                geoSlider = 2
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-        else:
-            if not SelectedDistrict:
-                UpazilaList = []
-            else:
-                if geoSlider == 1:
-                    geoSlider = 2
-                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-                UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
         SelectedUpazila = None
 
     if ctx.triggered_id == "Upazila":
