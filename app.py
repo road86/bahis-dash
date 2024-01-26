@@ -31,71 +31,154 @@ bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
 
+# @callback(
+#    Output('goToFruitDetailsButton', 'href'),
+#    Input('showOptionsRadioItems', 'value'),
+# )
+# def redirect_details(selected_fruit):
+#    return f'/details?fruit={selected_fruit}'
 
-app.layout = html.Div(
-    [
-        dcc.Location(id="url", refresh=False),
-        navbar.Navbar(),
-        html.Br(),
 
-        dbc.Row(
-            [
-                dbc.Col(            # left side
-                    [
+def layout_gen():  # aid=None, **other_unknown_query_strings):
+    img_logo = "assets/Logo.png"
+    return html.Div(
+        [
+            dcc.Location(id="url", refresh=True),
+            html.Div(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col([
+                                dbc.Button("Menu", id="open-sidemenu", n_clicks=0),
+                                dbc.Offcanvas(
+                                    html.Div(id="bsidemenu"),
+                                    id="sidemenu",
+                                    title="Menu",
+                                    is_open=False,
+                                ),
+                            ]),
+                            dbc.Col(
+                                html.Label("BAHIS dashboard", style={"font-weight": "bold",
+                                                                     "font-size": "200%"}),
+                                width=5,
+                            ),
+                            dbc.Col(
+                                html.Img(src=img_logo, height="30px"),
+                                width=3,
+                                # align='right'
+                            )
+                        ],
+                        justify="end",
+                        align="center"
+                    )
+                ]
+            ),
+            html.Br(),
+            dbc.Row(
+                [
+                    dbc.Col(            # left side
+                        [
+                            dbc.Card(
+                                dbc.CardBody(RegionSelect.Form),
+                            ),
+                            dbc.Card(
+                                dbc.CardBody(MapNResolution.Form)
+                            )
+                        ],
+                        width=4,
+                    ),
+                    dbc.Col([          # right side
                         dbc.Card(
-                            dbc.CardBody(RegionSelect.Form),
+                            dbc.CardBody(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                DateRangeSelect.Form
+                                            ),
+                                            dbc.Col(
+                                                DiseaseSelect.Form
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
                         ),
                         dbc.Card(
-                            dbc.CardBody(MapNResolution.Form)
-                        )
-                    ],
-                    width=4,
-                ),
-                dbc.Col([          # right side
-                    dbc.Card(
-                        dbc.CardBody(
-                            [
-                                dbc.Row(
-                                    [
-                                        dbc.Col(
-                                            DateRangeSelect.Form
-                                        ),
-                                        dbc.Col(
-                                            DiseaseSelect.Form
-                                        )
-                                    ]
-                                )
-                            ]
-                        )
-                    ),
-                    dbc.Card(
-                        dbc.CardBody(
-                            [dbc.Card(
-                                dbc.CardBody([
-                                    dash.page_container,
-                                ])
-                            )]
+                            dbc.CardBody(
+                                [dbc.Card(
+                                    dbc.CardBody([
+                                        dash.page_container,
+                                    ])
+                                )]
+                            ),
                         ),
-                    ),
-                ])
-            ]
-        ),
+                    ])
+                ]
+            ),
 
-        html.Br(),
-        html.Div(id="dummy"),
-        html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
-        # dcc.Store(id="cache_bahis_data", storage_type="memory"),
-        # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
-        # id="cache_bahis_dgdata", storage_type="memory"),
-        # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split')
-        # id="cache_bahis_distypes", storage_type="memory"),
-        # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
-        dcc.Store(id="cache_page_settings", storage_type="memory"),
-        dcc.Store(id="cache_page_data", storage_type="memory"),
-        dcc.Store(id="cache_page_farmdata", storage_type="memory"),
-        dcc.Store(id="cache_page_geodata", storage_type="memory"),
-    ]
+            html.Br(),
+            html.Div(id="dummy"),
+            html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
+            # dcc.Store(id="cache_bahis_data", storage_type="memory"),
+            # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
+            # id="cache_bahis_dgdata", storage_type="memory"),
+            # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split')
+            # id="cache_bahis_distypes", storage_type="memory"),
+            # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
+            dcc.Store(id="cache_page_settings", storage_type="memory"),
+            dcc.Store(id="cache_page_data", storage_type="memory"),
+            dcc.Store(id="cache_page_farmdata", storage_type="memory"),
+            dcc.Store(id="cache_page_geodata", storage_type="memory"),
+            dcc.Store(id="cache_aid", storage_type="memory"),
+        ]
+    )
+
+# aid = "20"
+
+
+app.layout = layout_gen
+
+
+# @app.callback(
+#     Output("bsidemenu", "children"),
+#     Input("bsidemenu", "id")
+# )
+# def build_sidemenu(dummy):
+#     return navbar.NavbarN()
+
+
+@app.callback(
+    Output("bsidemenu", "children"),
+    Input("sidemenu", "is_open"),
+    Input("cache_aid", "data"),
 )
+def build_sidemenu(dummy, aid):
+    if aid is not None:
+        print(aid)
+        return navbar.Navbar(aid)
+    else:
+        print('ha')
+        return navbar.NavbarN()
+
+
+@app.callback(
+    Output("sidemenu", "is_open"),
+    # Output("bsidemenu", "id"),
+    Input("open-sidemenu", "n_clicks"),
+    # Input("cache_aid", "data"),
+    # Input("bsidemenu", "id"),
+    State("sidemenu", "is_open"),
+)
+def display_valueNtoggle_offcanvas(n1, is_open):
+    # if aid is not None:
+    # dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    # surf = navbar.Navbar(aid),
+    # else:
+    #     surf = surf
+    if n1:
+        return not is_open,
+    return is_open  # , id
 
 
 # @app.callback(
@@ -108,18 +191,6 @@ app.layout = html.Div(
 # def store2cache(dummy):
 #     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json
 # (date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
-
-
-@app.callback(
-    Output("sidemenu", "is_open"),
-    Input("open-sidemenu", "n_clicks"),
-    [State("sidemenu", "is_open")],
-)
-def display_valueNtoggle_offcanvas(n1, is_open):
-
-    if n1:
-        return not is_open,
-    return is_open
 
 
 @app.callback(
@@ -146,13 +217,14 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("DateRange", "value"),
     Input("Disease", "value"),
     # Input("cache_bahis_geodata", "data"),
-    State("url", "pathname"),
+    Input("cache_aid", "data"),
+    # State("url", "pathname"),
     # prevent_initial_call=True,
 )
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
-              geoSlider, DateRange, SelectedDisease, urlid):
+              geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
 
-    # navbar.Navbar(urlid),
+    # navbar.Navbar(aid),
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
     # geoResolution = "upazila"
@@ -170,14 +242,16 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     List = fetchdata.fetchDivisionlist(bahis_geodata)
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
 
-    # if urlid !=  "/":
-    #     SelectedDivision = int(urlid[1:3])
-    #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-    #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-    #     if len(str(urlid)) - 1 == 4:
-    #         SelectedDistrict = int(urlid[1:5])
-    #         List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-    #         UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+    if aid is not None:
+        SelectedDivision = int(aid[0:2])
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+        DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
+        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        if len(str(aid)) - 1 == 4:
+            SelectedDistrict = int(aid[0:4])
+            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:

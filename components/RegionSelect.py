@@ -1,7 +1,7 @@
 from components import fetchdata
 import dash_bootstrap_components as dbc
 from dash import html, dcc, callback
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 import pandas as pd
 
 Form = html.Div([
@@ -35,10 +35,9 @@ Form = html.Div([
 @callback(
     Output("Division", "options"),
     Input("cache_bahis_geodata", "data"),
-    State("url", "pathname"),
     prevent_initial_call=True
 )
-def DivisionList(geodata, urlid):
+def DivisionList(geodata):
     List = fetchdata.fetchDivisionlist(pd.read_json(geodata, orient="split"))
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
     return DivisionList
