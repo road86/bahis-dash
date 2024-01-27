@@ -94,14 +94,11 @@ def open_data(path):
     return data
 
 
-# ULOSelUpa = int(upazilano)
-Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
-
-
-def layout(upazilano=None):
-    #    layout = html.Div(
-    # ULOSelUpa = int(upazilano)
-
+# def layout(upazilano=None):
+#    layout = html.Div(
+def layout(upazilano):
+    ULOSelUpa = int(upazilano)
+    Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
     return html.Div([
         # ulo.layout = html.Div(
         print(upazilano),
@@ -278,14 +275,23 @@ def layout(upazilano=None):
     ])
 
 
-ulo.layout = layout
-
+ulo.layout = html.Div([
+    dcc.Location(id="url", refresh=False),
+    html.Div(id="dummy"),
+    html.Div(id="layout") 
+])
 
 firstrun = True
 
 # endtime_start = datetime.now()
 # print("initialize : " + str(endtime_start - starttime_start))
 
+@ulo.callback(
+        Output("layout", "children"), 
+        Input("dummy", "id"),
+        State("url", "pathname"))
+def display_page(dummy, pathname):
+    return layout(int(pathname[1:]))
 
 @ulo.callback(
     # dash cleintsied callback with js
@@ -303,7 +309,8 @@ firstrun = True
     Input("ULOPperiodSlider", "value"),
     Input("ULODiseaselist", "value"),
     Input("ULOtabs", "active_tab"),
-    State("upazilano", "children")
+    State("url", "pathname")
+    # State("upazilano", "children")
 )
 def update_whatever(
     ULOstart_date,
@@ -314,8 +321,9 @@ def update_whatever(
     ULOtabs,
     ULOSelUpa,
 ):
+    
     starttime_general = datetime.now()
-
+    ULOSelUpa = int(ULOSelUpa[1:])
     global firstrun, \
         ULOddDList, \
         ULOpath, \
