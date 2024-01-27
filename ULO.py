@@ -101,7 +101,6 @@ def layout(upazilano):
     Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
     return html.Div([
         # ulo.layout = html.Div(
-        print(upazilano),
         dcc.Location(id="url", refresh=False),
         html.Div([
             dbc.Row(
@@ -292,7 +291,7 @@ firstrun = True
     Input("dummy", "id"),
     State("url", "pathname"))
 def display_page(dummy, pathname):
-    decode = int(pathname[1:]) / 42
+    decode = int(int(pathname[1:]) / 42)
     return layout(decode)
 
 
@@ -326,7 +325,7 @@ def update_whatever(
 ):
 
     starttime_general = datetime.now()
-    ULOSelUpa = int(ULOSelUpa[1:])
+    ULOSelUpa = int(int(ULOSelUpa[1:]) / 42)
     global firstrun, \
         ULOddDList, \
         ULOpath, \
