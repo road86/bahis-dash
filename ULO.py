@@ -292,7 +292,8 @@ firstrun = True
     Input("dummy", "id"),
     State("url", "pathname"))
 def display_page(dummy, pathname):
-    return layout(int(pathname[1:]))
+    decode = int(pathname[1:]) / 42
+    return layout(decode)
 
 
 @ulo.callback(
