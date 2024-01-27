@@ -278,7 +278,7 @@ def layout(upazilano):
 ulo.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     html.Div(id="dummy"),
-    html.Div(id="layout") 
+    html.Div(id="layout")
 ])
 
 firstrun = True
@@ -286,12 +286,14 @@ firstrun = True
 # endtime_start = datetime.now()
 # print("initialize : " + str(endtime_start - starttime_start))
 
+
 @ulo.callback(
-        Output("layout", "children"), 
-        Input("dummy", "id"),
-        State("url", "pathname"))
+    Output("layout", "children"),
+    Input("dummy", "id"),
+    State("url", "pathname"))
 def display_page(dummy, pathname):
     return layout(int(pathname[1:]))
+
 
 @ulo.callback(
     # dash cleintsied callback with js
@@ -321,7 +323,7 @@ def update_whatever(
     ULOtabs,
     ULOSelUpa,
 ):
-    
+
     starttime_general = datetime.now()
     ULOSelUpa = int(ULOSelUpa[1:])
     global firstrun, \
