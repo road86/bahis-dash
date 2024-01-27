@@ -1,7 +1,3 @@
-# create overall page
-# store data in cache
-# general layout: navbar and "body"
-
 import dash
 import dash_bootstrap_components as dbc
 from components import pathnames, fetchdata
@@ -9,7 +5,7 @@ from dash import Dash, Input, Output, dcc, html, State
 
 import pandas as pd
 import json
-from datetime import date, datetime
+from datetime import date
 from dash.dash import no_update
 from components import ReportsSickDead
 import plotly.express as px
@@ -24,10 +20,8 @@ ulo = Dash(
     prevent_initial_callbacks="initial_duplicate",
 )
 
-# dash.register_page(__name__,)  # register page to main dash app
-starttime_start = datetime.now()
+dash.register_page(__name__,)  # register page to main dash app
 pd.options.mode.chained_assignment = None
-dash.register_page(__name__, path_template="ulo/<upazilano>")  # register page to main dash app
 
 sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
 geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
@@ -94,13 +88,10 @@ def open_data(path):
     return data
 
 
-# def layout(upazilano=None):
-#    layout = html.Div(
 def layout(upazilano):
     ULOSelUpa = int(upazilano)
     Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
     return html.Div([
-        # ulo.layout = html.Div(
         dcc.Location(id="url", refresh=False),
         html.Div([
             dbc.Row(
@@ -282,9 +273,6 @@ ulo.layout = html.Div([
 
 firstrun = True
 
-# endtime_start = datetime.now()
-# print("initialize : " + str(endtime_start - starttime_start))
-
 
 @ulo.callback(
     Output("layout", "children"),
@@ -312,7 +300,6 @@ def display_page(dummy, pathname):
     Input("ULODiseaselist", "value"),
     Input("ULOtabs", "active_tab"),
     State("url", "pathname")
-    # State("upazilano", "children")
 )
 def update_whatever(
     ULOstart_date,
@@ -323,8 +310,6 @@ def update_whatever(
     ULOtabs,
     ULOSelUpa,
 ):
-
-    starttime_general = datetime.now()
     ULOSelUpa = int(int(ULOSelUpa[1:]) / 42)
     global firstrun, \
         ULOddDList, \
@@ -347,11 +332,7 @@ def update_whatever(
     ULOsub_bahis_sourcedata = fetchdata.date_subset(ULOdates, ULOsub_bahis_sourcedata)
     ULOsub_bahis_sourcedata = fetchdata.disease_subset(ULOdiseaselist, ULOsub_bahis_sourcedata)
 
-#    ULOfigMonthly = yearly_comparison.yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
     ULOfigMonthly = yearlyComp(ULOsub_bahis_sourcedata4yc, ULOdiseaselist)
-
-    endtime_general = datetime.now()
-    print("general callback : " + str(endtime_general - starttime_general))
 
     if ULOtabs == "ULOReportsLATab":
         lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
@@ -372,14 +353,11 @@ def update_whatever(
         )
 
     if ULOtabs == "ULOReportsPTab":
-        starttime_tab1 = datetime.now()
         poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         ULOsub_bahis_sourcedataP = ULOsub_bahis_sourcedata[ULOsub_bahis_sourcedata["species"].isin(poultry)]
         ULOfigheight = 175
         ULOfiggPR, ULOfiggPSick, ULOfiggPDead = ReportsSickDead.ReportsSickDead(ULOsub_bahis_sourcedataP, ULOdates,
                                                                                 ULOPperiodClick, ULOfigheight)
-        endtime_tab1 = datetime.now()
-        print("tabLA : " + str(endtime_tab1 - starttime_tab1))
         return (
             ULOddDList,
             no_update,
@@ -397,10 +375,3 @@ if __name__ == "__main__":
     ulo.run(debug=True, host="0.0.0.0", port=80)  # maybe debug false to prevent second loading
 else:
     server = ulo.server
-
-# def layout(upazilano=None):
-#     #    layout = html.Div(
-#     ULOSelUpa = int(upazilano)
-#     Upazila = str(bahis_geodata[bahis_geodata["value"] == ULOSelUpa]['name'].iloc[0].capitalize())
-#     return html.Div(
-#         [
