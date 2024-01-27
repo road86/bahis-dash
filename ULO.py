@@ -38,7 +38,7 @@ ULOlast_date = max(bahis_data['date']).date()
 ULOdates = [ULOstart_date, ULOlast_date]
 ULOcreate_date = fetchdata.create_date(sourcefilename)
 
-ULOSelUpa = 201539
+# ULOSelUpa = 201539 = 000.008.464.638
 
 ULOddDList = []
 
