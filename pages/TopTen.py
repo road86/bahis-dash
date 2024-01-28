@@ -51,54 +51,59 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     return flani, fpoul, figDisTyp
 
 
-layout = [
-    html.Label("Top10 Report"),
-    dbc.Card(
-        dbc.CardBody(
-            [
-                dbc.Row([
-                    dbc.Col(
-                        [
-                            html.Label("Top 10 Large Animal Diseases"),
-                            dcc.Graph(id="LATop10")
-                        ],
-                        width=6,
-                    ),
-                    dbc.Col(
-                        [
-                            html.Label("Top 10 Poultry Diseases"),
-                            dcc.Graph(id="PTop10")
-                        ],
-                        width=6,
-                    ),
-                ])
-            ]
-        )
-    ),
-    dbc.Card(
-        dbc.CardBody(
-            [
-                dbc.Row([
-                    dbc.Col([
-                            dbc.Label("Select Disease Type"),
-                            dcc.Dropdown(
-                                id="Distypes",
-                                clearable=False,
-                            )],
-                            width=2),
-                    dbc.Col(
-                        [
-                            html.Label("Top 10 Disease Types"),
-                            dcc.Graph(id="figDistypes"),
-                        ]
-                    )
-                ])
-            ]
-        )
-    ),
-    html.Div(id="dummy"),
-]
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Top10 Report"),
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    dbc.Row([
+                        dbc.Col(
+                            [
+                                html.Label("Top 10 Large Animal Diseases"),
+                                dcc.Graph(id="LATop10")
+                            ],
+                            width=6,
+                        ),
+                        dbc.Col(
+                            [
+                                html.Label("Top 10 Poultry Diseases"),
+                                dcc.Graph(id="PTop10")
+                            ],
+                            width=6,
+                        ),
+                    ])
+                ]
+            )
+        ),
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    dbc.Row([
+                        dbc.Col([
+                                dbc.Label("Select Disease Type"),
+                                dcc.Dropdown(
+                                    id="Distypes",
+                                    clearable=False,
+                                )],
+                                width=2),
+                        dbc.Col(
+                            [
+                                html.Label("Top 10 Disease Types"),
+                                dcc.Graph(id="figDistypes"),
+                            ]
+                        )
+                    ])
+                ]
+            )
+        ),
+        html.Div(id="dummy"),
+    ])
 
+
+layout = layout_gen
 
 @callback(
     Output("LATop10", "figure"),

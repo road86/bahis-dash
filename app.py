@@ -51,7 +51,7 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
                             dbc.Col([
                                 dbc.Button("Menu", id="open-sidemenu", n_clicks=0),
                                 dbc.Offcanvas(
-                                    html.Div(id="bsidemenu"),
+                                    html.Div(id="sidemenu_content"),
                                     id="sidemenu",
                                     title="Menu",
                                     is_open=False,
@@ -141,33 +141,50 @@ app.layout = layout_gen
 
 
 # @app.callback(
-#     Output("bsidemenu", "children"),
-#     Input("bsidemenu", "id")
+#     # Output("cache_aid", "data"),
+#     Output("sidemenu_content", "children"),
+#     # Output("layout", "children"),
+#     Input("dummy", "id"),
+#     State("url", "pathname"))
+# def display_page(dummy, pathname):
+#     print(pathname.split('/')[1])
+#     aid = str(pathname.split('/')[1])
+#     if aid == "":
+#         print('ha')
+#         return navbar.NavbarN()
+#     else:
+#         print('ho')        
+#         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+#         return navbar.Navbar(aid)
+
+
+# @app.callback(
+#     Output("sidemenu_content", "children"),
+#     Input("sidemenu_content", "id")
 # )
 # def build_sidemenu(dummy):
 #     return navbar.NavbarN()
 
 
 @app.callback(
-    Output("bsidemenu", "children"),
+    Output("sidemenu_content", "children"),
     Input("sidemenu", "is_open"),
     Input("cache_aid", "data"),
 )
-def build_sidemenu(dummy, aid):
+def build_sidemenu(sidemenu_open, aid):
+    print(aid + "sidemen")
     if aid is not None:
-        print(aid)
         return navbar.Navbar(aid)
     else:
-        print('ha')
         return navbar.NavbarN()
 
 
 @app.callback(
     Output("sidemenu", "is_open"),
-    # Output("bsidemenu", "id"),
+    # Output("sidemenu_content", "id"),
     Input("open-sidemenu", "n_clicks"),
     # Input("cache_aid", "data"),
-    # Input("bsidemenu", "id"),
+    # Input("sidemenu_content", "id"),
     State("sidemenu", "is_open"),
 )
 def display_valueNtoggle_offcanvas(n1, is_open):
@@ -216,8 +233,8 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("geoSlider", "value"),
     Input("DateRange", "value"),
     Input("Disease", "value"),
-    # Input("cache_bahis_geodata", "data"),
     Input("cache_aid", "data"),
+    # Input("cache_bahis_geodata", "data"),
     # State("url", "pathname"),
     # prevent_initial_call=True,
 )
@@ -232,7 +249,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     # change to relative path names later further 3 instances
 
     geoNameNNumber = bahis_geodata
-
     # against node is null error
     if DistrictList is None:
         DistrictList = []
@@ -372,19 +388,20 @@ def UpdatePageData(settings):
 
 @app.callback(
     Output("Map", "figure", allow_duplicate=True),
-    Output("dummy", "id", allow_duplicate=True),
+    # Output("dummy", "id", allow_duplicate=True),
     # Output("url", "pathname"),
     # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
-    Input("dummy", "id"),
+    # Input("dummy", "id"),
     # Input('page-content', 'children'),
     # State("url", "pathname"),
 )
-def UpdateFigs(data, geodata, settings, dummy):
+def UpdateFigs(data, geodata, settings):  # , dummy):
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
                                     pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
+    # dummy="1"
     return MapFig, dummy
 
 

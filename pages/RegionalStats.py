@@ -124,28 +124,34 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
     return Rfindic, Rfigg, NRlabel, AlertTable
 
 
-layout = [
-    html.Label("Regional Stats Report"),
-    dbc.Row([
-            dbc.Col(
-                [
-                    dbc.Row(dcc.Graph(id="DRindicators")),
-                    dbc.Row(dcc.Graph(id="DRRepG1")),
-                    dbc.Row(
-                        [
-                            html.Label(
-                                "Non-Reporting Regions (Please handle with care \
-                                    as geoshape files and geolocations have issues)",
-                                id="NRlabel",
-                            ),
-                            html.Div(id="AlertTable"),
-                        ]
-                    ),
-                ]
-            ),
-            html.Div(id="dummy"),
-            ])
-]
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Regional Stats Report"),
+        dbc.Row([
+                dbc.Col(
+                    [
+                        dbc.Row(dcc.Graph(id="DRindicators")),
+                        dbc.Row(dcc.Graph(id="DRRepG1")),
+                        dbc.Row(
+                            [
+                                html.Label(
+                                    "Non-Reporting Regions (Please handle with care \
+                                        as geoshape files and geolocations have issues)",
+                                    id="NRlabel",
+                                ),
+                                html.Div(id="AlertTable"),
+                            ]
+                        ),
+                    ]
+                ),
+                html.Div(id="dummy"),
+                ])
+    ])
+
+
+layout = layout_gen
 
 
 @callback(

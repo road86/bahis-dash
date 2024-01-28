@@ -214,27 +214,28 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     return {"data": data, "layout": layout}  # , vDis
 
 
-def layout_gen():  # aid=None, **other_unknown_query_strings):
-    # if aid is None:
-    #     return html.Div([
-    #         html.Label("Weekly Completeness"),
-    #         html.Div(id="dummy"),
-    #         dbc.Col(
-    #             [
-    #                 dcc.Graph(id="Completeness")
-    #             ]
-    #         )
-    #     ])
-    # else:
-    return html.Div([
-        html.Label("Weekly Completeness"),
-        html.Div(id="dummy"),
-        dbc.Col(
-            [
-                dcc.Graph(id="Completeness")
-            ]
-        )
-    ])
+def layout_gen(aid=None, **other_unknown_query_strings):  # aid=None, **other_unknown_query_strings):
+    if aid is None:
+        return html.Div([
+            html.Label("Weekly Completeness"),
+            html.Div(id="dummy"),
+            dbc.Col(
+                [
+                    dcc.Graph(id="Completeness")
+                ]
+            )
+        ])
+    else:
+        return html.Div([
+            dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+            html.Label("Weekly Completeness"),
+            html.Div(id="dummy"),
+            dbc.Col(
+                [
+                    dcc.Graph(id="Completeness")
+                ]
+            )
+        ])
 
 
 layout = layout_gen

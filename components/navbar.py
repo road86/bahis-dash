@@ -96,7 +96,7 @@ def Navbar(aid):
                     [
                         dbc.Nav(
                             [
-                                dbc.NavLink("Homeee", href="/?aid=" + aid),  # , active="exact"),
+                                dbc.NavLink("Homee", href="/?aid=" + aid),  # , active="exact"),
                                 dbc.NavLink("Completeness Report",
                                             href="/completeness/?aid=" + aid, active="exact"),
                                 dbc.NavLink("Large Animal Report",

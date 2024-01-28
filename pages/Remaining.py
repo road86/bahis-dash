@@ -9,37 +9,43 @@ import json
 
 dash.register_page(__name__,)  # register page to main dash app
 
-layout = [
-    html.Label("Remaining Animals Report"),
-    dbc.Row([
-        dbc.Col(
-            [
-                dbc.Row(dcc.Graph(id="ReportsR")),
-                dbc.Row(dcc.Graph(id="SickR")),
-                dbc.Row(dcc.Graph(id="DeadR")),
-            ]
-        ),
-        dbc.Col(
-            [
-                dcc.Slider(
-                    min=1,
-                    max=3,
-                    step=1,
-                    marks={1: 'Reports monthly',
-                           2: 'Reports weekly',
-                           3: 'Reports daily',
-                           },
-                    value=2,
-                    vertical=True,
-                    id="RperiodSlider"
-                )
-            ],
-            width=1,
-        ),
-        html.Div(id="dummy"),
-    ])
-]
 
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Remaining Animals Report"),
+        dbc.Row([
+            dbc.Col(
+                [
+                    dbc.Row(dcc.Graph(id="ReportsR")),
+                    dbc.Row(dcc.Graph(id="SickR")),
+                    dbc.Row(dcc.Graph(id="DeadR")),
+                ]
+            ),
+            dbc.Col(
+                [
+                    dcc.Slider(
+                        min=1,
+                        max=3,
+                        step=1,
+                        marks={1: 'Reports monthly',
+                            2: 'Reports weekly',
+                            3: 'Reports daily',
+                            },
+                        value=2,
+                        vertical=True,
+                        id="RperiodSlider"
+                    )
+                ],
+                width=1,
+            ),
+            html.Div(id="dummy"),
+        ])
+    ])
+
+
+layout = layout_gen
 
 @callback(
     Output("ReportsR", "figure"),
