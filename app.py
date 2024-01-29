@@ -172,7 +172,6 @@ app.layout = layout_gen
     Input("cache_aid", "data"),
 )
 def build_sidemenu(sidemenu_open, aid):
-    print(aid + "sidemen")
     if aid is not None:
         return navbar.Navbar(aid)
     else:
@@ -388,17 +387,17 @@ def UpdatePageData(settings):
 
 @app.callback(
     Output("Map", "figure", allow_duplicate=True),
-    # Output("dummy", "id", allow_duplicate=True),
+    Output("dummy", "id", allow_duplicate=True),
     # Output("url", "pathname"),
     # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
-    # Input("dummy", "id"),
+    Input("dummy", "id"),
     # Input('page-content', 'children'),
     # State("url", "pathname"),
 )
-def UpdateFigs(data, geodata, settings):  # , dummy):
+def UpdateFigs(data, geodata, settings, dummy):
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
                                     pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
     # dummy="1"
