@@ -134,8 +134,6 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
         ]
     )
 
-# aid = "20"
-
 
 app.layout = layout_gen
 
@@ -150,28 +148,18 @@ app.layout = layout_gen
 #     print(pathname.split('/')[1])
 #     aid = str(pathname.split('/')[1])
 #     if aid == "":
-#         print('ha')
 #         return navbar.NavbarN()
 #     else:
-#         print('ho')        
 #         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
 #         return navbar.Navbar(aid)
-
-
-# @app.callback(
-#     Output("sidemenu_content", "children"),
-#     Input("sidemenu_content", "id")
-# )
-# def build_sidemenu(dummy):
-#     return navbar.NavbarN()
 
 
 @app.callback(
     Output("sidemenu_content", "children"),
     Input("sidemenu", "is_open"),
-    Input("cache_aid", "data"),
+    State("cache_aid", "data"),
 )
-def build_sidemenu(sidemenu_open, aid):
+def build_sidemenu(sidemenu_open, aid:
     if aid is not None:
         return navbar.Navbar(aid)
     else:
@@ -180,10 +168,7 @@ def build_sidemenu(sidemenu_open, aid):
 
 @app.callback(
     Output("sidemenu", "is_open"),
-    # Output("sidemenu_content", "id"),
     Input("open-sidemenu", "n_clicks"),
-    # Input("cache_aid", "data"),
-    # Input("sidemenu_content", "id"),
     State("sidemenu", "is_open"),
 )
 def display_valueNtoggle_offcanvas(n1, is_open):
@@ -256,15 +241,16 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
 
     List = fetchdata.fetchDivisionlist(bahis_geodata)
     DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
-
     if aid is not None:
         SelectedDivision = int(aid[0:2])
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
         List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
         DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        if len(str(aid)) - 1 == 4:
+        if len(str(aid)) == 4:
             SelectedDistrict = int(aid[0:4])
+            List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+            DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
 
