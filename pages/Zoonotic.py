@@ -72,7 +72,7 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
     return fig
 
 
-def layout_gen(aid=None, **other_unknown_query_strings): 
+def layout_gen(aid=None, **other_unknown_query_strings):
     if aid is not None:
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div([
@@ -89,6 +89,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
 
 
 layout = layout_gen
+
 
 @callback(
     Output("TrendReports", "figure"),

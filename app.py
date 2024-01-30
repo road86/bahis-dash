@@ -306,7 +306,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             geoSlider = 3
 
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
-    
     page_settings = {
         "division": SelectedDivision,
         "district": SelectedDistrict,
@@ -364,8 +363,6 @@ def UpdatePageData(settings):
                 farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
             else:
                 farmdata = farmdata
-
-    print(len(fetchdata.fetchDiseaselist(reportsdata)))
 
     page_data = reportsdata
     page_farmdata = farmdata
