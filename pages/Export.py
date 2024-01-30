@@ -33,7 +33,7 @@ def Poultry(dummy, data):  # , fullgeodata):
     reportsdata = pd.read_json(data, orient="split")
 
     sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
-    geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     fullgeodata = fetchdata.fetchgeodata(geofilename)
 
     ExportTable = reportsdata
