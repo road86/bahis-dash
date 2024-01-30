@@ -159,7 +159,7 @@ app.layout = layout_gen
     Input("sidemenu", "is_open"),
     State("cache_aid", "data"),
 )
-def build_sidemenu(sidemenu_open, aid:
+def build_sidemenu(sidemenu_open, aid):
     if aid is not None:
         return navbar.Navbar(aid)
     else:
