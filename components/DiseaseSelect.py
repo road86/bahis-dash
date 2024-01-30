@@ -19,7 +19,7 @@ Form = html.Div([
 
 
 @callback(
-    Output("Disease", "options"),  # , allow_duplicate=True),
+    Output("Disease", "options", allow_duplicate=True),
     Input("cache_bahis_data", "data"),
     prevent_initial_call=True
 )

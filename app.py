@@ -306,7 +306,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             geoSlider = 3
 
     DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
-
+    
     page_settings = {
         "division": SelectedDivision,
         "district": SelectedDistrict,
@@ -324,6 +324,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     Output("cache_page_data", "data"),
     Output("cache_page_farmdata", "data"),
     Output("cache_page_geodata", "data"),
+    Output("Disease", "options", allow_duplicate=True),
     Input("cache_page_settings", "data"),
 )
 def UpdatePageData(settings):
@@ -364,11 +365,14 @@ def UpdatePageData(settings):
             else:
                 farmdata = farmdata
 
+    print(len(fetchdata.fetchDiseaselist(reportsdata)))
+
     page_data = reportsdata
     page_farmdata = farmdata
     page_geodata = geodata
     return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
-        date_format='iso', orient='split'), page_geodata.to_json(date_format='iso', orient='split')
+        date_format='iso', orient='split'), page_geodata.to_json(
+            date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
 
 
 @app.callback(
