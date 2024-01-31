@@ -235,7 +235,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
 
-
     # 20*42= 000 000 000 840
     # BBB BBB BBB JFB
     # 2015*42= 000 000 084 630
@@ -244,12 +243,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         aid = str(decode(aid))
     else:
         aid is None
-    # navbar.Navbar(aid),
-
-    # geoNameNNumber = pd.read_json(geodata, orient="split")
-    # geoResolution = "upazila"
-    # shapePath = "exported_data/processed_geodata/upadata.geojson"
-    # change to relative path names later further 3 instances
 
     geoNameNNumber = bahis_geodata
     # against node is null error
@@ -284,18 +277,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
                 geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        # if urlid != "/":
-        #     SelectedDivision = int(urlid[1:3])
-        #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-        #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        #     SelectedDistrict = None
-        #     if len(str(urlid)) - 1 == 4:
-        #         SelectedDistrict = int(urlid[1:5])
-        #         List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-        #         UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-        #     else:
-        #         UpazilaList = []
-        # else:
         if not SelectedDivision:
             DistrictList = []
             SelectedDistrict = None
@@ -306,11 +287,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         SelectedUpazila = None
 
     if ctx.triggered_id == "District":
-        # if len(str(urlid)) - 1 == 4:
-        #     SelectedDistrict = int(urlid[1:5])
-        #     List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-        #     UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-        # else:
         if not SelectedDistrict:
             UpazilaList = []
         else:
