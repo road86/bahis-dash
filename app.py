@@ -39,6 +39,16 @@ create_date = fetchdata.create_date(sourcefilename)  # implement here
 #    return f'/details?fruit={selected_fruit}'
 
 
+def decode(pathname):
+    if pathname is not None:
+        geoNo = ""
+        for x in range(0, 12):
+            geoNo = geoNo + str(int(ord(pathname[x])) - 66)
+        return int(int(geoNo) / 42)
+    else:
+        return pathname
+
+
 def layout_gen():  # aid=None, **other_unknown_query_strings):
     img_logo = "assets/Logo.png"
     return html.Div(
@@ -225,6 +235,15 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
 
+
+    # 20*42= 000 000 000 840
+    # BBB BBB BBB JFB
+    # 2015*42= 000 000 084 630
+    # BBB BBB BJF HEB
+    if aid is not None:
+        aid = str(decode(aid))
+    else:
+        aid is None
     # navbar.Navbar(aid),
 
     # geoNameNNumber = pd.read_json(geodata, orient="split")
