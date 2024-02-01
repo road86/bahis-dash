@@ -72,17 +72,23 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
     return fig
 
 
-layout = [
-    html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
-    dbc.Row([
-        dbc.Col(
-            [
-                dbc.Row(dcc.Graph(id="TrendReports")),
-            ]
-        ),
-        html.Div(id="dummy"),
+def layout_gen(aid=None, **other_unknown_query_strings):
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
+        dbc.Row([
+            dbc.Col(
+                [
+                    dbc.Row(dcc.Graph(id="TrendReports")),
+                ]
+            ),
+            html.Div(id="dummy"),
+        ])
     ])
-]
+
+
+layout = layout_gen
 
 
 @callback(
@@ -95,7 +101,7 @@ layout = [
 def ZooTrend(dummy, data, settings):
 
     sourcepath = "exported_data/"       # make global variable or in settings
-    geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
     selected_diseases = tmpdg['name'].tolist()

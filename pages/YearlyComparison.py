@@ -46,12 +46,17 @@ def yearlyComp(bahis_data, diseaselist):
     return figYearlyComp
 
 
-layout = [
-    html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
-    dcc.Graph(id="figMonthly"),
-    html.Div(id="dummy"),
-]
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
+        dcc.Graph(id="figMonthly"),
+        html.Div(id="dummy"),
+    ])
 
+
+layout = layout_gen
 
 @callback(
     Output("figMonthly", "figure"),

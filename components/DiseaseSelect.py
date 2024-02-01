@@ -19,11 +19,10 @@ Form = html.Div([
 
 
 @callback(
-    Output("Disease", "options"),  # , allow_duplicate=True),
+    Output("Disease", "options", allow_duplicate=True),
     Input("cache_bahis_data", "data"),
     prevent_initial_call=True
 )
 def DiseaseList(bahis_data):
-    print('heres')
     List = fetchdata.fetchDiseaselist(pd.read_json(bahis_data, orient="split"))
     return List

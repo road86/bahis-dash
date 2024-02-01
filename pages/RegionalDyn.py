@@ -8,15 +8,22 @@ import plotly.express as px
 
 dash.register_page(__name__,)  # register page to main dash app
 
-layout = [
-    html.Label("Regional Dynamics Report"),
-    dbc.Row([
-            dbc.Col(
-                dcc.Graph(id="RegionalDynamics")
-            ),
-            html.Div(id="dummy"),
-            ])
-]
+
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Regional Dynamics Report"),
+        dbc.Row([
+                dbc.Col(
+                    dcc.Graph(id="RegionalDynamics")
+                ),
+                html.Div(id="dummy"),
+                ])
+    ])
+
+
+layout = layout_gen
 
 
 @callback(

@@ -1,5 +1,5 @@
 import dash
-from dash import html, callback, dash_table
+from dash import html, dcc, callback, dash_table
 from dash.dependencies import Input, Output, State
 import pandas as pd
 from components import fetchdata, pathnames
@@ -8,12 +8,17 @@ from components import fetchdata, pathnames
 dash.register_page(__name__,)  # register page to main dash app
 
 
-layout = [
-    html.Label("Export Data", id="ExportLabel"),
-    html.Div(id="ExportTab"),
-    html.Div(id="dummy"),
-]
+def layout_gen(aid=None, **other_unknown_query_strings): 
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div([
+        html.Label("Export Data", id="ExportLabel"),
+        html.Div(id="ExportTab"),
+        html.Div(id="dummy"),
+    ])
 
+
+layout = layout_gen
 
 @callback(
     Output("ExportLabel", "children"),
@@ -28,7 +33,7 @@ def Poultry(dummy, data):  # , fullgeodata):
     reportsdata = pd.read_json(data, orient="split")
 
     sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
-    geofilename, dgfilename, sourcefilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     fullgeodata = fetchdata.fetchgeodata(geofilename)
 
     ExportTable = reportsdata
