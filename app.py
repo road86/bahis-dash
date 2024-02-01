@@ -31,13 +31,6 @@ bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
 
-# @callback(
-#    Output('goToFruitDetailsButton', 'href'),
-#    Input('showOptionsRadioItems', 'value'),
-# )
-# def redirect_details(selected_fruit):
-#    return f'/details?fruit={selected_fruit}'
-
 
 def decode(pathname):
     if pathname is not None:
@@ -130,12 +123,6 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
             html.Br(),
             html.Div(id="dummy"),
             html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
-            # dcc.Store(id="cache_bahis_data", storage_type="memory"),
-            # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
-            # id="cache_bahis_dgdata", storage_type="memory"),
-            # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split')
-            # id="cache_bahis_distypes", storage_type="memory"),
-            # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
@@ -146,22 +133,6 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
 
 
 app.layout = layout_gen
-
-
-# @app.callback(
-#     # Output("cache_aid", "data"),
-#     Output("sidemenu_content", "children"),
-#     # Output("layout", "children"),
-#     Input("dummy", "id"),
-#     State("url", "pathname"))
-# def display_page(dummy, pathname):
-#     print(pathname.split('/')[1])
-#     aid = str(pathname.split('/')[1])
-#     if aid == "":
-#         return navbar.NavbarN()
-#     else:
-#         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-#         return navbar.Navbar(aid)
 
 
 @app.callback(
@@ -182,26 +153,9 @@ def build_sidemenu(sidemenu_open, aid):
     State("sidemenu", "is_open"),
 )
 def display_valueNtoggle_offcanvas(n1, is_open):
-    # if aid is not None:
-    # dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-    # surf = navbar.Navbar(aid),
-    # else:
-    #     surf = surf
     if n1:
         return not is_open,
     return is_open  # , id
-
-
-# @app.callback(
-#     Output("cache_bahis_data", "data"),
-#     Output("cache_bahis_distypes", "data"),
-#     Output("cache_bahis_geodata", "data"),
-#     Input("dummy", "id")
-# )
-
-# def store2cache(dummy):
-#     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json
-# (date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
@@ -214,9 +168,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("geoSlider", "value"),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
-    #    Output("cache_bahis_data", "data"),
-    #    Output("cache_bahis_geodata", "data"),
-    #    Output('page-content', 'children'),
 
     Input("Division", "value"),
     Input("District", "value"),
@@ -228,9 +179,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("DateRange", "value"),
     Input("Disease", "value"),
     Input("cache_aid", "data"),
-    # Input("cache_bahis_geodata", "data"),
-    # State("url", "pathname"),
-    # prevent_initial_call=True,
 )
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
@@ -370,14 +318,10 @@ def UpdatePageData(settings):
 @app.callback(
     Output("Map", "figure", allow_duplicate=True),
     Output("dummy", "id", allow_duplicate=True),
-    # Output("url", "pathname"),
-    # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("dummy", "id"),
-    # Input('page-content', 'children'),
-    # State("url", "pathname"),
 )
 def UpdateFigs(data, geodata, settings, dummy):
     MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
