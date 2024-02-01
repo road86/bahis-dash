@@ -42,7 +42,7 @@ def decode(pathname):
         return pathname
 
 
-def layout_gen():  # aid=None, **other_unknown_query_strings):
+def layout_gen():
     img_logo = "assets/Logo.png"
     return html.Div(
         [
@@ -144,7 +144,7 @@ def build_sidemenu(sidemenu_open, aid):
     if aid is not None:
         return navbar.Navbar(aid)
     else:
-        return navbar.NavbarN()
+        return html.Div(html.Label("Wrong URL, please ask for support"))
 
 
 @app.callback(
@@ -189,9 +189,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     # BBB BBB BJF HEB
     if aid is not None:
         aid = str(decode(aid))
-    else:
-        aid is None
-
+    # else:
+    #     aid is None
     geoNameNNumber = bahis_geodata
     # against node is null error
     if DistrictList is None:
@@ -199,9 +198,14 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     if UpazilaList is None:
         UpazilaList = []
 
-    List = fetchdata.fetchDivisionlist(bahis_geodata)
-    DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
-    if aid is not None:
+    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+
+    if aid == "1620859":
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+    elif (aid is not None) and (aid != "1620859"):
+        # List = fetchdata.fetchDivisionlist(bahis_geodata)
+        # DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         SelectedDivision = int(aid[0:2])
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
@@ -213,6 +217,13 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+    else:
+        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+        DistrictList = []
+        UpazilaList = []
+        DiseaseList = []
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:
@@ -231,6 +242,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         else:
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        SelectedDistrict = None
         UpazilaList = []
         SelectedUpazila = None
 
@@ -248,7 +260,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         if geoSlider < 3:
             geoSlider = 3
 
-    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
     page_settings = {
         "division": SelectedDivision,
         "district": SelectedDistrict,
@@ -268,51 +279,56 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     Output("cache_page_geodata", "data"),
     Output("Disease", "options", allow_duplicate=True),
     Input("cache_page_settings", "data"),
+    Input("cache_aid", "data"),
 )
-def UpdatePageData(settings):
+def UpdatePageData(settings, aid):
 
-    reportsdata = bahis_data
-    geodata = bahis_geodata
-    reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
-    reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
-
-    if type(json.loads(settings)["upazila"]) == int:
-        reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
-        geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
+    if aid is None:
+        return None, None, None, []
     else:
-        if type(json.loads(settings)["district"]) == int:
-            reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-            geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]]
+        reportsdata = bahis_data
+        geodata = bahis_geodata
+        reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
+        reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
+
+        if type(json.loads(settings)["upazila"]) == int:
+            reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
+            geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
         else:
-            if type(json.loads(settings)["division"]) == int:
-                reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
-                geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)
-                                      ["division"]]
+            if type(json.loads(settings)["district"]) == int:
+                reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
+                geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)
+                                      ["district"]]
             else:
-                reportsdata = reportsdata
-                geodata = geodata
+                if type(json.loads(settings)["division"]) == int:
+                    reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
+                    geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)
+                                          ["division"]]
+                else:
+                    reportsdata = reportsdata
+                    geodata = geodata
 
-    farmdata = farm_data
-    farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
-    farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
+        farmdata = farm_data
+        farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
+        farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
 
-    if type(json.loads(settings)["upazila"]) == int:
-        farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
-    else:
-        if type(json.loads(settings)["district"]) == int:
-            farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
+        if type(json.loads(settings)["upazila"]) == int:
+            farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
         else:
-            if type(json.loads(settings)["division"]) == int:
-                farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
+            if type(json.loads(settings)["district"]) == int:
+                farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
             else:
-                farmdata = farmdata
+                if type(json.loads(settings)["division"]) == int:
+                    farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
+                else:
+                    farmdata = farmdata
 
-    page_data = reportsdata
-    page_farmdata = farmdata
-    page_geodata = geodata
-    return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
-        date_format='iso', orient='split'), page_geodata.to_json(
-            date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
+        page_data = reportsdata
+        page_farmdata = farmdata
+        page_geodata = geodata
+        return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
+            date_format='iso', orient='split'), page_geodata.to_json(
+                date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
 
 
 @app.callback(
@@ -324,10 +340,13 @@ def UpdatePageData(settings):
     Input("dummy", "id"),
 )
 def UpdateFigs(data, geodata, settings, dummy):
-    MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
-                                    pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-    # dummy="1"
-    return MapFig, dummy
+    if data is not None:
+        MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
+                                        pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
+        # dummy="1"
+        return MapFig, dummy
+    else:
+        return {}, dummy
 
 
 # Run the app on localhost:80
