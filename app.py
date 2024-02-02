@@ -31,13 +31,6 @@ bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
 
-# @callback(
-#    Output('goToFruitDetailsButton', 'href'),
-#    Input('showOptionsRadioItems', 'value'),
-# )
-# def redirect_details(selected_fruit):
-#    return f'/details?fruit={selected_fruit}'
-
 
 def decode(pathname):
     if pathname is not None:
@@ -49,7 +42,7 @@ def decode(pathname):
         return pathname
 
 
-def layout_gen():  # aid=None, **other_unknown_query_strings):
+def layout_gen():
     img_logo = "assets/Logo.png"
     return html.Div(
         [
@@ -130,12 +123,6 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
             html.Br(),
             html.Div(id="dummy"),
             html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
-            # dcc.Store(id="cache_bahis_data", storage_type="memory"),
-            # dcc.Store(data=bahis_dgdata.to_json(date_format='iso', orient='split')
-            # id="cache_bahis_dgdata", storage_type="memory"),
-            # dcc.Store(data=bahis_distypes.to_json(date_format='iso', orient='split')
-            # id="cache_bahis_distypes", storage_type="memory"),
-            # dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
@@ -148,22 +135,6 @@ def layout_gen():  # aid=None, **other_unknown_query_strings):
 app.layout = layout_gen
 
 
-# @app.callback(
-#     # Output("cache_aid", "data"),
-#     Output("sidemenu_content", "children"),
-#     # Output("layout", "children"),
-#     Input("dummy", "id"),
-#     State("url", "pathname"))
-# def display_page(dummy, pathname):
-#     print(pathname.split('/')[1])
-#     aid = str(pathname.split('/')[1])
-#     if aid == "":
-#         return navbar.NavbarN()
-#     else:
-#         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-#         return navbar.Navbar(aid)
-
-
 @app.callback(
     Output("sidemenu_content", "children"),
     Input("sidemenu", "is_open"),
@@ -173,7 +144,7 @@ def build_sidemenu(sidemenu_open, aid):
     if aid is not None:
         return navbar.Navbar(aid)
     else:
-        return navbar.NavbarN()
+        return html.Div(html.Label("Wrong URL, please ask for support"))
 
 
 @app.callback(
@@ -182,26 +153,9 @@ def build_sidemenu(sidemenu_open, aid):
     State("sidemenu", "is_open"),
 )
 def display_valueNtoggle_offcanvas(n1, is_open):
-    # if aid is not None:
-    # dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-    # surf = navbar.Navbar(aid),
-    # else:
-    #     surf = surf
     if n1:
         return not is_open,
     return is_open  # , id
-
-
-# @app.callback(
-#     Output("cache_bahis_data", "data"),
-#     Output("cache_bahis_distypes", "data"),
-#     Output("cache_bahis_geodata", "data"),
-#     Input("dummy", "id")
-# )
-
-# def store2cache(dummy):
-#     return bahis_data.to_json(date_format='iso', orient='split'), bahis_distypes.to_json
-# (date_format='iso', orient='split'), bahis_geodata.to_json(date_format='iso', orient='split')
 
 
 @app.callback(
@@ -214,9 +168,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("geoSlider", "value"),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
-    #    Output("cache_bahis_data", "data"),
-    #    Output("cache_bahis_geodata", "data"),
-    #    Output('page-content', 'children'),
 
     Input("Division", "value"),
     Input("District", "value"),
@@ -228,9 +179,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("DateRange", "value"),
     Input("Disease", "value"),
     Input("cache_aid", "data"),
-    # Input("cache_bahis_geodata", "data"),
-    # State("url", "pathname"),
-    # prevent_initial_call=True,
 )
 def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
               geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
@@ -241,9 +189,8 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     # BBB BBB BJF HEB
     if aid is not None:
         aid = str(decode(aid))
-    else:
-        aid is None
-
+    # else:
+    #     aid is None
     geoNameNNumber = bahis_geodata
     # against node is null error
     if DistrictList is None:
@@ -251,9 +198,14 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     if UpazilaList is None:
         UpazilaList = []
 
-    List = fetchdata.fetchDivisionlist(bahis_geodata)
-    DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
-    if aid is not None:
+    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+
+    if aid == "1620859":
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+    elif (aid is not None) and (aid != "1620859"):
+        # List = fetchdata.fetchDivisionlist(bahis_geodata)
+        # DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         SelectedDivision = int(aid[0:2])
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
@@ -265,6 +217,13 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+    else:
+        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+        List = fetchdata.fetchDivisionlist(bahis_geodata)
+        DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
+        DistrictList = []
+        UpazilaList = []
+        DiseaseList = []
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:
@@ -283,6 +242,7 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         else:
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        SelectedDistrict = None
         UpazilaList = []
         SelectedUpazila = None
 
@@ -300,7 +260,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         if geoSlider < 3:
             geoSlider = 3
 
-    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
     page_settings = {
         "division": SelectedDivision,
         "district": SelectedDistrict,
@@ -320,70 +279,74 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     Output("cache_page_geodata", "data"),
     Output("Disease", "options", allow_duplicate=True),
     Input("cache_page_settings", "data"),
+    Input("cache_aid", "data"),
 )
-def UpdatePageData(settings):
+def UpdatePageData(settings, aid):
 
-    reportsdata = bahis_data
-    geodata = bahis_geodata
-    reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
-    reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
-
-    if type(json.loads(settings)["upazila"]) == int:
-        reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
-        geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
+    if aid is None:
+        return None, None, None, []
     else:
-        if type(json.loads(settings)["district"]) == int:
-            reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-            geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]]
+        reportsdata = bahis_data
+        geodata = bahis_geodata
+        reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
+        reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
+
+        if type(json.loads(settings)["upazila"]) == int:
+            reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
+            geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
         else:
-            if type(json.loads(settings)["division"]) == int:
-                reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
-                geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)
-                                      ["division"]]
+            if type(json.loads(settings)["district"]) == int:
+                reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
+                geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)
+                                      ["district"]]
             else:
-                reportsdata = reportsdata
-                geodata = geodata
+                if type(json.loads(settings)["division"]) == int:
+                    reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
+                    geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)
+                                          ["division"]]
+                else:
+                    reportsdata = reportsdata
+                    geodata = geodata
 
-    farmdata = farm_data
-    farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
-    farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
+        farmdata = farm_data
+        farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
+        farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
 
-    if type(json.loads(settings)["upazila"]) == int:
-        farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
-    else:
-        if type(json.loads(settings)["district"]) == int:
-            farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
+        if type(json.loads(settings)["upazila"]) == int:
+            farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
         else:
-            if type(json.loads(settings)["division"]) == int:
-                farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
+            if type(json.loads(settings)["district"]) == int:
+                farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
             else:
-                farmdata = farmdata
+                if type(json.loads(settings)["division"]) == int:
+                    farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
+                else:
+                    farmdata = farmdata
 
-    page_data = reportsdata
-    page_farmdata = farmdata
-    page_geodata = geodata
-    return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
-        date_format='iso', orient='split'), page_geodata.to_json(
-            date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
+        page_data = reportsdata
+        page_farmdata = farmdata
+        page_geodata = geodata
+        return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
+            date_format='iso', orient='split'), page_geodata.to_json(
+                date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
 
 
 @app.callback(
     Output("Map", "figure", allow_duplicate=True),
     Output("dummy", "id", allow_duplicate=True),
-    # Output("url", "pathname"),
-    # Output('page-content', 'children'),
     Input("cache_page_data", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("dummy", "id"),
-    # Input('page-content', 'children'),
-    # State("url", "pathname"),
 )
 def UpdateFigs(data, geodata, settings, dummy):
-    MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
-                                    pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
-    # dummy="1"
-    return MapFig, dummy
+    if data is not None:
+        MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
+                                        pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
+        # dummy="1"
+        return MapFig, dummy
+    else:
+        return {}, dummy
 
 
 # Run the app on localhost:80
