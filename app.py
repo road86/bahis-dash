@@ -52,7 +52,10 @@ def layout_gen():
                     dbc.Row(
                         [
                             dbc.Col([
-                                dbc.Button("Menu", id="open-sidemenu", n_clicks=0),
+                                dbc.Button("Menu",
+                                           id="open-sidemenu",
+                                           n_clicks=0,
+                                           style={"font-size": "150%"},),
                                 dbc.Offcanvas(
                                     html.Div(id="sidemenu_content"),
                                     id="sidemenu",
@@ -61,14 +64,11 @@ def layout_gen():
                                 ),
                             ]),
                             dbc.Col(
-                                html.Label("BAHIS dashboard", style={"font-weight": "bold",
-                                                                     "font-size": "200%"}),
+                                html.H1("BAHIS Dashboard (beta)"),
                                 width=5,
                             ),
                             dbc.Col(
-                                html.Img(src=img_logo, height="30px"),
                                 width=3,
-                                # align='right'
                             )
                         ],
                         justify="end",
@@ -122,13 +122,34 @@ def layout_gen():
 
             html.Br(),
             html.Div(id="dummy"),
-            html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
+            html.Div(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(html.P('Data last updated ' + str(create_date),
+                                           style={"font-size": "80%"})),
+                            dbc.Col(
+                                html.P("Developed by the Department of Livestock Services (Bangladesh Government) with support from FAO Bangladesh ECTAD 2024",
+                                       style={"font-size": "80%"}),
+                                width=5,
+                            ),
+                            dbc.Col(
+                                html.Img(src=img_logo, height="45px"),
+                                width=5,
+                            )
+                        ],
+                        justify="end",
+                        align="center"
+                    )
+                ]
+            ),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
             dcc.Store(id="cache_page_geodata", storage_type="memory"),
             dcc.Store(id="cache_aid", storage_type="memory"),
-        ]
+        ],
+        style={"margin": "10px"},
     )
 
 
