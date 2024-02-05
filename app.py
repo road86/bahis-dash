@@ -125,7 +125,10 @@ def layout_gen():
                             dbc.Col(html.P("Data last updated " + str(create_date), style={"font-size": "80%"})),
                             dbc.Col(
                                 html.P(
-                                    "Developed by the Department of Livestock Services (Bangladesh Government) with support from FAO Bangladesh ECTAD 2024",
+                                    [
+                                        "Developed by the Department of Livestock ",
+                                        "Services (Bangladesh Government) with support from FAO Bangladesh ECTAD 2024",
+                                    ],
                                     style={"font-size": "80%"},
                                 ),
                                 width=5,
