@@ -9,7 +9,9 @@ import plotly.graph_objects as go
 import plotly.express as px
 from dash import dash_table
 
-dash.register_page(__name__,)  # register page to main dash app
+dash.register_page(
+    __name__,
+)  # register page to main dash app
 
 
 def natNo(sub_bahis_sourcedata):
@@ -124,31 +126,35 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
     return Rfindic, Rfigg, NRlabel, AlertTable
 
 
-def layout_gen(aid=None, **other_unknown_query_strings): 
+def layout_gen(aid=None, **other_unknown_query_strings):
     if aid is not None:
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-    return html.Div([
-        html.Label("Regional Stats Report"),
-        dbc.Row([
-                dbc.Col(
-                    [
-                        dbc.Row(dcc.Graph(id="DRindicators")),
-                        dbc.Row(dcc.Graph(id="DRRepG1")),
-                        dbc.Row(
-                            [
-                                html.Label(
-                                    "Non-Reporting Regions (Please handle with care \
+    return html.Div(
+        [
+            html.Label("Regional Stats Report"),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            dbc.Row(dcc.Graph(id="DRindicators")),
+                            dbc.Row(dcc.Graph(id="DRRepG1")),
+                            dbc.Row(
+                                [
+                                    html.Label(
+                                        "Non-Reporting Regions (Please handle with care \
                                         as geoshape files and geolocations have issues)",
-                                    id="NRlabel",
-                                ),
-                                html.Div(id="AlertTable"),
-                            ]
-                        ),
-                    ]
-                ),
-                html.Div(id="dummy"),
-                ])
-    ])
+                                        id="NRlabel",
+                                    ),
+                                    html.Div(id="AlertTable"),
+                                ]
+                            ),
+                        ]
+                    ),
+                    html.Div(id="dummy"),
+                ]
+            ),
+        ]
+    )
 
 
 layout = layout_gen
@@ -163,10 +169,9 @@ layout = layout_gen
     State("cache_page_data", "data"),
     State("cache_page_geodata", "data"),
     State("cache_page_settings", "data"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def RegionalStats(dummy, data, geodata, settings):
-
     reportsdata = pd.read_json(data, orient="split")
     geolocdata = pd.read_json(geodata, orient="split")
     geoResolutionNo = json.loads(settings)["georesolution"]
@@ -181,7 +186,8 @@ def RegionalStats(dummy, data, geodata, settings):
     pname = str(geoResolution) + "name"
     labl = "Reports"
 
-    Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(reportsdata, geoResolution,
-                                                 geolocdata, pnumber, pname, geoResolutionNo, labl)
+    Rfindic, Rfigg, NRlabel, AlertTable = GeoRep(
+        reportsdata, geoResolution, geolocdata, pnumber, pname, geoResolutionNo, labl
+    )
 
     return Rfindic, Rfigg, NRlabel, AlertTable
