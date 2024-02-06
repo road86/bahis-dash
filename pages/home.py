@@ -2,17 +2,21 @@ from dash import html, callback
 from dash.dependencies import Output, Input, State
 import dash
 
-dash.register_page(__name__, path='/')
+dash.register_page(__name__, path="/")
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
     html.Div(id="dummy"),
-    return html.Div([
-        html.Div([
-            html.H2("Welcome to the bahis dashboard."),
-            html.H2("Please select a report from the menu on the top left."),
-        ])
-    ])
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.H2("Welcome to the bahis dashboard."),
+                    html.H2("Please select a report from the menu on the top left."),
+                ]
+            )
+        ]
+    )
 
 
 layout = layout_gen

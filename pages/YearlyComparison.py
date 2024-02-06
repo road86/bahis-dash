@@ -7,7 +7,9 @@ import plotly.express as px
 from components import fetchdata, pathnames
 
 
-dash.register_page(__name__,)  # register page to main dash app
+dash.register_page(
+    __name__,
+)  # register page to main dash app
 
 
 def yearlyComp(bahis_data, diseaselist):
@@ -16,7 +18,7 @@ def yearlyComp(bahis_data, diseaselist):
     )["date"].agg({"count"})
     monthly = monthly.rename({"count": "reports"}, axis=1)
     monthly = monthly.reset_index()
-    monthly['reports'] = monthly['reports'] / 1000
+    monthly["reports"] = monthly["reports"] / 1000
     monthly["Year"] = monthly["Year"].astype(str)
     figYearlyComp = px.bar(
         data_frame=monthly,
@@ -29,34 +31,49 @@ def yearlyComp(bahis_data, diseaselist):
     figYearlyComp.update_xaxes(dtick="M1")  # , tickformat="%B \n%Y")
     figYearlyComp.update_layout(
         xaxis=dict(
-            tickmode='array',
+            tickmode="array",
             tickvals=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            ticktext=['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'],
-            title=""
+            ticktext=[
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ],
+            title="",
         ),
         title={
-            'text': "Disease dynamics for \"" + str(diseaselist) + "\"",
-            'y': 0.95,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        }
+            "text": 'Disease dynamics for "' + str(diseaselist) + '"',
+            "y": 0.95,
+            "x": 0.5,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
     )
     return figYearlyComp
 
 
-def layout_gen(aid=None, **other_unknown_query_strings): 
+def layout_gen(aid=None, **other_unknown_query_strings):
     if aid is not None:
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-    return html.Div([
-        html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
-        dcc.Graph(id="figMonthly"),
-        html.Div(id="dummy"),
-    ])
+    return html.Div(
+        [
+            html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
+            dcc.Graph(id="figMonthly"),
+            html.Div(id="dummy"),
+        ]
+    )
 
 
 layout = layout_gen
+
 
 @callback(
     Output("figMonthly", "figure"),
@@ -64,17 +81,16 @@ layout = layout_gen
     State("cache_page_settings", "data"),
     State("cache_page_geodata", "data"),
     # State("cache_bahis_data", "data"), caching probably too large
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
-def YearlyComparison(dummy, settings, page_geodata):    # , data):
-
-    sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
+def YearlyComparison(dummy, settings, page_geodata):  # , data):
+    sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     fulldata = fetchdata.fetchsourcedata(sourcefilename)
-#    fulldata = pd.read_json(data, orient="split")
+    #    fulldata = pd.read_json(data, orient="split")
     geodata = pd.read_json(page_geodata, orient="split")
 
-#    fulldata = fetchdata.date_subset(json.loads(settings)["daterange"], fulldata)
+    #    fulldata = fetchdata.date_subset(json.loads(settings)["daterange"], fulldata)
     fulldata = fetchdata.disease_subset(json.loads(settings)["disease"], fulldata)
 
     if type(json.loads(settings)["upazila"]) == int:

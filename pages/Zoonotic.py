@@ -9,7 +9,9 @@ from datetime import datetime, timedelta
 import plotly.express as px
 
 
-dash.register_page(__name__,)  # register page to main dash app
+dash.register_page(
+    __name__,
+)  # register page to main dash app
 
 
 def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
@@ -19,26 +21,11 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
     tmp["date"] = pd.to_datetime(tmp.index)
 
     if periodClick == 3:
-        tmp = (
-            tmp['counts']
-            .groupby(tmp['date'])
-            .sum()
-            .astype(int)
-        )
+        tmp = tmp["counts"].groupby(tmp["date"]).sum().astype(int)
     if periodClick == 2:
-        tmp = (
-            tmp['counts']
-            .groupby(tmp['date'].dt.to_period('W-SAT'))
-            .sum()
-            .astype(int)
-        )
+        tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("W-SAT")).sum().astype(int)
     if periodClick == 1:
-        tmp = (
-            tmp['counts']
-            .groupby(tmp['date'].dt.to_period('M'))
-            .sum()
-            .astype(int)
-        )
+        tmp = tmp["counts"].groupby(tmp["date"].dt.to_period("M")).sum().astype(int)
     tmp = tmp.to_frame()
     tmp["date"] = tmp.index
     tmp["date"] = tmp["date"].astype("datetime64[D]")
@@ -54,9 +41,7 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
     fig.add_annotation(
         x=datetime.strptime(dates[1], "%Y-%m-%d")
         - timedelta(
-            days=int(
-                ((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08
-            )
+            days=int(((datetime.strptime(dates[1], "%Y-%m-%d") - datetime.strptime(dates[0], "%Y-%m-%d")).days) * 0.08)
         ),
         y=max(tmp),
         text="total reports " + str("{:,}".format(sub_bahis_sourcedata["date"].size)),
@@ -75,17 +60,21 @@ def TrendReports(sub_bahis_sourcedata, dates, periodClick, figheight):
 def layout_gen(aid=None, **other_unknown_query_strings):
     if aid is not None:
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
-    return html.Div([
-        html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
-        dbc.Row([
-            dbc.Col(
+    return html.Div(
+        [
+            html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
+            dbc.Row(
                 [
-                    dbc.Row(dcc.Graph(id="TrendReports")),
+                    dbc.Col(
+                        [
+                            dbc.Row(dcc.Graph(id="TrendReports")),
+                        ]
+                    ),
+                    html.Div(id="dummy"),
                 ]
             ),
-            html.Div(id="dummy"),
-        ])
-    ])
+        ]
+    )
 
 
 layout = layout_gen
@@ -96,31 +85,36 @@ layout = layout_gen
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_settings", "data"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def ZooTrend(dummy, data, settings):
-
-    sourcepath = "exported_data/"       # make global variable or in settings
+    sourcepath = "exported_data/"  # make global variable or in settings
     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
-    selected_diseases = tmpdg['name'].tolist()
+    selected_diseases = tmpdg["name"].tolist()
 
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
     reportsdata = reportsdata[reportsdata["top_diagnosis"].isin(selected_diseases)]
 
-    Diseases = reportsdata.groupby(["top_diagnosis"])['species'].agg("count").reset_index()
+    Diseases = reportsdata.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
     Diseases = Diseases.sort_values(by="species", ascending=False)
     Diseases = Diseases.rename({"species": "counts"}, axis=1)
     Diseases = Diseases.head(10)
     reportsdata = reportsdata[reportsdata["top_diagnosis"].isin(Diseases["top_diagnosis"])]
-    reportsdata['date'] = pd.to_datetime(reportsdata['date'])
-    tmp = reportsdata.groupby(['date', 'top_diagnosis']).size().reset_index(name='incidences')
+    reportsdata["date"] = pd.to_datetime(reportsdata["date"])
+    tmp = reportsdata.groupby(["date", "top_diagnosis"]).size().reset_index(name="incidences")
 
     figheight = 570
-    figTrend = px.line(tmp, x='date', y='incidences', color='top_diagnosis', markers=True,
-                       category_orders={"top_diagnosis": Diseases['top_diagnosis']})
+    figTrend = px.line(
+        tmp,
+        x="date",
+        y="incidences",
+        color="top_diagnosis",
+        markers=True,
+        category_orders={"top_diagnosis": Diseases["top_diagnosis"]},
+    )
     figTrend.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
     # figTrend.update_xaxes(
     #     range=[
@@ -132,8 +126,8 @@ def ZooTrend(dummy, data, settings):
         x=datetime.strptime(DateRange[1], "%Y-%m-%d")
         - timedelta(
             days=int(
-                ((datetime.strptime(DateRange[1], "%Y-%m-%d") - datetime.strptime(DateRange[0],
-                                                                                  "%Y-%m-%d")).days) * 0.08
+                ((datetime.strptime(DateRange[1], "%Y-%m-%d") - datetime.strptime(DateRange[0], "%Y-%m-%d")).days)
+                * 0.08
             )
         ),
         y=max(tmp),

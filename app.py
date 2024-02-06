@@ -20,9 +20,11 @@ app = Dash(
     prevent_initial_callbacks="initial_duplicate",
 )
 
-dash.register_page(__name__,)  # register page to main dash app
+dash.register_page(
+    __name__,
+)  # register page to main dash app
 
-sourcepath = "exported_data/"           # called also in Top10, make global or settings parameter
+sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
 geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 farm_data = fetchdata.fetchfarmdata(farmdatafilename)
@@ -51,84 +53,103 @@ def layout_gen():
                 [
                     dbc.Row(
                         [
-                            dbc.Col([
-                                dbc.Button("Menu", id="open-sidemenu", n_clicks=0),
-                                dbc.Offcanvas(
-                                    html.Div(id="sidemenu_content"),
-                                    id="sidemenu",
-                                    title="Menu",
-                                    is_open=False,
-                                ),
-                            ]),
                             dbc.Col(
-                                html.Label("BAHIS dashboard", style={"font-weight": "bold",
-                                                                     "font-size": "200%"}),
+                                [
+                                    dbc.Button(
+                                        "Menu",
+                                        id="open-sidemenu",
+                                        n_clicks=0,
+                                        style={"font-size": "150%"},
+                                    ),
+                                    dbc.Offcanvas(
+                                        html.Div(id="sidemenu_content"),
+                                        id="sidemenu",
+                                        title="Menu",
+                                        is_open=False,
+                                    ),
+                                ]
+                            ),
+                            dbc.Col(
+                                html.H1("BAHIS Dashboard (beta)"),
                                 width=5,
                             ),
                             dbc.Col(
-                                html.Img(src=img_logo, height="30px"),
                                 width=3,
-                                # align='right'
-                            )
+                            ),
                         ],
                         justify="end",
-                        align="center"
+                        align="center",
                     )
                 ]
             ),
             html.Br(),
             dbc.Row(
                 [
-                    dbc.Col(            # left side
+                    dbc.Col(  # left side
                         [
                             dbc.Card(
                                 dbc.CardBody(RegionSelect.Form),
                             ),
-                            dbc.Card(
-                                dbc.CardBody(MapNResolution.Form)
-                            )
+                            dbc.Card(dbc.CardBody(MapNResolution.Form)),
                         ],
                         width=4,
                     ),
-                    dbc.Col([          # right side
-                        dbc.Card(
-                            dbc.CardBody(
-                                [
-                                    dbc.Row(
-                                        [
-                                            dbc.Col(
-                                                DateRangeSelect.Form
-                                            ),
-                                            dbc.Col(
-                                                DiseaseSelect.Form
-                                            )
-                                        ]
-                                    )
-                                ]
-                            )
-                        ),
-                        dbc.Card(
-                            dbc.CardBody(
-                                [dbc.Card(
-                                    dbc.CardBody([
-                                        dash.page_container,
-                                    ])
-                                )]
+                    dbc.Col(
+                        [  # right side
+                            dbc.Card(
+                                dbc.CardBody([dbc.Row([dbc.Col(DateRangeSelect.Form), dbc.Col(DiseaseSelect.Form)])])
                             ),
-                        ),
-                    ])
+                            dbc.Card(
+                                dbc.CardBody(
+                                    [
+                                        dbc.Card(
+                                            dbc.CardBody(
+                                                [
+                                                    dash.page_container,
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                ),
+                            ),
+                        ]
+                    ),
                 ]
             ),
-
             html.Br(),
             html.Div(id="dummy"),
-            html.Label('Data last updated ' + str(create_date), style={'text-align': 'right'}),
+            html.Div(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(html.P("Data last updated " + str(create_date), style={"font-size": "80%"})),
+                            dbc.Col(
+                                html.P(
+                                    [
+                                        "Developed by the Department of Livestock ",
+                                        "Services (Bangladesh Government) with support from FAO Bangladesh ECTAD 2024",
+                                    ],
+                                    style={"font-size": "80%"},
+                                ),
+                                width=5,
+                            ),
+                            dbc.Col(
+                                html.Img(src=img_logo, height="45px"),
+                                width=5,
+                            ),
+                        ],
+                        justify="end",
+                        align="center",
+                    )
+                ]
+            ),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
             dcc.Store(id="cache_page_geodata", storage_type="memory"),
             dcc.Store(id="cache_aid", storage_type="memory"),
-        ]
+        ],
+        style={"margin": "10px"},
     )
 
 
@@ -154,7 +175,7 @@ def build_sidemenu(sidemenu_open, aid):
 )
 def display_valueNtoggle_offcanvas(n1, is_open):
     if n1:
-        return not is_open,
+        return (not is_open,)
     return is_open  # , id
 
 
@@ -168,7 +189,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("geoSlider", "value"),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
-
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -180,9 +200,18 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("Disease", "value"),
     Input("cache_aid", "data"),
 )
-def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList, DistrictList, UpazilaList,
-              geoSlider, DateRange, SelectedDisease, aid):  # , urlid):
-
+def Framework(
+    SelectedDivision,
+    SelectedDistrict,
+    SelectedUpazila,
+    DivisionList,
+    DistrictList,
+    UpazilaList,
+    geoSlider,
+    DateRange,
+    SelectedDisease,
+    aid,
+):  # , urlid):
     # 20*42= 000 000 000 840
     # BBB BBB BBB JFB
     # 2015*42= 000 000 084 630
@@ -269,8 +298,17 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
         "daterange": DateRange,
     }
 
-    return DivisionList, DistrictList, UpazilaList, SelectedDivision, SelectedDistrict, SelectedUpazila, geoSlider, \
-        DiseaseList, json.dumps(page_settings)
+    return (
+        DivisionList,
+        DistrictList,
+        UpazilaList,
+        SelectedDivision,
+        SelectedDistrict,
+        SelectedUpazila,
+        geoSlider,
+        DiseaseList,
+        json.dumps(page_settings),
+    )
 
 
 @app.callback(
@@ -282,7 +320,6 @@ def Framework(SelectedDivision, SelectedDistrict, SelectedUpazila, DivisionList,
     Input("cache_aid", "data"),
 )
 def UpdatePageData(settings, aid):
-
     if aid is None:
         return None, None, None, []
     else:
@@ -297,13 +334,15 @@ def UpdatePageData(settings, aid):
         else:
             if type(json.loads(settings)["district"]) == int:
                 reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-                geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)
-                                      ["district"]]
+                geodata = geodata.loc[
+                    geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]
+                ]
             else:
                 if type(json.loads(settings)["division"]) == int:
                     reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
-                    geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)
-                                          ["division"]]
+                    geodata = geodata.loc[
+                        geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)["division"]
+                    ]
                 else:
                     reportsdata = reportsdata
                     geodata = geodata
@@ -326,9 +365,12 @@ def UpdatePageData(settings, aid):
         page_data = reportsdata
         page_farmdata = farmdata
         page_geodata = geodata
-        return page_data.to_json(date_format='iso', orient='split'), page_farmdata.to_json(
-            date_format='iso', orient='split'), page_geodata.to_json(
-                date_format='iso', orient='split'), fetchdata.fetchDiseaselist(reportsdata)
+        return (
+            page_data.to_json(date_format="iso", orient="split"),
+            page_farmdata.to_json(date_format="iso", orient="split"),
+            page_geodata.to_json(date_format="iso", orient="split"),
+            fetchdata.fetchDiseaselist(reportsdata),
+        )
 
 
 @app.callback(
@@ -341,8 +383,11 @@ def UpdatePageData(settings, aid):
 )
 def UpdateFigs(data, geodata, settings, dummy):
     if data is not None:
-        MapFig = MapNResolution.plotMap(json.loads(settings)["georesolution"],
-                                        pd.read_json(data, orient="split"), pd.read_json(geodata, orient="split"))
+        MapFig = MapNResolution.plotMap(
+            json.loads(settings)["georesolution"],
+            pd.read_json(data, orient="split"),
+            pd.read_json(geodata, orient="split"),
+        )
         # dummy="1"
         return MapFig, dummy
     else:

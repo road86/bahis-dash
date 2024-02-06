@@ -12,13 +12,12 @@ def open_data(path):
 
 
 def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
-
     #  note check, if only one of the resolution is selected, then plot only this and not the whole resolution
     #  check error, when none (eg, barisal and rare disease), then hover name error, but actually it is simply empty.
 
     if geoResolutionNo == 1:
         geoResolution = "division"
-        shapePath = "exported_data/processed_geodata/divdata.geojson"           # keep in mind to adjust
+        shapePath = "exported_data/processed_geodata/divdata.geojson"  # keep in mind to adjust
 
     if geoResolutionNo == 2:
         geoResolution = "district"
@@ -34,8 +33,7 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
     reports = reports.rename(columns={geoResolution: "Reports"})
 
     geoNameNNumber = geoNameNNumber[geoNameNNumber["loc_type"] == geoResolutionNo]
-    geoNameNNumber = geoNameNNumber.rename(columns={"value": geoResolution + "number",
-                                                    "name": geoResolution + "name"})
+    geoNameNNumber = geoNameNNumber.rename(columns={"value": geoResolution + "number", "name": geoResolution + "name"})
     [[geoResolution + "number", geoResolution + "name"]]
     geoNameNNumber = geoNameNNumber.set_index(geoResolution + "number")
     geoNameNNumber[geoResolution + "name"] = geoNameNNumber[geoResolution + "name"].str.title()
@@ -44,11 +42,11 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
 
     reports[geoResolution + "number"] = reports.index
     shapedata = open_data(shapePath)
-    geoResolutionDiv = geoResolution    # exception of shapefile names in division resolution
+    geoResolutionDiv = geoResolution  # exception of shapefile names in division resolution
     if geoResolutionNo == 1:
         geoResolutionDiv = "div"
 
-    if pd.notna(reports['Reports']).any():
+    if pd.notna(reports["Reports"]).any():
         custolor = [[0, "white"], [1 / reports["Reports"].max(), "lightgray"], [1, "red"]]
     else:
         custolor = [[0, "white"]]
@@ -67,37 +65,38 @@ def plotMap(geoResolutionNo, reportsdata, geoNameNNumber):
         opacity=0.7,
         labels={"Reports": "Reports"},
         hover_name=geoResolution + "name",
-        hover_data={geoResolution + "name": False, geoResolution + "number": False}
+        hover_data={geoResolution + "name": False, geoResolution + "number": False},
     )
-    fig.update_layout(
-        autosize=True, coloraxis_showscale=True, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550)
+    fig.update_layout(autosize=True, coloraxis_showscale=True, margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=550)
     return fig
 
 
-Form = html.Div([
-    dcc.Store(id="cache_bahis_data", storage_type="memory"),
-    dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
-    dcc.Graph(id="Map"),
-    dcc.Slider(
-        min=1,
-        max=3,
-        step=1,
-        marks={
-            1: "Division",
-            2: "District",
-            3: "Upazila",
-        },
-        value=3,
-        id="geoSlider",
-    )
-])
+Form = html.Div(
+    [
+        dcc.Store(id="cache_bahis_data", storage_type="memory"),
+        dcc.Store(id="cache_bahis_geodata", storage_type="memory"),
+        dcc.Graph(id="Map"),
+        dcc.Slider(
+            min=1,
+            max=3,
+            step=1,
+            marks={
+                1: "Division",
+                2: "District",
+                3: "Upazila",
+            },
+            value=3,
+            id="geoSlider",
+        ),
+    ]
+)
 
 
 @callback(
     Output("Map", "figure"),
     Input("cache_bahis_data", "data"),
     Input("cache_bahis_geodata", "data"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def mapPrep(sourcedata, geodata):
     geoResolutionNo = 3
@@ -105,6 +104,7 @@ def mapPrep(sourcedata, geodata):
     geoNameNNumber = pd.read_json(geodata, orient="split")
     fig = plotMap(geoResolutionNo, reportsdata, geoNameNNumber)
     return fig
+
 
 #     # subDist=bahis_geodata[bahis_geodata['loc_type']==geoSlider]
 
