@@ -38,15 +38,23 @@ def Navbar(aid):
                     [
                         dbc.Nav(
                             [
-                                dbc.NavLink("Antibiotics Usage Poultry", href="/completeness", active="exact"),
-                                dbc.NavLink("Antibiotics Usage Report AWaRe", href="/completeness", active="exact"),
-                                dbc.NavLink("Antibiotics Class", href="/completeness", active="exact"),
-                                dbc.NavLink("Biosecurity at entrance", href="/bsentrance", active="exact"),
+                                dbc.NavLink("Antibiotics Usage Poultry", href="/todopage/?aid=" + aid, active="exact"),
                                 dbc.NavLink(
-                                    "Biosecurity between loading and production", href="/bsproduction", active="exact"
+                                    "Antibiotics Usage Report AWaRe", href="/todopage/?aid=" + aid, active="exact"
                                 ),
-                                dbc.NavLink("Biosecurity personell management", href="/bspersonell", active="exact"),
-                                dbc.NavLink("Biosecurity equipment management", href="/bsequipment", active="exact"),
+                                dbc.NavLink("Antibiotics Class", href="/todopage/?aid=" + aid, active="exact"),
+                                dbc.NavLink("Biosecurity at entrance", href="/bsentrance/?aid=" + aid, active="exact"),
+                                dbc.NavLink(
+                                    "Biosecurity between loading and production",
+                                    href="/bsproduction/?aid=" + aid,
+                                    active="exact",
+                                ),
+                                dbc.NavLink(
+                                    "Biosecurity personell management", href="/bspersonell/?aid=" + aid, active="exact"
+                                ),
+                                dbc.NavLink(
+                                    "Biosecurity equipment management", href="/bsequipment/?aid=" + aid, active="exact"
+                                ),
                             ],
                             vertical=True,
                             pills=True,
