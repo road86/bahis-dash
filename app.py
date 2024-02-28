@@ -349,7 +349,7 @@ def UpdatePageData(settings, aid):
 
         farmdata = farm_data
         farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
-        farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
+        # farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
 
         if type(json.loads(settings)["upazila"]) == int:
             farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
