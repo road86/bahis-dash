@@ -22,7 +22,9 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     tmp = tmp.rename({"species": "counts"}, axis=1)
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    fpoul = px.bar(tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts", "top_diagnosis": ""}, title="")
+    fpoul = px.bar(
+        tmp, x="counts", y="top_diagnosis", labels={"counts": "Number of Reports", "top_diagnosis": ""}, title=""
+    )
     fpoul.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
@@ -37,7 +39,11 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
     flani = px.bar(
-        tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts in Thousands", "top_diagnosis": ""}, title=""
+        tmp,
+        x="counts",
+        y="top_diagnosis",
+        labels={"counts": "Number of Reports in Thousands", "top_diagnosis": ""},
+        title="",
     )
     flani.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
@@ -49,7 +55,9 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     tmp = tmp.rename({"species": "counts"}, axis=1)
     tmp = tmp.head(10)
     tmp = tmp.iloc[::-1]
-    figDisTyp = px.bar(tmp, x="counts", y="top_diagnosis", labels={"counts": "Counts", "top_diagnosis": ""}, title="")
+    figDisTyp = px.bar(
+        tmp, x="counts", y="top_diagnosis", labels={"counts": "Number of Reports", "top_diagnosis": ""}, title=""
+    )
     figDisTyp.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     return flani, fpoul, figDisTyp
