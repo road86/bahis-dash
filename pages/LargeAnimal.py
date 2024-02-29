@@ -72,5 +72,7 @@ def LargeAnimal(LAperiodClick, dummy, data, settings):
     reportsdata = reportsdata[reportsdata["species"].isin(LargeAnimal)]
     figheight = 190
 
-    figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, LAperiodClick, figheight)
+    figgLAR, figgLASick, figgLADead = ReportsSickDead.ReportsSickDead(
+        reportsdata, DateRange, LAperiodClick, figheight, "NPoultry"
+    )
     return figgLAR, figgLASick, figgLADead

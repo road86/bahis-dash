@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 
-def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight):
+def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry):
     if sub_bahis_sourcedata.shape[0] != 0:
         tmp = sub_bahis_sourcedata["date"].dt.date.value_counts()
         tmp = tmp.to_frame()
@@ -68,7 +68,10 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight):
         tmp = tmp.reset_index()
         tmp = tmp.rename(columns={"date": "date"})
         tmp["date"] = tmp["date"].astype("datetime64[D]")
-        figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
+        if Poultry == "Poultry":
+            figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Birds"})
+        else:
+            figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
         figSick.update_traces(marker_color="black")
         figSick.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figSick.update_xaxes(
@@ -96,7 +99,10 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight):
             opacity=0.8,
         )
 
-        figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
+        if Poultry == "Poultry":
+            figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Birds"})
+        else:
+            figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
         figDead.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figDead.update_traces(marker_color="red")
         figDead.update_xaxes(
