@@ -369,7 +369,8 @@ def UpdatePageData(settings, aid):
             page_data.to_json(date_format="iso", orient="split"),
             page_farmdata.to_json(date_format="iso", orient="split"),
             page_geodata.to_json(date_format="iso", orient="split"),
-            fetchdata.fetchDiseaselist(reportsdata),
+            # fetchdata.fetchDiseaselist(reportsdata),
+            fetchdata.fetchDiseaselist(bahis_data),
         )
 
 

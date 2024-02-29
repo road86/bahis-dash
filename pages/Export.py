@@ -60,7 +60,7 @@ def Poultry(dummy, data):  # , fullgeodata):
     ExportTable["upazila"] = ExportTable["name"].str.capitalize()
     ExportTable.drop(["name", "value"], inplace=True, axis=1)
 
-    ExportLabel = "Export Data Size: " + str(ExportTable.shape)
+    ExportLabel = "Export Data Entries: " + str(ExportTable.shape[0])
 
     ExportTab = (
         dash_table.DataTable(

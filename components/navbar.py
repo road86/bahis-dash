@@ -14,19 +14,18 @@ def Navbar(aid):
                             [
                                 dbc.NavLink("Home", href="/?aid=" + aid),  # , active="exact"),
                                 dbc.NavLink("Completeness Report", href="/completeness/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Large Animal Report", href="/largeanimal/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Poultry Report", href="/poultry/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Remaining Animals Report", href="/remaining/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Top 10 Report", href="/topten/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Zoonotic Reports", href="/zoonotic/?aid=" + aid, active="exact"),
                                 dbc.NavLink(
                                     "Regional Statistics Report", href="/regionalstats/?aid=" + aid, active="exact"
                                 ),
                                 dbc.NavLink(
                                     "Regional Dynamics Report", href="/regionaldyn/?aid=" + aid, active="exact"
                                 ),
+                                dbc.NavLink("Large Animal Report", href="/largeanimal/?aid=" + aid, active="exact"),
+                                dbc.NavLink("Poultry Report", href="/poultry/?aid=" + aid, active="exact"),
+                                dbc.NavLink("Remaining Animals Report", href="/remaining/?aid=" + aid, active="exact"),
+                                dbc.NavLink("Top 10 Report", href="/topten/?aid=" + aid, active="exact"),
+                                dbc.NavLink("Zoonotic Reports", href="/zoonotic/?aid=" + aid, active="exact"),
                                 dbc.NavLink("Yearly Comparison", href="/yearlycomparison/?aid=" + aid, active="exact"),
-                                dbc.NavLink("Export Data", href="/export/?aid=" + aid, active="exact"),
                             ],
                             vertical=True,
                             pills=True,
@@ -61,6 +60,18 @@ def Navbar(aid):
                         ),
                     ],
                     title="Farm Assessment Data",
+                ),
+                dbc.AccordionItem(
+                    [
+                        dbc.Nav(
+                            [
+                                dbc.NavLink("Export Patient Data", href="/export/?aid=" + aid, active="exact"),
+                            ],
+                            vertical=True,
+                            pills=True,
+                        ),
+                    ],
+                    title="Export Data",
                 ),
                 # dbc.AccordionItem(
                 #     [
