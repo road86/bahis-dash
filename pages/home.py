@@ -15,7 +15,7 @@ def fIndicator(sub_bahis_sourcedata):
         go.Indicator(
             mode="number",
             title="Number of Reports",
-            value=sub_bahis_sourcedata.shape[0],  # / 1000,  # f"{bahis_sourcedata.shape[0]:,}"),
+            value=sub_bahis_sourcedata.shape[0],  # f"{bahis_sourcedata.shape[0]:,}"),
             number={"valueformat": ".0f"},
             domain={"row": 0, "column": 0},
         )
@@ -25,7 +25,7 @@ def fIndicator(sub_bahis_sourcedata):
         go.Indicator(
             mode="number",
             title="Sick Animals",
-            value=sub_bahis_sourcedata["sick"].sum(),  #  / 1000,  # f"{int(bahis_sourcedata['sick'].sum()):,}",
+            value=sub_bahis_sourcedata["sick"].sum(),  # f"{int(bahis_sourcedata['sick'].sum()):,}",
             number={"valueformat": ".0f"},
             domain={"row": 0, "column": 1},
         )
