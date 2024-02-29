@@ -207,6 +207,15 @@ def LApressed(n):
         DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
         DiseaseList = DiseaseList["Disease"].sort_values().tolist()
         DiseaseList.insert(0, "All Diseases")
+    elif subpage == "remaining":
+        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+        data = bahis_data[~bahis_data["species"].isin(Poultry)]
+        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
+        data = data[~data["species"].isin(LargeAnimal)]
+        DiseaseList = data["top_diagnosis"].unique()
+        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
+        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
+        DiseaseList.insert(0, "All Diseases")
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
