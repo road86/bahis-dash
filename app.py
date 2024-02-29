@@ -238,7 +238,8 @@ def LApressed(n):
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
-    Input("DateRange", "value"),
+    Input("DateRange", "start_date"),
+    Input("DateRange", "end_date"),
     Input("Disease", "value"),
     Input("cache_aid", "data"),
 )
@@ -250,7 +251,8 @@ def Framework(
     DistrictList,
     UpazilaList,
     geoSlider,
-    DateRange,
+    start_date,
+    end_date,
     SelectedDisease,
     aid,
 ):  # , urlid):
@@ -269,6 +271,7 @@ def Framework(
     if UpazilaList is None:
         UpazilaList = []
 
+    DateRange = [start_date, end_date]
     # DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     if aid == "1620859":
