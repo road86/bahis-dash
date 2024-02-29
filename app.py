@@ -180,6 +180,40 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
+    Output("sidemenu", "is_open", allow_duplicate=True),
+    Output("Disease", "options", allow_duplicate=True),
+    Input("_pages_location", "href"),
+    prevent_initial_call=True,
+)
+def LApressed(n):
+    # print(bahis_data.shape())
+    first = n.find("/")
+    f = 3
+    while first >= 0 and f > 1:
+        first = n.find("/", first + 1)
+        f -= 1
+    subpage = n[first + 1 : n.find("/", first + 1)]
+    if subpage == "largeanimal":
+        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
+        data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
+        DiseaseList = data["top_diagnosis"].unique()
+        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
+        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
+        DiseaseList.insert(0, "All Diseases")
+    elif subpage == "poultry":
+        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+        data = bahis_data[bahis_data["species"].isin(Poultry)]
+        DiseaseList = data["top_diagnosis"].unique()
+        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
+        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
+        DiseaseList.insert(0, "All Diseases")
+    else:
+        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+
+    return False, DiseaseList
+
+
+@app.callback(
     Output("Division", "options", allow_duplicate=True),
     Output("District", "options"),
     Output("Upazila", "options"),
@@ -187,7 +221,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("District", "value"),
     Output("Upazila", "value"),
     Output("geoSlider", "value"),
-    Output("Disease", "options", allow_duplicate=True),
     Output("cache_page_settings", "data"),
     Input("Division", "value"),
     Input("District", "value"),
@@ -227,7 +260,7 @@ def Framework(
     if UpazilaList is None:
         UpazilaList = []
 
-    DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+    # DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     if aid == "1620859":
         List = fetchdata.fetchDivisionlist(bahis_geodata)
@@ -247,12 +280,12 @@ def Framework(
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
     else:
-        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+        # DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         DistrictList = []
         UpazilaList = []
-        DiseaseList = []
+        # DiseaseList = []
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:
@@ -306,7 +339,7 @@ def Framework(
         SelectedDistrict,
         SelectedUpazila,
         geoSlider,
-        DiseaseList,
+        # DiseaseList,
         json.dumps(page_settings),
     )
 
@@ -315,7 +348,7 @@ def Framework(
     Output("cache_page_data", "data"),
     Output("cache_page_farmdata", "data"),
     Output("cache_page_geodata", "data"),
-    Output("Disease", "options", allow_duplicate=True),
+    # Output("Disease", "options", allow_duplicate=True),
     Input("cache_page_settings", "data"),
     Input("cache_aid", "data"),
 )
@@ -370,7 +403,7 @@ def UpdatePageData(settings, aid):
             page_farmdata.to_json(date_format="iso", orient="split"),
             page_geodata.to_json(date_format="iso", orient="split"),
             # fetchdata.fetchDiseaselist(reportsdata),
-            fetchdata.fetchDiseaselist(bahis_data),
+            # fetchdata.fetchDiseaselist(bahis_data),
         )
 
 
