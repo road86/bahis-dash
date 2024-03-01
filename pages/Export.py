@@ -39,22 +39,7 @@ layout = layout_gen
 )
 def Poultry(filenames, dummy, data):  # , fullgeodata):
     reportsdata = pd.read_json(data, orient="split")
-<<<<<<< HEAD
     geofilename = json.loads(filenames)["geo"]
-=======
-
-    sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-    (
-        geofilename,
-        dgfilename,
-        sourcefilename,
-        farmdatafilename,
-        medfilename,
-        path1,
-        path2,
-        path3,
-    ) = pathnames.get_pathnames(sourcepath)
->>>>>>> b0bef0e (adding medlist)
     fullgeodata = fetchdata.fetchgeodata(geofilename)
 
     ExportTable = reportsdata
