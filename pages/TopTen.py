@@ -133,23 +133,8 @@ layout = layout_gen
     State("cache_page_data", "data"),
     prevent_initial_call=True,
 )
-<<<<<<< HEAD
 def TopTenView(filenames, SelDistypes, dummy, data):
     dgfilename = json.loads(filenames)["dg"]
-=======
-def TopTenView(SelDistypes, dummy, data):
-    sourcepath = "exported_data/"  # make global variable or in settings
-    (
-        geofilename,
-        dgfilename,
-        sourcefilename,
-        farmdatafilename,
-        medfilename,
-        path1,
-        path2,
-        path3,
-    ) = pathnames.get_pathnames(sourcepath)
->>>>>>> b0bef0e (adding medlist)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     vDistypes = bahis_distypes["Disease type"]
     reportsdata = pd.read_json(data, orient="split")
