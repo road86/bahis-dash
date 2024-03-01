@@ -25,7 +25,9 @@ dash.register_page(
 )  # register page to main dash app
 
 sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+geofilename, dgfilename, sourcefilename, farmdatafilename, medfilename, path1, path2, path3 = pathnames.get_pathnames(
+    sourcepath
+)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 farm_data = fetchdata.fetchfarmdata(farmdatafilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)

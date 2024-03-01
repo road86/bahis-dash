@@ -136,7 +136,16 @@ layout = layout_gen
 )
 def TopTenView(SelDistypes, dummy, data):
     sourcepath = "exported_data/"  # make global variable or in settings
-    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    (
+        geofilename,
+        dgfilename,
+        sourcefilename,
+        farmdatafilename,
+        medfilename,
+        path1,
+        path2,
+        path3,
+    ) = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     vDistypes = bahis_distypes["Disease type"]
     reportsdata = pd.read_json(data, orient="split")

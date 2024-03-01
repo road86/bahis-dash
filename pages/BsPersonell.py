@@ -39,7 +39,16 @@ def BSEntrance(dummy, data, settings):
     text4 = "c4. Workers and visitors shower upon entering farm"
     categories = [text1, text2, text3, text4]
     sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    (
+        geofilename,
+        dgfilename,
+        sourcefilename,
+        farmdatafilename,
+        medfilename,
+        path1,
+        path2,
+        path3,
+    ) = pathnames.get_pathnames(sourcepath)
     fulldata = fetchdata.fetchfarmdata(farmdatafilename)
     if type(json.loads(settings)["upazila"]) == int:
         fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]
