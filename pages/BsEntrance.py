@@ -1,7 +1,7 @@
 import dash
 from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
-from components import pathnames, fetchdata
+from components import fetchdata
 from dash.dependencies import Input, Output, State
 import pandas as pd
 import plotly.graph_objects as px
@@ -26,12 +26,13 @@ layout = [
 
 @callback(
     Output("BSEntrance", "figure"),
+    Input("cache_filenames", "data"),
     Input("dummy", "id"),
     State("cache_page_farmdata", "data"),
     State("cache_page_settings", "data"),
     prevent_initial_call=True,
 )
-def BSEntrance(dummy, data, settings):
+def BSEntrance(filenames, dummy, data, settings):
     farmdata = pd.read_json(data, orient="split")
     text1 = "a1. Outside vehicles do not enter farm, only essential vehicles"
     text2 = "a2. Only workers and approved visitors enter farm"
@@ -41,17 +42,7 @@ def BSEntrance(dummy, data, settings):
     text6 = "a6. Signs posted"
     # print(farmdata.iloc[:, 5]) until 10
     categories = [text1, text2, text3, text4, text5, text6]
-    sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-    (
-        geofilename,
-        dgfilename,
-        sourcefilename,
-        farmdatafilename,
-        medfilename,
-        path1,
-        path2,
-        path3,
-    ) = pathnames.get_pathnames(sourcepath)
+    farmdatafilename = json.loads(filenames)["farmdata"]
     fulldata = fetchdata.fetchfarmdata(farmdatafilename)
     if type(json.loads(settings)["upazila"]) == int:
         fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]

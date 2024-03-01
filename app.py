@@ -172,6 +172,7 @@ def layout_gen():
                 ]
             ),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
+            dcc.Store(id="cache_filenames", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
             dcc.Store(id="cache_page_geodata", storage_type="memory"),
@@ -259,6 +260,7 @@ def LApressed(n):
     Output("Upazila", "value"),
     Output("geoSlider", "value"),
     Output("cache_page_settings", "data"),
+    Output("cache_filenames", "data"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -362,6 +364,17 @@ def Framework(
         "daterange": DateRange,
     }
 
+    filenames = {
+        "geo": geofilename,
+        "dg": dgfilename,
+        "source": sourcefilename,
+        "farmdata": farmdatafilename,
+        "meds": medfilename,
+        "one": path1,
+        "two": path2,
+        "three": path3,
+    }
+
     return (
         DivisionList,
         DistrictList,
@@ -371,6 +384,7 @@ def Framework(
         SelectedUpazila,
         geoSlider,
         json.dumps(page_settings),
+        json.dumps(filenames),
     )
 
 
