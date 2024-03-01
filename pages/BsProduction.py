@@ -39,8 +39,22 @@ def BSEntrance(filenames, dummy, data, settings):
     text3 = "b3. Only visitors enter production area if accompanied by farm manager"
     text4 = "b4. Signs posted"
     categories = [text1, text2, text3, text4]
+<<<<<<< HEAD
     Input("cache_filenames", "data"),
     farmdatafilename = json.loads(filenames)["farmdata"]
+=======
+    sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
+    (
+        geofilename,
+        dgfilename,
+        sourcefilename,
+        farmdatafilename,
+        medfilename,
+        path1,
+        path2,
+        path3,
+    ) = pathnames.get_pathnames(sourcepath)
+>>>>>>> b0bef0e (adding medlist)
     fulldata = fetchdata.fetchfarmdata(farmdatafilename)
     if type(json.loads(settings)["upazila"]) == int:
         fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]
