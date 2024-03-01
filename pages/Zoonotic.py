@@ -1,5 +1,5 @@
 import dash
-from components import pathnames, fetchdata
+from components import fetchdata
 from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
@@ -82,23 +82,14 @@ layout = layout_gen
 
 @callback(
     Output("TrendReports", "figure"),
+    Input("cache_filenames", "data"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_settings", "data"),
     prevent_initial_call=True,
 )
-def ZooTrend(dummy, data, settings):
-    sourcepath = "exported_data/"  # make global variable or in settings
-    (
-        geofilename,
-        dgfilename,
-        sourcefilename,
-        farmdatafilename,
-        medfilename,
-        path1,
-        path2,
-        path3,
-    ) = pathnames.get_pathnames(sourcepath)
+def ZooTrend(filenames, dummy, data, settings):
+    dgfilename = json.loads(filenames)["dg"]
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
     selected_diseases = tmpdg["name"].tolist()

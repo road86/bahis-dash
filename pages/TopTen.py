@@ -1,10 +1,11 @@
 import dash
-from components import pathnames, fetchdata
+from components import fetchdata
 from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import pandas as pd
 import plotly.express as px
+import json
 
 dash.register_page(
     __name__,
@@ -126,23 +127,14 @@ layout = layout_gen
     Output("PTop10", "figure"),
     Output("figDistypes", "figure"),
     Output("Distypes", "options"),
+    Input("cache_filenames", "data"),
     Input("Distypes", "value"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     prevent_initial_call=True,
 )
-def TopTenView(SelDistypes, dummy, data):
-    sourcepath = "exported_data/"  # make global variable or in settings
-    (
-        geofilename,
-        dgfilename,
-        sourcefilename,
-        farmdatafilename,
-        medfilename,
-        path1,
-        path2,
-        path3,
-    ) = pathnames.get_pathnames(sourcepath)
+def TopTenView(filenames, SelDistypes, dummy, data):
+    dgfilename = json.loads(filenames)["dg"]
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     vDistypes = bahis_distypes["Disease type"]
     reportsdata = pd.read_json(data, orient="split")
