@@ -89,7 +89,16 @@ layout = layout_gen
 )
 def ZooTrend(dummy, data, settings):
     sourcepath = "exported_data/"  # make global variable or in settings
-    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+    (
+        geofilename,
+        dgfilename,
+        sourcefilename,
+        farmdatafilename,
+        medfilename,
+        path1,
+        path2,
+        path3,
+    ) = pathnames.get_pathnames(sourcepath)
     [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
     tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == "Zoonotic diseases"]
     selected_diseases = tmpdg["name"].tolist()
