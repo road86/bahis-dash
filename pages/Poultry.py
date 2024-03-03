@@ -72,5 +72,7 @@ def Poultry(PperiodClick, dummy, data, settings):
     reportsdata = reportsdata[reportsdata["species"].isin(Poultry)]
     figheight = 190
 
-    figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(reportsdata, DateRange, PperiodClick, figheight)
+    figgPR, figgPSick, figgPDead = ReportsSickDead.ReportsSickDead(
+        reportsdata, DateRange, PperiodClick, figheight, "Poultry"
+    )
     return figgPR, figgPSick, figgPDead
