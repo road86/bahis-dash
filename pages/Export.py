@@ -19,6 +19,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
             html.Label("Export Data", id="ExportLabel"),
             html.Div(id="ExportTab"),
             html.Div(id="dummy"),
+            # html.Button("download raw data", id="raw_csv"),
+            # dcc.Download(id="raw_download"),
         ]
     )
 
@@ -79,3 +81,17 @@ def Poultry(filenames, dummy, data):  # , fullgeodata):
         ),
     )
     return ExportLabel, ExportTab
+
+
+# @callback(
+#     Output("raw_download", "data"),
+#     Input("raw_csv", "n_clicks"),
+#     prevent_initial_call=True,
+# )
+# def func(n_clicks):
+#     sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
+#     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+#     print(sourcefilename)
+#     raw_data = pd.read_csv(sourcefilename)
+#     print(raw_data)
+#     return dcc.send_data_frame(raw_data.to_csv, "rawdata.csv")
