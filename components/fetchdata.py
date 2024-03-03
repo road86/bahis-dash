@@ -65,6 +65,11 @@ def fetchfarmdata(farmfilename):
             "biosecurity_practices_shower_before_enter_farm",
             "biosecurity_practices_materials_cleaned",
             "biosecurity_practices_materials_disinfect",
+            "g1_product1",
+            "g2_product2",
+            "g3_product3",
+            "g4_product4",
+            "g5_product5",
         ]
     ]
     farm_data = farm_data.rename(
@@ -89,11 +94,60 @@ def fetchfarmdata(farmfilename):
             "biosecurity_practices_shower_before_enter_farm": "shower_before_enter_farm",
             "biosecurity_practices_materials_cleaned": "materials_cleaned",
             "biosecurity_practices_materials_disinfect": "materials_disinfect",
+            "g1_product1": "g1",
+            "g2_product2": "g2",
+            "g3_product3": "g3",
+            "g4_product4": "g4",
+            "g5_product5": "g5",
         }
     )
     farm_data["date"] = pd.to_datetime(farm_data["date"], errors="coerce")
     farm_data["date"] = pd.to_datetime(farm_data.date).dt.tz_localize(None)
     return farm_data
+
+
+def fetchmedsdata(medsfilename):
+    tmp = pd.read_csv(medsfilename)
+    tmp = tmp.drop_duplicates(subset=["product_id"]).sort_values(by=["product_id"])
+    medsdata = tmp[
+        [
+            "product_id",
+            "product_label",
+            "generic1",
+            "generic1_label",
+            "generic2",
+            "generic2_label",
+            "generic3",
+            "generic3_label",
+            "generic4",
+            "generic4_label",
+            "treatment_type",
+            "generic1_importance_category",
+            "generic1_importance_generic",
+            "generic1_aware_category",
+            "generic1_aware_class",
+        ]
+    ]
+    medsdata = medsdata.rename(
+        columns={
+            "product_id": "id",
+            "product_label": "label",
+            "generic1": "g1",
+            "generic1_label": "g1label",
+            "generic2": "g2",
+            "generic2_label": "g2label",
+            "generic3": "g3",
+            "generic3_label": "g3label",
+            "generic4": "g4",
+            "generic4_label": "g4label",
+            "treatment_type": "treattype",
+            "generic1_importance_category": "importance_category",
+            "generic1_importance_generic": "importance_gen",
+            "generic1_aware_category": "aware",
+            "generic1_aware_class": "aware_class",
+        }
+    )
+    return medsdata
 
 
 def fetchgeodata(geofilename):  # fetch geodata from bahis, delete mouzas and unions
