@@ -68,7 +68,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Top10 Report"),
+            # html.Label("Top10 Report"),
+            html.H2("Top10 Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Card(
                 dbc.CardBody(
                     [

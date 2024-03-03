@@ -15,7 +15,8 @@ dash.register_page(
 )  # register page to main dash app
 
 layout = [
-    html.Label("Biosecurity Practice Entrance"),
+    # html.Label("Biosecurity Practice Entrance"),
+    html.H2("Biosecurity Practice Entrance", style={"textAlign": "center", "font-weight": "bold"}),
     dbc.Row(
         dcc.Graph(id="BSEntrance"),
     ),
@@ -77,5 +78,5 @@ def BSEntrance(dummy, data, settings):
             px.Bar(name="fulltime", x=categories, y=fulltime),
         ]
     )
-    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], height=550)
+    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], yaxis_title="total farm", height=550)
     return fig

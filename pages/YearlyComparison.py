@@ -65,7 +65,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
+            # html.Label("Yearly Comparison (Click on traces to select/de-select them)"),
+            html.H2("Yearly Comparison", style={"textAlign": "center", "font-weight": "bold"}),
             dcc.Graph(id="figMonthly"),
             html.Div(id="dummy"),
         ]

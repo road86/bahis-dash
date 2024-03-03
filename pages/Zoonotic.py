@@ -62,7 +62,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
+            # html.Label("Zoonotic Disease Report (Click on traces to select/de-select them)"),
+            html.H2("Zoonotic Disease Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(
                 [
                     dbc.Col(

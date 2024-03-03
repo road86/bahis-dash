@@ -17,7 +17,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Poultry Report"),
+            # html.Label("Poultry Report"),
+            html.H2("Poultry Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(
                 [
                     dbc.Col(
