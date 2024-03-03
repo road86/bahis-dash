@@ -42,6 +42,7 @@ def BSEntrance(filenames, dummy, data, settings):
     text6 = "a6. Signs posted"
     # print(farmdata.iloc[:, 5]) until 10
     categories = [text1, text2, text3, text4, text5, text6]
+    farmdatafilename = json.loads(filenames)["farmdata"]
     fulldata = fetchdata.fetchfarmdata(farmdatafilename)
     if type(json.loads(settings)["upazila"]) == int:
         fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]
