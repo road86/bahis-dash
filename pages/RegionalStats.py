@@ -131,7 +131,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Regional Stats Report"),
+            # html.Label("Regional Stats Report"),
+            html.H2("Regional Stats Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(
                 [
                     dbc.Col(

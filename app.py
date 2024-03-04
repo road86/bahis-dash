@@ -70,7 +70,7 @@ def layout_gen():
                                 ]
                             ),
                             dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)"),
+                                html.H1("BAHIS Dashboard (beta)", style={"font-weight": "bold"}),
                                 width=5,
                             ),
                             dbc.Col(

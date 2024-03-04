@@ -16,6 +16,7 @@ dash.register_page(
 
 layout = [
     html.Label("Biosecurity Practice Equipment"),
+    html.H2("Biosecurity Practice Equipment", style={"textAlign": "center", "font-weight": "bold"}),
     dbc.Row(
         dcc.Graph(id="BSProduction"),
     ),
@@ -64,5 +65,5 @@ def BSEntrance(dummy, data, settings):
             px.Bar(name="fulltime", x=categories, y=fulltime),
         ]
     )
-    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], height=550)
+    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], yaxis_title="total farm", height=550)
     return fig

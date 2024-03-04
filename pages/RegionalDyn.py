@@ -16,7 +16,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            html.Label("Regional Dynamics Report"),
+            # html.Label("Regional Dynamics Report"),
+            html.H2("Regional Dynamics Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(
                 [
                     dbc.Col(dcc.Graph(id="RegionalDynamics")),

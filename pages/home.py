@@ -60,10 +60,10 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         [
             html.Div(
                 [
-                    html.H2("Welcome to the bahis dashboard.", style={"textAlign": "center"}),
+                    html.H2("Welcome to the bahis dashboard.", style={"textAlign": "center", "font-weight": "bold"}),
                     html.H2(
                         "Please select a report from the menu on the top left.",
-                        style={"textAlign": "center", "marginBottom": "1.5em"},
+                        style={"textAlign": "center", "font-weight": "bold", "marginBottom": "1.5em"},
                     ),
                 ]
             ),

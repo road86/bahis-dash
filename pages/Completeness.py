@@ -235,7 +235,12 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
 
 
 layout = html.Div(
-    [html.Label("Weekly Completeness"), html.Div(id="dummy"), dbc.Col([dcc.Graph(id="Completeness")])]  # layout_gen
+    [
+        # html.Label("Weekly Completeness"),
+        html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
+        html.Div(id="dummy"),
+        dbc.Col([dcc.Graph(id="Completeness")]),
+    ]  # layout_gen
 )
 
 
