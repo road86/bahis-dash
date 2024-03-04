@@ -13,7 +13,8 @@ dash.register_page(
 
 def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with):
     poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-    sub_bahis_sourcedataP = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
+    sub_bahis_sourcedataP_tmp = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(poultry)]
+    sub_bahis_sourcedataP = sub_bahis_sourcedataP_tmp.copy()
     sub_bahis_sourcedataP["top_diagnosis"] = sub_bahis_sourcedataP.top_diagnosis.replace(
         to_replace, replace_with, regex=True
     )
@@ -28,7 +29,8 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     fpoul.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     lanimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-    sub_bahis_sourcedataLA = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
+    sub_bahis_sourcedataLA_tmp = sub_bahis_sourcedata[sub_bahis_sourcedata["species"].isin(lanimal)]
+    sub_bahis_sourcedataLA = sub_bahis_sourcedataLA_tmp.copy()
     sub_bahis_sourcedataLA["top_diagnosis"] = sub_bahis_sourcedataLA.top_diagnosis.replace(
         to_replace, replace_with, regex=True
     )
