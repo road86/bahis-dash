@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-
 import pandas as pd
 import plotly.express as px
 
@@ -22,7 +21,10 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
         tmp["date"] = tmp["date"].astype("datetime64[D]")
 
         fig = px.bar(tmp, x="date", y="counts", labels={"date": "", "counts": "No. of Reports"})
-        fig.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        fig.update_layout(
+            height=figheight,
+            margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        )
         fig.update_xaxes(
             range=[
                 datetime.strptime(dates[0], "%Y-%m-%d") - timedelta(days=6),
@@ -129,6 +131,19 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
             bgcolor="#ff7f0e",
             opacity=0.8,
         )
+        if periodClick == 3:
+            fig.update_layout(xaxis=dict(dtick="d"))
+            figSick.update_layout(xaxis=dict(dtick="d"))
+            figDead.update_layout(xaxis=dict(dtick="d"))
+        if periodClick == 2:
+            fig.update_layout(xaxis=dict(dtick=7 * 86400000.0))
+            figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0))
+            figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0))
+        if periodClick == 1:
+            fig.update_layout(xaxis=dict(dtick="M1"))
+            figSick.update_layout(xaxis=dict(dtick="M1"))
+            figDead.update_layout(xaxis=dict(dtick="M1"))
+
     else:
         fig = {}
         figSick = {}
