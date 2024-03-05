@@ -4,7 +4,6 @@ import dash_bootstrap_components as dbc
 from components import fetchdata
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import plotly.graph_objects as px
 
 # import plotly.express as px
 import json

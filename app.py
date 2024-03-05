@@ -221,7 +221,7 @@ def LApressed(n):
     while first >= 0 and f > 1:
         first = n.find("/", first + 1)
         f -= 1
-    subpage = n[first + 1 : n.find("/", first + 1)]
+    subpage = n[first + 1 : n.find("/", first + 1)]  # noqa: E203
     if subpage == "largeanimal":
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
