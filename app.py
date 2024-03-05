@@ -44,6 +44,31 @@ def decode(pathname):
         return pathname
 
 
+def divtrig(SelectedDivision, geoSlider, geoNameNNumber):
+    if not SelectedDivision:
+        DistrictList = []
+        SelectedDistrict = None
+    else:
+        List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+    SelectedDistrict = None
+    UpazilaList = []
+    SelectedUpazila = None
+    return DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila
+
+
+def distrig(SelectedDistrict, geoSlider, geoNameNNumber):
+    if not SelectedDistrict:
+        UpazilaList = []
+    else:
+        if geoSlider == 1:
+            geoSlider = 2
+        List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+        UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+    SelectedUpazila = None
+    return UpazilaList, SelectedUpazila
+
+
 def layout_gen():
     img_logo = "assets/Logo.png"
     return html.Div(
@@ -70,7 +95,7 @@ def layout_gen():
                                 ]
                             ),
                             dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)", style={"font-weight": "bold"}),
+                                html.H1("BAHIS Dashboard (beta)"),
                                 width=5,
                             ),
                             dbc.Col(
@@ -112,7 +137,8 @@ def layout_gen():
                                     ]
                                 ),
                             ),
-                        ]
+                        ],
+                        width=8,
                     ),
                 ]
             ),
@@ -272,14 +298,11 @@ def Framework(
         UpazilaList = []
 
     DateRange = [start_date, end_date]
-    # DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
     if aid == "1620859":
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
     elif (aid is not None) and (aid != "1620859"):
-        # List = fetchdata.fetchDivisionlist(bahis_geodata)
-        # DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         SelectedDivision = int(aid[0:2])
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
@@ -292,12 +315,10 @@ def Framework(
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
     else:
-        # DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
         DistrictList = []
         UpazilaList = []
-        # DiseaseList = []
 
     if ctx.triggered_id == "geoSlider":
         if geoSlider == 2:
@@ -310,25 +331,21 @@ def Framework(
                 geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        if not SelectedDivision:
-            DistrictList = []
-            SelectedDistrict = None
-        else:
-            List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-            DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        SelectedDistrict = None
-        UpazilaList = []
-        SelectedUpazila = None
+        DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
+            SelectedDivision, geoSlider, geoNameNNumber
+        )
+        # if not SelectedDivision:
+        #     DistrictList = []
+        #     SelectedDistrict = None
+        # else:
+        #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
+        #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
+        # SelectedDistrict = None
+        # UpazilaList = []
+        # SelectedUpazila = None
 
     if ctx.triggered_id == "District":
-        if not SelectedDistrict:
-            UpazilaList = []
-        else:
-            if geoSlider == 1:
-                geoSlider = 2
-            List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
-            UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
-        SelectedUpazila = None
+        UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
 
     if ctx.triggered_id == "Upazila":
         if geoSlider < 3:
@@ -351,7 +368,6 @@ def Framework(
         SelectedDistrict,
         SelectedUpazila,
         geoSlider,
-        # DiseaseList,
         json.dumps(page_settings),
     )
 
