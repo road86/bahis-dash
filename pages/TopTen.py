@@ -61,6 +61,8 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     figDisTyp = px.bar(
         tmp, x="counts", y="top_diagnosis", labels={"counts": "Number of Reports", "top_diagnosis": ""}, title=""
     )
+    figDisTyp.update_yaxes(range=[0, 4])
+    figDisTyp.update_xaxes(range=[0, 6])
     figDisTyp.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
     return flani, fpoul, figDisTyp
