@@ -145,7 +145,11 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
             figDead.update_layout(xaxis=dict(dtick="M1"))
 
     else:
-        fig = {}
+        # fig = {}
+        fig = px.bar()
+        fig.add_annotation(x=0.5, y=0.5, text="No data available", showarrow=False, font=dict(size=20))
+        fig.update_xaxes(showline=False, showticklabels=False)
+        fig.update_yaxes(showline=False, showticklabels=False)
         figSick = {}
         figDead = {}
     return fig, figSick, figDead
