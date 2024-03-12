@@ -78,5 +78,5 @@ def BSEntrance(filenames, dummy, data, settings):
             px.Bar(name="fulltime", x=categories, y=fulltime),
         ]
     )
-    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], yaxis_title="total farm", height=550)
+    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], yaxis_title="Total farm", height=550)
     return fig

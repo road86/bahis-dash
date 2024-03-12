@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from components import fetchdata
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import plotly.graph_objects as px
+import plotly.express as px
 
 # import plotly.express as px
 import json
@@ -15,17 +15,20 @@ dash.register_page(
 )  # register page to main dash app
 
 layout = [
-    html.Label("Biosecurity Practice Equipment"),
-    html.H2("Biosecurity Practice Equipment", style={"textAlign": "center", "font-weight": "bold"}),
+    html.Label("Antibiotics Usage"),
     dbc.Row(
-        dcc.Graph(id="BSProduction"),
+        [
+            dbc.Col([html.Label("Full"), dcc.Graph(id="ABClassF")]),
+            dbc.Col([html.Label("time"), dcc.Graph(id="ABClassT")]),
+        ]
     ),
     html.Div(id="dummy"),
 ]
 
 
 @callback(
-    Output("BSEqupment", "figure"),
+    Output("ABClassF", "figure"),
+    Output("ABClassT", "figure"),
     Input("cache_filenames", "data"),
     Input("dummy", "id"),
     State("cache_page_farmdata", "data"),
@@ -34,11 +37,11 @@ layout = [
 )
 def BSEntrance(filenames, dummy, data, settings):
     farmdata = pd.read_json(data, orient="split")
-    text1 = "d1. No movement of vehicles in and out of the production area"
-    text2 = "d2. Only workers enter production area"
-    categories = [text1, text2]
     farmdatafilename = json.loads(filenames)["farmdata"]
     fulldata = fetchdata.fetchfarmdata(farmdatafilename)
+    medsfilename = json.loads(filenames)["meds"]
+    medsdata = fetchdata.fetchmedsdata(medsfilename)
+
     if type(json.loads(settings)["upazila"]) == int:
         fulldata = fulldata.loc[fulldata["upazila"] == json.loads(settings)["upazila"]]
     else:
@@ -50,20 +53,18 @@ def BSEntrance(filenames, dummy, data, settings):
             else:
                 fulldata = fulldata
 
-    selectedtime = [
-        len(farmdata[(farmdata["materials_cleaned"] == 1)]) / farmdata.shape[0],
-        len(farmdata[(farmdata["materials_disinfect"] == 1)]) / farmdata.shape[0],
-    ]
-    fulltime = [
-        len(fulldata[(fulldata["materials_cleaned"] == 1)]) / fulldata.shape[0],
-        len(fulldata[(fulldata["materials_disinfect"] == 1)]) / fulldata.shape[0],
-    ]
+    merge_df = pd.merge(farmdata["g1"], medsdata[["id", "aware_class"]], left_on="g1", right_on="id")
+    if len(merge_df) == 0:
+        figT = px.pie()
+        figT.add_annotation(x=0.5, y=0.5, text="No data available", showarrow=False, font=dict(size=20))
+        # figT.update_layout(title="No data available")
+    else:
+        category_counts = merge_df.groupby("aware_class").size().reset_index(name="count")
+        figT = px.pie(category_counts, values="count", names="aware_class", title="selected timeframe")
+        figT.update_layout(height=550)
 
-    fig = px.Figure(
-        data=[
-            px.Bar(name="selected timeframe", x=categories, y=selectedtime),
-            px.Bar(name="fulltime", x=categories, y=fulltime),
-        ]
-    )
-    fig.update_layout(yaxis_tickformat="2%", yaxis_range=[0, 1], yaxis_title="Total farm", height=550)
-    return fig
+    merge_df = pd.merge(fulldata["g1"], medsdata[["id", "aware_class"]], left_on="g1", right_on="id")
+    category_counts = merge_df.groupby("aware_class").size().reset_index(name="count")
+    figF = px.pie(category_counts, values="count", names="aware_class", title="fulltime")
+    figF.update_layout(height=550)
+    return figF, figT
