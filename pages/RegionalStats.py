@@ -98,14 +98,21 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
     del tmp
     del aaa
 
+    if geoResNo == 1:
+        reptxt = "Divisions"
+    if geoResNo == 2:
+        reptxt = "Districts"
+    if geoResNo == 3:
+        reptxt = "Upazilas"
+
     Rfindic = fIndicator(sub_bahis_sourcedata)
     Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
 
     Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
     Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-    NRlabel = f"Regions with no data in the current database: {len(alerts)} \
-        (Please handle with care as geoshape files and geolocations have issues)"
+    NRlabel = f"{len(alerts)} {reptxt} with the above settings on location, daterange and disease have no data in the patient database:"  # \
+    # (Please handle with care as geoshape files and geolocations have issues)"
 
     AlertTable = (
         dash_table.DataTable(
