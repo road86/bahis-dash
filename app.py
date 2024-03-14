@@ -34,6 +34,7 @@ farm_data = fetchdata.fetchfarmdata(farmdatafilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
+farmpage = False
 
 
 def decode(pathname):
@@ -217,17 +218,24 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 @app.callback(
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
+    Output("dummy", "id", allow_duplicate=True),
     Input("_pages_location", "href"),
+    Input("dummy", "id"),
     prevent_initial_call=True,
 )
-def LApressed(n):
-    # print(bahis_data.shape())
+def LApressed(n, dummy):
+    print(bahis_data + "AA")
     first = n.find("/")
     f = 3
     while first >= 0 and f > 1:
         first = n.find("/", first + 1)
         f -= 1
     subpage = n[first + 1 : n.find("/", first + 1)]  # noqa: E203
+    if n[first + 1 : first + 3] == "fa":
+        farmpage = True
+    else:
+        farmpage = False
+
     if subpage == "prlargeanimal":
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
@@ -254,7 +262,7 @@ def LApressed(n):
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    return False, DiseaseList
+    return False, DiseaseList, dummy
 
 
 @app.callback(
@@ -461,21 +469,35 @@ def UpdatePageData(settings, aid):
     Output("Map", "figure", allow_duplicate=True),
     Output("dummy", "id", allow_duplicate=True),
     Input("cache_page_data", "data"),
+    Input("cache_page_farmdata", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("dummy", "id"),
 )
-def UpdateFigs(data, geodata, settings, dummy):
-    if data is not None:
-        MapFig = MapNResolution.plotMap(
-            json.loads(settings)["georesolution"],
-            pd.read_json(data, orient="split"),
-            pd.read_json(geodata, orient="split"),
-        )
-        # dummy="1"
-        return MapFig, dummy
+def UpdateFigs(data, farmdata, geodata, settings, dummy):
+    print(farmpage)
+    if farmpage:
+        if farmdata is not None:
+            MapFig = MapNResolution.plotMap(
+                json.loads(settings)["georesolution"],
+                pd.read_json(farmdata, orient="split"),
+                pd.read_json(geodata, orient="split"),
+            )
+            # dummy="1"
+            return MapFig, dummy
+        else:
+            return {}, dummy
     else:
-        return {}, dummy
+        if data is not None:
+            MapFig = MapNResolution.plotMap(
+                json.loads(settings)["georesolution"],
+                pd.read_json(data, orient="split"),
+                pd.read_json(geodata, orient="split"),
+            )
+            # dummy="1"
+            return MapFig, dummy
+        else:
+            return {}, dummy
 
 
 # Run the app on localhost:80
