@@ -249,13 +249,19 @@ layout = html.Div(
         # html.Label("Weekly Completeness"),
         html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
         html.Div(id="dummy"),
-        dbc.Col([dcc.Graph(id="Completeness")]),
+        # dbc.Col([dcc.Graph(id="Completeness", style={"width": "150%"}), style={"overflowX": "auto"}]),
+        html.Div(
+            dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
+            style={"width": "100%", "overflowX": "auto"},
+        )
+        # dbc.Col([dcc.Graph(id="Completeness")]),
     ]  # layout_gen
 )
 
 
 @callback(
     Output("Completeness", "figure"),
+    # Output("Completeness", "style"),
     Input("Completeness", "figure"),
     # Input("Refresh", "n_clicks"),
     Input("dummy", "id"),
@@ -278,7 +284,20 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings):
             (json.loads(settings))["division"],
             (json.loads(settings))["district"],
         )
-    #    else:
-    #        CompletenessFig = CompletenessFig
 
-    return CompletenessFig
+        # style = {"width": "150%"}
+    else:
+        CompletenessFig = CompletenessFig
+
+    return CompletenessFig  # , style
+
+
+@callback(
+    Output("Completeness", "style"),
+    # Output("Completeness", "figure", allow_duplicate=True),
+    Input("Completeness", "figure"),
+    prevent_initial_call=True,
+)
+def adjust_scroll(fig):
+    datapoints = len(fig["data"][0]["x"])
+    return {"minWidth": str(datapoints * 120) + "px"}  # "overflowX": "scroll" if datapoints > 7 else "auto",
