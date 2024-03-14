@@ -216,26 +216,25 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
+    Output("Map", "figure", allow_duplicate=True),
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
     Output("dummy", "id", allow_duplicate=True),
     Input("_pages_location", "href"),
+    Input("cache_page_data", "data"),
+    Input("cache_page_farmdata", "data"),
+    Input("cache_page_geodata", "data"),
+    Input("cache_page_settings", "data"),
     Input("dummy", "id"),
     prevent_initial_call=True,
 )
-def LApressed(n, dummy):
-    print(bahis_data + "AA")
+def sideandmap(n, data, farmdata, geodata, settings, dummy):
     first = n.find("/")
     f = 3
     while first >= 0 and f > 1:
         first = n.find("/", first + 1)
         f -= 1
     subpage = n[first + 1 : n.find("/", first + 1)]  # noqa: E203
-    if n[first + 1 : first + 3] == "fa":
-        farmpage = True
-    else:
-        farmpage = False
-
     if subpage == "prlargeanimal":
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
@@ -262,7 +261,28 @@ def LApressed(n, dummy):
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    return False, DiseaseList, dummy
+    if n[first + 1 : first + 3] == "fa":  # noqa: E203
+        if farmdata is not None:
+            MapFig = MapNResolution.plotMap(
+                json.loads(settings)["georesolution"],
+                pd.read_json(farmdata, orient="split"),
+                pd.read_json(geodata, orient="split"),
+            )
+            # dummy="1"
+            return MapFig, False, DiseaseList, dummy
+        else:
+            return {}, False, DiseaseList, dummy
+    else:
+        if data is not None:
+            MapFig = MapNResolution.plotMap(
+                json.loads(settings)["georesolution"],
+                pd.read_json(data, orient="split"),
+                pd.read_json(geodata, orient="split"),
+            )
+            # dummy="1"
+            return MapFig, False, DiseaseList, dummy
+        else:
+            return {}, False, DiseaseList, dummy
 
 
 @app.callback(
@@ -465,39 +485,39 @@ def UpdatePageData(settings, aid):
         )
 
 
-@app.callback(
-    Output("Map", "figure", allow_duplicate=True),
-    Output("dummy", "id", allow_duplicate=True),
-    Input("cache_page_data", "data"),
-    Input("cache_page_farmdata", "data"),
-    Input("cache_page_geodata", "data"),
-    Input("cache_page_settings", "data"),
-    Input("dummy", "id"),
-)
-def UpdateFigs(data, farmdata, geodata, settings, dummy):
-    print(farmpage)
-    if farmpage:
-        if farmdata is not None:
-            MapFig = MapNResolution.plotMap(
-                json.loads(settings)["georesolution"],
-                pd.read_json(farmdata, orient="split"),
-                pd.read_json(geodata, orient="split"),
-            )
-            # dummy="1"
-            return MapFig, dummy
-        else:
-            return {}, dummy
-    else:
-        if data is not None:
-            MapFig = MapNResolution.plotMap(
-                json.loads(settings)["georesolution"],
-                pd.read_json(data, orient="split"),
-                pd.read_json(geodata, orient="split"),
-            )
-            # dummy="1"
-            return MapFig, dummy
-        else:
-            return {}, dummy
+# @app.callback(
+#     Output("Map", "figure", allow_duplicate=True),
+#     Output("dummy", "id", allow_duplicate=True),
+#     Input("cache_page_data", "data"),
+#     Input("cache_page_farmdata", "data"),
+#     Input("cache_page_geodata", "data"),
+#     Input("cache_page_settings", "data"),
+#     Input("dummy", "id"),
+# )
+# def UpdateFigs(data, farmdata, geodata, settings, dummy):
+#     print(farmpage)
+#     if farmpage:
+#         if farmdata is not None:
+#             MapFig = MapNResolution.plotMap(
+#                 json.loads(settings)["georesolution"],
+#                 pd.read_json(farmdata, orient="split"),
+#                 pd.read_json(geodata, orient="split"),
+#             )
+#             # dummy="1"
+#             return MapFig, dummy
+#         else:
+#             return {}, dummy
+#     else:
+#         if data is not None:
+#             MapFig = MapNResolution.plotMap(
+#                 json.loads(settings)["georesolution"],
+#                 pd.read_json(data, orient="split"),
+#                 pd.read_json(geodata, orient="split"),
+#             )
+#             # dummy="1"
+#             return MapFig, dummy
+#         else:
+#             return {}, dummy
 
 
 # Run the app on localhost:80
