@@ -228,21 +228,21 @@ def LApressed(n):
         first = n.find("/", first + 1)
         f -= 1
     subpage = n[first + 1 : n.find("/", first + 1)]  # noqa: E203
-    if subpage == "largeanimal":
+    if subpage == "prlargeanimal":
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
         DiseaseList = data["top_diagnosis"].unique()
         DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
         DiseaseList = DiseaseList["Disease"].sort_values().tolist()
         DiseaseList.insert(0, "All Diseases")
-    elif subpage == "poultry":
+    elif subpage == "prpoultry":
         Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         data = bahis_data[bahis_data["species"].isin(Poultry)]
         DiseaseList = data["top_diagnosis"].unique()
         DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
         DiseaseList = DiseaseList["Disease"].sort_values().tolist()
         DiseaseList.insert(0, "All Diseases")
-    elif subpage == "remaining":
+    elif subpage == "prremaining":
         Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         data = bahis_data[~bahis_data["species"].isin(Poultry)]
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
