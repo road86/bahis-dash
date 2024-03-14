@@ -73,6 +73,7 @@ def distrig(SelectedDistrict, geoSlider, geoNameNNumber):
 
 def layout_gen():
     img_logo = "assets/Logo.png"
+    bahis_logo = "assets/bahis-logo.png"
     return html.Div(
         [
             dcc.Location(id="url", refresh=True),
@@ -94,7 +95,12 @@ def layout_gen():
                                         title="Menu",
                                         is_open=False,
                                     ),
-                                ]
+                                ],
+                                # width=1,
+                            ),
+                            dbc.Col(
+                                html.Img(src=bahis_logo, height="50px"),
+                                width=1,
                             ),
                             dbc.Col(
                                 html.H1("BAHIS Dashboard (beta)"),
