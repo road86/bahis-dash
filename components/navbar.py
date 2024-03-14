@@ -46,6 +46,9 @@ def Navbar(aid):
                                     dbc.NavLink(
                                         "Yearly Comparison", href="/pryearlycomparison/?aid=" + aid, active="exact"
                                     ),
+                                    dbc.NavLink(
+                                        "Yearly Percentage Comparison", href="/pryearlyperc/?aid=" + aid, active="exact"
+                                    ),
                                 ],
                                 vertical=True,
                                 pills=True,
