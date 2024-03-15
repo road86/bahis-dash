@@ -61,7 +61,7 @@ def Navbar(aid):
                             dbc.Nav(
                                 [
                                     dbc.NavLink(
-                                        "Antibiotics Usage Poultry", href="/todopage/?aid=" + aid, active="exact"
+                                        "Antibiotics Usage Poultry", href="/faabusage/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink(
                                         "Antibiotics Usage Report AWaRe", href="/faabaware/?aid=" + aid, active="exact"

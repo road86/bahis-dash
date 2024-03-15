@@ -236,7 +236,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):
     while first >= 0 and f > 1:
         first = urlnext.find("/", first + 1)
         f -= 1
-    urlnext = urlnext[first + 1 :]
+    urlnext = urlnext[first + 1 :]  # noqa: E203
     urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
     if urlnext == "prlargeanimal":
         DiseaseList = fetchdata.fetchDiseaselist(
