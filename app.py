@@ -184,6 +184,7 @@ def layout_gen():
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
             dcc.Store(id="cache_page_geodata", storage_type="memory"),
             dcc.Store(id="cache_aid", storage_type="memory"),
+            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
         ],
         style={"margin": "10px"},
     )
@@ -219,37 +220,41 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("Map", "figure", allow_duplicate=True),
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
+    Output("cache_urlorigin", "data"),
     Output("dummy", "id", allow_duplicate=True),
+    Input("Map", "figure"),
     Input("_pages_location", "href"),
     Input("cache_page_data", "data"),
     Input("cache_page_farmdata", "data"),
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
+    Input("cache_urlorigin", "data"),
     Input("dummy", "id"),
     prevent_initial_call=True,
 )
-def sideandmap(n, data, farmdata, geodata, settings, dummy):
-    first = n.find("/")
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
+    first = urlnext.find("/")
     f = 3
     while first >= 0 and f > 1:
-        first = n.find("/", first + 1)
+        first = urlnext.find("/", first + 1)
         f -= 1
-    subpage = n[first + 1 : n.find("/", first + 1)]  # noqa: E203
-    if subpage == "prlargeanimal":
+    urlnext = urlnext[first + 1 :]
+    urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
+    if urlnext == "prlargeanimal":
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
         data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
         DiseaseList = data["top_diagnosis"].unique()
         DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
         DiseaseList = DiseaseList["Disease"].sort_values().tolist()
         DiseaseList.insert(0, "All Diseases")
-    elif subpage == "prpoultry":
+    elif urlnext == "prpoultry":
         Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         data = bahis_data[bahis_data["species"].isin(Poultry)]
         DiseaseList = data["top_diagnosis"].unique()
         DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
         DiseaseList = DiseaseList["Disease"].sort_values().tolist()
         DiseaseList.insert(0, "All Diseases")
-    elif subpage == "prremaining":
+    elif urlnext == "prremaining":
         Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
         data = bahis_data[~bahis_data["species"].isin(Poultry)]
         LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
@@ -261,28 +266,34 @@ def sideandmap(n, data, farmdata, geodata, settings, dummy):
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    if n[first + 1 : first + 3] == "fa":  # noqa: E203
-        if farmdata is not None:
-            MapFig = MapNResolution.plotMap(
-                json.loads(settings)["georesolution"],
-                pd.read_json(farmdata, orient="split"),
-                pd.read_json(geodata, orient="split"),
-            )
-            # dummy="1"
-            return MapFig, False, DiseaseList, dummy
+    if urlnext[:2] == "fa":
+        if urlorigin[:2] != "fa":
+            if farmdata is not None:
+                MapFig = MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(farmdata, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                )
+                # dummy="1"
+                return MapFig, False, DiseaseList, urlnext, dummy
+            else:
+                return {}, False, DiseaseList, urlnext, dummy
         else:
-            return {}, False, DiseaseList, dummy
+            return MapFig, False, DiseaseList, urlnext, dummy
     else:
-        if data is not None:
-            MapFig = MapNResolution.plotMap(
-                json.loads(settings)["georesolution"],
-                pd.read_json(data, orient="split"),
-                pd.read_json(geodata, orient="split"),
-            )
-            # dummy="1"
-            return MapFig, False, DiseaseList, dummy
+        if (urlorigin[:2] == "fa") or (urlorigin == []):
+            if data is not None:
+                MapFig = MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(data, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                )
+                # dummy="1"
+                return MapFig, False, DiseaseList, urlnext, dummy
+            else:
+                return {}, False, DiseaseList, urlnext, dummy
         else:
-            return {}, False, DiseaseList, dummy
+            return MapFig, False, DiseaseList, urlnext, dummy
 
 
 @app.callback(
