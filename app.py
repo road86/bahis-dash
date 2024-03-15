@@ -239,57 +239,50 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):
     urlnext = urlnext[first + 1 :]
     urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
     if urlnext == "prlargeanimal":
-        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Buffalo", "Cattle", "Goat", "Sheep"])]
+        )
     elif urlnext == "prpoultry":
-        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        data = bahis_data[bahis_data["species"].isin(Poultry)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"])]
+        )
     elif urlnext == "prremaining":
-        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        data = bahis_data[~bahis_data["species"].isin(Poultry)]
-        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        data = data[~data["species"].isin(LargeAnimal)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[
+                ~bahis_data["species"].isin(
+                    ["Buffalo", "Cattle", "Goat", "Sheep", "Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+                )
+            ]
+        )
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    if urlnext[:2] == "fa":
-        if urlorigin[:2] != "fa":
-            if farmdata is not None:
-                MapFig = MapNResolution.plotMap(
+    if urlnext.startswith("fa"):
+        if not urlorigin.startswith("fa") and farmdata is not None:
+            return (
+                MapNResolution.plotMap(
                     json.loads(settings)["georesolution"],
                     pd.read_json(farmdata, orient="split"),
                     pd.read_json(geodata, orient="split"),
-                )
-                return MapFig, False, DiseaseList, urlnext
-            else:
-                return {}, False, DiseaseList, urlnext
-        else:
-            return MapFig, False, DiseaseList, urlnext
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+            )
     else:
-        if (urlorigin[:2] == "fa") or (urlorigin == []):
-            if data is not None:
-                MapFig = MapNResolution.plotMap(
+        if (not urlorigin or urlorigin.startswith("fa")) and data is not None:
+            return (
+                MapNResolution.plotMap(
                     json.loads(settings)["georesolution"],
                     pd.read_json(data, orient="split"),
                     pd.read_json(geodata, orient="split"),
-                )
-                return MapFig, False, DiseaseList, urlnext
-            else:
-                return {}, False, DiseaseList, urlnext
-        else:
-            return MapFig, False, DiseaseList, urlnext
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+            )
+
+    return MapFig, False, DiseaseList, urlnext
 
 
 @app.callback(
@@ -379,15 +372,6 @@ def Framework(
         DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
             SelectedDivision, geoSlider, geoNameNNumber
         )
-        # if not SelectedDivision:
-        #     DistrictList = []
-        #     SelectedDistrict = None
-        # else:
-        #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-        #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        # SelectedDistrict = None
-        # UpazilaList = []
-        # SelectedUpazila = None
 
     if ctx.triggered_id == "District":
         UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
