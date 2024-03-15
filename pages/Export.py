@@ -90,7 +90,8 @@ def Poultry(filenames, dummy, data):  # , fullgeodata):
 # )
 # def func(n_clicks):
 #     sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-#     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+#     geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 =
+#        pathnames.get_pathnames(sourcepath)
 #     print(sourcefilename)
 #     raw_data = pd.read_csv(sourcefilename)
 #     print(raw_data)
