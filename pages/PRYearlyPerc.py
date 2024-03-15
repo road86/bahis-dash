@@ -30,7 +30,6 @@ def yearlyComp(alldata, bahis_data, diseaselist):
     monthlyA["Year"] = monthlyA["Year"].astype(str)
     result = monthlyA.copy()
     result.iloc[:, -1] = monthly.iloc[:, -1] / monthlyA.iloc[:, -1]
-    print(result)
 
     figYearlyComp = px.bar(
         data_frame=result,

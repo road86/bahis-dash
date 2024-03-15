@@ -221,7 +221,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_urlorigin", "data"),
-    Output("dummy", "id", allow_duplicate=True),
     Input("Map", "figure"),
     Input("_pages_location", "href"),
     Input("cache_page_data", "data"),
@@ -229,10 +228,9 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("cache_urlorigin", "data"),
-    Input("dummy", "id"),
     prevent_initial_call=True,
 )
-def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):
     first = urlnext.find("/")
     f = 3
     while first >= 0 and f > 1:
@@ -274,12 +272,11 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
                     pd.read_json(farmdata, orient="split"),
                     pd.read_json(geodata, orient="split"),
                 )
-                # dummy="1"
-                return MapFig, False, DiseaseList, urlnext, dummy
+                return MapFig, False, DiseaseList, urlnext
             else:
-                return {}, False, DiseaseList, urlnext, dummy
+                return {}, False, DiseaseList, urlnext
         else:
-            return MapFig, False, DiseaseList, urlnext, dummy
+            return MapFig, False, DiseaseList, urlnext
     else:
         if (urlorigin[:2] == "fa") or (urlorigin == []):
             if data is not None:
@@ -288,12 +285,11 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
                     pd.read_json(data, orient="split"),
                     pd.read_json(geodata, orient="split"),
                 )
-                # dummy="1"
-                return MapFig, False, DiseaseList, urlnext, dummy
+                return MapFig, False, DiseaseList, urlnext
             else:
-                return {}, False, DiseaseList, urlnext, dummy
+                return {}, False, DiseaseList, urlnext
         else:
-            return MapFig, False, DiseaseList, urlnext, dummy
+            return MapFig, False, DiseaseList, urlnext
 
 
 @app.callback(
