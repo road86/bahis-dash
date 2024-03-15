@@ -97,19 +97,19 @@ def layout_gen():
                                         is_open=False,
                                     ),
                                 ],
-                                # width=1,
+                                width=4,
                             ),
                             dbc.Col(
                                 html.Img(src=bahis_logo, height="50px"),
                                 width=1,
                             ),
                             dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)"),
-                                width=5,
+                                html.H1("BAHIS Dashboard (beta)", style={"textAlign": "left", "font-weight": "bold"}),
+                                width=7,
                             ),
-                            dbc.Col(
-                                width=3,
-                            ),
+                            # dbc.Col(
+                            #     width=3,
+                            # ),
                         ],
                         justify="end",
                         align="center",
