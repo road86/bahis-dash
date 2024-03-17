@@ -25,13 +25,16 @@ dash.register_page(
 )  # register page to main dash app
 
 sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+geofilename, dgfilename, sourcefilename, farmdatafilename, medfilename, path1, path2, path3 = pathnames.get_pathnames(
+    sourcepath
+)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 farm_data = fetchdata.fetchfarmdata(farmdatafilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
 create_date = fetchdata.create_date(sourcefilename)  # implement here
+farmpage = False
 
 
 def decode(pathname):
@@ -71,6 +74,7 @@ def distrig(SelectedDistrict, geoSlider, geoNameNNumber):
 
 def layout_gen():
     img_logo = "assets/Logo.png"
+    bahis_logo = "assets/bahis-logo.png"
     return html.Div(
         [
             dcc.Location(id="url", refresh=True),
@@ -92,15 +96,20 @@ def layout_gen():
                                         title="Menu",
                                         is_open=False,
                                     ),
-                                ]
+                                ],
+                                width=4,
                             ),
                             dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)"),
-                                width=5,
+                                html.Img(src=bahis_logo, height="50px"),
+                                width=1,
                             ),
                             dbc.Col(
-                                width=3,
+                                html.H1("BAHIS Dashboard (beta)", style={"textAlign": "left", "font-weight": "bold"}),
+                                width=7,
                             ),
+                            # dbc.Col(
+                            #     width=3,
+                            # ),
                         ],
                         justify="end",
                         align="center",
@@ -153,7 +162,7 @@ def layout_gen():
                                 html.P(
                                     [
                                         "Developed by the Department of Livestock ",
-                                        "Services (Bangladesh Government) with support from FAO Bangladesh ECTAD 2024",
+                                        "Services (Bangladesh Government) with support from FAO ECTAD Bangladesh 2024",
                                     ],
                                     style={"font-size": "80%"},
                                 ),
@@ -170,10 +179,12 @@ def layout_gen():
                 ]
             ),
             dcc.Store(id="cache_page_settings", storage_type="memory"),
+            dcc.Store(id="cache_filenames", storage_type="memory"),
             dcc.Store(id="cache_page_data", storage_type="memory"),
             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
             dcc.Store(id="cache_page_geodata", storage_type="memory"),
             dcc.Store(id="cache_aid", storage_type="memory"),
+            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
         ],
         style={"margin": "10px"},
     )
@@ -206,46 +217,76 @@ def display_valueNtoggle_offcanvas(n1, is_open):
 
 
 @app.callback(
+    Output("Map", "figure", allow_duplicate=True),
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
+    Output("cache_urlorigin", "data"),
+    Output("dummy", "id", allow_duplicate=True),
+    Input("Map", "figure"),
     Input("_pages_location", "href"),
+    Input("cache_page_data", "data"),
+    Input("cache_page_farmdata", "data"),
+    Input("cache_page_geodata", "data"),
+    Input("cache_page_settings", "data"),
+    Input("cache_urlorigin", "data"),
+    Input("dummy", "id"),
     prevent_initial_call=True,
 )
-def LApressed(n):
-    # print(bahis_data.shape())
-    first = n.find("/")
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
+    first = urlnext.find("/")
     f = 3
     while first >= 0 and f > 1:
-        first = n.find("/", first + 1)
+        first = urlnext.find("/", first + 1)
         f -= 1
-    subpage = n[first + 1 : n.find("/", first + 1)]
-    if subpage == "largeanimal":
-        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        data = bahis_data[bahis_data["species"].isin(LargeAnimal)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
-    elif subpage == "poultry":
-        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        data = bahis_data[bahis_data["species"].isin(Poultry)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
-    elif subpage == "remaining":
-        Poultry = ["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-        data = bahis_data[~bahis_data["species"].isin(Poultry)]
-        LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-        data = data[~data["species"].isin(LargeAnimal)]
-        DiseaseList = data["top_diagnosis"].unique()
-        DiseaseList = pd.DataFrame(DiseaseList, columns=["Disease"])
-        DiseaseList = DiseaseList["Disease"].sort_values().tolist()
-        DiseaseList.insert(0, "All Diseases")
+    urlnext = urlnext[first + 1 :]  # noqa: E203
+    urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
+    if urlnext == "prlargeanimal":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Buffalo", "Cattle", "Goat", "Sheep"])]
+        )
+    elif urlnext == "prpoultry":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"])]
+        )
+    elif urlnext == "prremaining":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[
+                ~bahis_data["species"].isin(
+                    ["Buffalo", "Cattle", "Goat", "Sheep", "Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+                )
+            ]
+        )
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
 
-    return False, DiseaseList
+    if urlnext.startswith("fa"):
+        if not urlorigin.startswith("fa") and farmdata is not None:
+            return (
+                MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(farmdata, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+                dummy,
+            )
+    else:
+        if (not urlorigin or urlorigin.startswith("fa")) and data is not None:
+            return (
+                MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(data, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+                dummy,
+            )
+
+    return MapFig, False, DiseaseList, urlnext, dummy
 
 
 @app.callback(
@@ -257,6 +298,7 @@ def LApressed(n):
     Output("Upazila", "value"),
     Output("geoSlider", "value"),
     Output("cache_page_settings", "data"),
+    Output("cache_filenames", "data"),
     Input("Division", "value"),
     Input("District", "value"),
     Input("Upazila", "value"),
@@ -334,15 +376,6 @@ def Framework(
         DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
             SelectedDivision, geoSlider, geoNameNNumber
         )
-        # if not SelectedDivision:
-        #     DistrictList = []
-        #     SelectedDistrict = None
-        # else:
-        #     List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
-        #     DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        # SelectedDistrict = None
-        # UpazilaList = []
-        # SelectedUpazila = None
 
     if ctx.triggered_id == "District":
         UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
@@ -360,6 +393,17 @@ def Framework(
         "daterange": DateRange,
     }
 
+    filenames = {
+        "geo": geofilename,
+        "dg": dgfilename,
+        "source": sourcefilename,
+        "farmdata": farmdatafilename,
+        "meds": medfilename,
+        "one": path1,
+        "two": path2,
+        "three": path3,
+    }
+
     return (
         DivisionList,
         DistrictList,
@@ -369,6 +413,7 @@ def Framework(
         SelectedUpazila,
         geoSlider,
         json.dumps(page_settings),
+        json.dumps(filenames),
     )
 
 
@@ -435,25 +480,39 @@ def UpdatePageData(settings, aid):
         )
 
 
-@app.callback(
-    Output("Map", "figure", allow_duplicate=True),
-    Output("dummy", "id", allow_duplicate=True),
-    Input("cache_page_data", "data"),
-    Input("cache_page_geodata", "data"),
-    Input("cache_page_settings", "data"),
-    Input("dummy", "id"),
-)
-def UpdateFigs(data, geodata, settings, dummy):
-    if data is not None:
-        MapFig = MapNResolution.plotMap(
-            json.loads(settings)["georesolution"],
-            pd.read_json(data, orient="split"),
-            pd.read_json(geodata, orient="split"),
-        )
-        # dummy="1"
-        return MapFig, dummy
-    else:
-        return {}, dummy
+# @app.callback(
+#     Output("Map", "figure", allow_duplicate=True),
+#     Output("dummy", "id", allow_duplicate=True),
+#     Input("cache_page_data", "data"),
+#     Input("cache_page_farmdata", "data"),
+#     Input("cache_page_geodata", "data"),
+#     Input("cache_page_settings", "data"),
+#     Input("dummy", "id"),
+# )
+# def UpdateFigs(data, farmdata, geodata, settings, dummy):
+#     print(farmpage)
+#     if farmpage:
+#         if farmdata is not None:
+#             MapFig = MapNResolution.plotMap(
+#                 json.loads(settings)["georesolution"],
+#                 pd.read_json(farmdata, orient="split"),
+#                 pd.read_json(geodata, orient="split"),
+#             )
+#             # dummy="1"
+#             return MapFig, dummy
+#         else:
+#             return {}, dummy
+#     else:
+#         if data is not None:
+#             MapFig = MapNResolution.plotMap(
+#                 json.loads(settings)["georesolution"],
+#                 pd.read_json(data, orient="split"),
+#                 pd.read_json(geodata, orient="split"),
+#             )
+#             # dummy="1"
+#             return MapFig, dummy
+#         else:
+#             return {}, dummy
 
 
 # Run the app on localhost:80

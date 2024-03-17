@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output, State
 import pandas as pd
 import json
 import plotly.express as px
-from components import fetchdata, pathnames
+from components import fetchdata
 
 
 dash.register_page(
@@ -78,15 +78,14 @@ layout = layout_gen
 
 @callback(
     Output("figMonthly", "figure"),
+    Input("cache_filenames", "data"),
     Input("dummy", "id"),
     State("cache_page_settings", "data"),
     State("cache_page_geodata", "data"),
-    # State("cache_bahis_data", "data"), caching probably too large
     prevent_initial_call=True,
 )
-def YearlyComparison(dummy, settings, page_geodata):  # , data):
-    sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-    geofilename, dgfilename, sourcefilename, farmdatafilename, path1, path2, path3 = pathnames.get_pathnames(sourcepath)
+def YearlyComparison(filenames, dummy, settings, page_geodata):
+    sourcefilename = json.loads(filenames)["source"]
     fulldata = fetchdata.fetchsourcedata(sourcefilename)
     #    fulldata = pd.read_json(data, orient="split")
     geodata = pd.read_json(page_geodata, orient="split")
