@@ -162,7 +162,7 @@ def layout_gen():
                                 html.P(
                                     [
                                         "Developed by the Department of Livestock ",
-                                        "Services (Bangladesh Government) with support from FAO ECTAD Bangladesh 2024",
+                                        "Services (DLS), Bangladesh, with support from FAO ECTAD Bangladesh 2024",
                                     ],
                                     style={"font-size": "80%"},
                                 ),
