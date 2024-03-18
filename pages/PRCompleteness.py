@@ -206,13 +206,16 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
         # shapes=shapes,
         xaxis=dict(
             type="category",
+            fixedrange=True,
             side="top",
             ticks="",
             ticklen=2,
             tickfont=dict(family="sans-serif"),
             tickcolor="#ffffff",
         ),
-        yaxis=dict(type="category", side="left", ticks="", tickfont=dict(family="sans-serif"), ticksuffix=" "),
+        yaxis=dict(
+            fixedrange=True, type="category", side="left", ticks="", tickfont=dict(family="sans-serif"), ticksuffix=" "
+        ),
         hovermode="closest",
         showlegend=False,
     )
