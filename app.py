@@ -449,7 +449,6 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
         )
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
-    print("ddtrigg", urlnext, urlorigin)
     if urlnext.startswith("fa"):
         if (not urlorigin.startswith("fa") or (urlorigin == urlnext)) and farmdata is not None:
             return (
@@ -465,7 +464,6 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
             )
     else:
         if ((not urlorigin or urlorigin.startswith("fa")) or (urlorigin == urlnext)) and data is not None:
-            print("dd")
             return (
                 MapNResolution.plotMap(
                     json.loads(settings)["georesolution"],
