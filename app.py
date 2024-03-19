@@ -75,124 +75,146 @@ def distrig(SelectedDistrict, geoSlider, geoNameNNumber):
 def layout_gen():
     img_logo = "assets/Logo.png"
     bahis_logo = "assets/bahis-logo.png"
-    return html.Div(
-        [
-            dcc.Location(id="url", refresh=True),
-            html.Div(
-                [
-                    dbc.Row(
+    a = html.Div(
+        id="loader-wrapper",
+        children=[
+            dcc.Loading(
+                id="loading",
+                type="circle",
+                children=[
+                    html.Div(
                         [
-                            dbc.Col(
+                            dcc.Location(id="url", refresh=True),
+                            html.Div(
                                 [
-                                    dbc.Button(
-                                        "Menu",
-                                        id="open-sidemenu",
-                                        n_clicks=0,
-                                        style={"font-size": "150%"},
-                                    ),
-                                    dbc.Offcanvas(
-                                        html.Div(id="sidemenu_content"),
-                                        id="sidemenu",
-                                        title="Menu",
-                                        is_open=False,
-                                    ),
-                                ],
-                                width=4,
-                            ),
-                            dbc.Col(
-                                html.Img(src=bahis_logo, height="50px"),
-                                width=1,
-                            ),
-                            dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)", style={"textAlign": "left", "font-weight": "bold"}),
-                                width=7,
-                            ),
-                            # dbc.Col(
-                            #     width=3,
-                            # ),
-                        ],
-                        justify="end",
-                        align="center",
-                    )
-                ]
-            ),
-            html.Br(),
-            dbc.Row(
-                [
-                    dbc.Col(  # left side
-                        [
-                            dbc.Card(
-                                dbc.CardBody(RegionSelect.Form),
-                            ),
-                            dbc.Card(dbc.CardBody(MapNResolution.Form)),
-                        ],
-                        width=4,
-                    ),
-                    dbc.Col(
-                        [  # right side
-                            dbc.Card(
-                                dbc.CardBody([dbc.Row([dbc.Col(DateRangeSelect.Form), dbc.Col(DiseaseSelect.Form)])])
-                            ),
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        dbc.Card(
-                                            dbc.CardBody(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
                                                 [
-                                                    dash.page_container,
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
+                                                    dbc.Button(
+                                                        "Menu",
+                                                        id="open-sidemenu",
+                                                        n_clicks=0,
+                                                        style={"font-size": "150%"},
+                                                    ),
+                                                    dbc.Offcanvas(
+                                                        html.Div(id="sidemenu_content"),
+                                                        id="sidemenu",
+                                                        title="Menu",
+                                                        is_open=False,
+                                                    ),
+                                                ],
+                                                width=4,
+                                            ),
+                                            dbc.Col(
+                                                html.Img(src=bahis_logo, height="50px"),
+                                                width=1,
+                                            ),
+                                            dbc.Col(
+                                                html.H1(
+                                                    "BAHIS Dashboard (beta)",
+                                                    style={"textAlign": "left", "font-weight": "bold"},
+                                                ),
+                                                width=7,
+                                            ),
+                                            # dbc.Col(
+                                            #     width=3,
+                                            # ),
+                                        ],
+                                        justify="end",
+                                        align="center",
+                                    )
+                                ]
                             ),
+                            html.Br(),
+                            dbc.Row(
+                                [
+                                    dbc.Col(  # left side
+                                        [
+                                            dbc.Card(
+                                                dbc.CardBody(RegionSelect.Form),
+                                            ),
+                                            dbc.Card(dbc.CardBody(MapNResolution.Form)),
+                                        ],
+                                        width=4,
+                                    ),
+                                    dbc.Col(
+                                        [  # right side
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [
+                                                        dbc.Row(
+                                                            [dbc.Col(DateRangeSelect.Form), dbc.Col(DiseaseSelect.Form)]
+                                                        )
+                                                    ]
+                                                )
+                                            ),
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [
+                                                        dbc.Card(
+                                                            dbc.CardBody(
+                                                                [
+                                                                    dash.page_container,
+                                                                ]
+                                                            )
+                                                        )
+                                                    ]
+                                                ),
+                                            ),
+                                        ],
+                                        width=8,
+                                    ),
+                                ]
+                            ),
+                            html.Br(),
+                            html.Div(id="dummy"),
+                            html.Div(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                html.P(
+                                                    "Data last updated " + str(create_date.strftime("%d %b '%y")),
+                                                    style={"font-size": "80%"},
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                html.P(
+                                                    [
+                                                        "Developed by the Department of Livestock ",
+                                                        "Services (DLS) Bangladesh, with support from FAO ECTAD \n\
+                                                            Bangladesh 2024",
+                                                    ],
+                                                    style={"font-size": "80%"},
+                                                ),
+                                                width=5,
+                                            ),
+                                            dbc.Col(
+                                                html.Img(src=img_logo, height="45px"),
+                                                width=5,
+                                            ),
+                                        ],
+                                        justify="end",
+                                        align="center",
+                                    )
+                                ]
+                            ),
+                            dcc.Store(id="cache_page_settings", storage_type="memory"),
+                            dcc.Store(id="cache_filenames", storage_type="memory"),
+                            dcc.Store(id="cache_page_data", storage_type="memory"),
+                            dcc.Store(id="cache_page_farmdata", storage_type="memory"),
+                            dcc.Store(id="cache_page_geodata", storage_type="memory"),
+                            dcc.Store(id="cache_aid", storage_type="memory"),
+                            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
                         ],
-                        width=8,
-                    ),
-                ]
-            ),
-            html.Br(),
-            html.Div(id="dummy"),
-            html.Div(
-                [
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.P(
-                                    "Data last updated " + str(create_date.strftime("%d %b '%y")),
-                                    style={"font-size": "80%"},
-                                )
-                            ),
-                            dbc.Col(
-                                html.P(
-                                    [
-                                        "Developed by the Department of Livestock ",
-                                        "Services (DLS) Bangladesh, with support from FAO ECTAD Bangladesh 2024",
-                                    ],
-                                    style={"font-size": "80%"},
-                                ),
-                                width=5,
-                            ),
-                            dbc.Col(
-                                html.Img(src=img_logo, height="45px"),
-                                width=5,
-                            ),
-                        ],
-                        justify="end",
-                        align="center",
+                        style={"margin": "10px"},
                     )
-                ]
-            ),
-            dcc.Store(id="cache_page_settings", storage_type="memory"),
-            dcc.Store(id="cache_filenames", storage_type="memory"),
-            dcc.Store(id="cache_page_data", storage_type="memory"),
-            dcc.Store(id="cache_page_farmdata", storage_type="memory"),
-            dcc.Store(id="cache_page_geodata", storage_type="memory"),
-            dcc.Store(id="cache_aid", storage_type="memory"),
-            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
+                ],
+            )
         ],
-        style={"margin": "10px"},
     )
+    return a
 
 
 app.layout = layout_gen
