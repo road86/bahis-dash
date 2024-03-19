@@ -157,12 +157,17 @@ def layout_gen():
                 [
                     dbc.Row(
                         [
-                            dbc.Col(html.P("Data last updated " + str(create_date), style={"font-size": "80%"})),
+                            dbc.Col(
+                                html.P(
+                                    "Data last updated " + str(create_date.strftime("%d %b '%y")),
+                                    style={"font-size": "80%"},
+                                )
+                            ),
                             dbc.Col(
                                 html.P(
                                     [
                                         "Developed by the Department of Livestock ",
-                                        "Services (DLS), Bangladesh, with support from FAO ECTAD Bangladesh 2024",
+                                        "Services (DLS) Bangladesh, with support from FAO ECTAD Bangladesh 2024",
                                     ],
                                     style={"font-size": "80%"},
                                 ),
