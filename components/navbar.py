@@ -96,13 +96,26 @@ def Navbar(aid):
                         [
                             dbc.Nav(
                                 [
-                                    dbc.NavLink("Export Patient Data", href="/export/?aid=" + aid, active="exact"),
+                                    dbc.NavLink("Export Patient Data", href="/exportpr/?aid=" + aid, active="exact"),
+                                    dbc.NavLink("Export Farmdata", href="/exportfa/?aid=" + aid, active="exact"),
                                 ],
                                 vertical=True,
                                 pills=True,
                             ),
                         ],
                         title="Export Data",
+                    ),
+                    dbc.AccordionItem(
+                        [
+                            dbc.Nav(
+                                [
+                                    dbc.NavLink("Form Summary", href="/formsummary/?aid=" + aid, active="exact"),
+                                ],
+                                vertical=True,
+                                pills=True,
+                            ),
+                        ],
+                        title="Form Data",
                     ),
                     # dbc.AccordionItem(
                     #     [

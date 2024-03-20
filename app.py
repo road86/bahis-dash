@@ -25,11 +25,24 @@ dash.register_page(
 )  # register page to main dash app
 
 sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
-geofilename, dgfilename, sourcefilename, farmdatafilename, medfilename, path1, path2, path3 = pathnames.get_pathnames(
-    sourcepath
-)
+(
+    geofilename,
+    dgfilename,
+    sourcefilename,
+    farmdatafilename,
+    AIinvestdatafilename,
+    DiseaseInvestdatafilename,
+    PartLSAssisdatafilename,
+    medfilename,
+    path1,
+    path2,
+    path3,
+) = pathnames.get_pathnames(sourcepath)
 bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 farm_data = fetchdata.fetchfarmdata(farmdatafilename)
+AIinvest_data = fetchdata.fetchAIinvestdata(AIinvestdatafilename)
+DiseaseInvest_data = fetchdata.fetchDiseaseInvestdata(DiseaseInvestdatafilename)
+PartLSAssis_data = fetchdata.fetchPartLSAssdata(PartLSAssisdatafilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
@@ -75,119 +88,146 @@ def distrig(SelectedDistrict, geoSlider, geoNameNNumber):
 def layout_gen():
     img_logo = "assets/Logo.png"
     bahis_logo = "assets/bahis-logo.png"
-    return html.Div(
-        [
-            dcc.Location(id="url", refresh=True),
-            html.Div(
-                [
-                    dbc.Row(
+    a = html.Div(
+        id="loader-wrapper",
+        children=[
+            dcc.Loading(
+                id="loading",
+                type="circle",
+                children=[
+                    html.Div(
                         [
-                            dbc.Col(
+                            dcc.Location(id="url", refresh=True),
+                            html.Div(
                                 [
-                                    dbc.Button(
-                                        "Menu",
-                                        id="open-sidemenu",
-                                        n_clicks=0,
-                                        style={"font-size": "150%"},
-                                    ),
-                                    dbc.Offcanvas(
-                                        html.Div(id="sidemenu_content"),
-                                        id="sidemenu",
-                                        title="Menu",
-                                        is_open=False,
-                                    ),
-                                ],
-                                width=4,
-                            ),
-                            dbc.Col(
-                                html.Img(src=bahis_logo, height="50px"),
-                                width=1,
-                            ),
-                            dbc.Col(
-                                html.H1("BAHIS Dashboard (beta)", style={"textAlign": "left", "font-weight": "bold"}),
-                                width=7,
-                            ),
-                            # dbc.Col(
-                            #     width=3,
-                            # ),
-                        ],
-                        justify="end",
-                        align="center",
-                    )
-                ]
-            ),
-            html.Br(),
-            dbc.Row(
-                [
-                    dbc.Col(  # left side
-                        [
-                            dbc.Card(
-                                dbc.CardBody(RegionSelect.Form),
-                            ),
-                            dbc.Card(dbc.CardBody(MapNResolution.Form)),
-                        ],
-                        width=4,
-                    ),
-                    dbc.Col(
-                        [  # right side
-                            dbc.Card(
-                                dbc.CardBody([dbc.Row([dbc.Col(DateRangeSelect.Form), dbc.Col(DiseaseSelect.Form)])])
-                            ),
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        dbc.Card(
-                                            dbc.CardBody(
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
                                                 [
-                                                    dash.page_container,
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
+                                                    dbc.Button(
+                                                        "Menu",
+                                                        id="open-sidemenu",
+                                                        n_clicks=0,
+                                                        style={"font-size": "150%"},
+                                                    ),
+                                                    dbc.Offcanvas(
+                                                        html.Div(id="sidemenu_content"),
+                                                        id="sidemenu",
+                                                        title="Menu",
+                                                        is_open=False,
+                                                    ),
+                                                ],
+                                                width=4,
+                                            ),
+                                            dbc.Col(
+                                                html.Img(src=bahis_logo, height="50px"),
+                                                width=1,
+                                            ),
+                                            dbc.Col(
+                                                html.H1(
+                                                    "BAHIS Dashboard (beta)",
+                                                    style={"textAlign": "left", "font-weight": "bold"},
+                                                ),
+                                                width=7,
+                                            ),
+                                            # dbc.Col(
+                                            #     width=3,
+                                            # ),
+                                        ],
+                                        justify="end",
+                                        align="center",
+                                    )
+                                ]
                             ),
+                            html.Br(),
+                            dbc.Row(
+                                [
+                                    dbc.Col(  # left side
+                                        [
+                                            dbc.Card(
+                                                dbc.CardBody(RegionSelect.Form),
+                                            ),
+                                            dbc.Card(dbc.CardBody(MapNResolution.Form)),
+                                        ],
+                                        width=4,
+                                    ),
+                                    dbc.Col(
+                                        [  # right side
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [
+                                                        dbc.Row(
+                                                            [dbc.Col(DateRangeSelect.Form), dbc.Col(DiseaseSelect.Form)]
+                                                        )
+                                                    ]
+                                                )
+                                            ),
+                                            dbc.Card(
+                                                dbc.CardBody(
+                                                    [
+                                                        dbc.Card(
+                                                            dbc.CardBody(
+                                                                [
+                                                                    dash.page_container,
+                                                                ]
+                                                            )
+                                                        )
+                                                    ]
+                                                ),
+                                            ),
+                                        ],
+                                        width=8,
+                                    ),
+                                ]
+                            ),
+                            html.Br(),
+                            html.Div(id="dummy"),
+                            html.Div(
+                                [
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                html.P(
+                                                    "Data last updated " + str(create_date.strftime("%d %b '%y")),
+                                                    style={"font-size": "80%"},
+                                                )
+                                            ),
+                                            dbc.Col(
+                                                html.P(
+                                                    [
+                                                        "Developed by the Department of Livestock ",
+                                                        "Services (DLS) Bangladesh, with support from FAO ECTAD \n\
+                                                            Bangladesh 2024",
+                                                    ],
+                                                    style={"font-size": "80%"},
+                                                ),
+                                                width=5,
+                                            ),
+                                            dbc.Col(
+                                                html.Img(src=img_logo, height="45px"),
+                                                width=5,
+                                            ),
+                                        ],
+                                        justify="end",
+                                        align="center",
+                                    )
+                                ]
+                            ),
+                            dcc.Store(id="cache_page_settings", storage_type="memory"),
+                            dcc.Store(id="cache_filenames", storage_type="memory"),
+                            dcc.Store(id="cache_page_data", storage_type="memory"),
+                            dcc.Store(id="cache_page_farmdata", storage_type="memory"),
+                            dcc.Store(id="cache_page_geodata", storage_type="memory"),
+                            dcc.Store(id="cache_aid", storage_type="memory"),
+                            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
                         ],
-                        width=8,
-                    ),
-                ]
-            ),
-            html.Br(),
-            html.Div(id="dummy"),
-            html.Div(
-                [
-                    dbc.Row(
-                        [
-                            dbc.Col(html.P("Data last updated " + str(create_date), style={"font-size": "80%"})),
-                            dbc.Col(
-                                html.P(
-                                    [
-                                        "Developed by the Department of Livestock ",
-                                        "Services (Bangladesh Government) with support from FAO ECTAD Bangladesh 2024",
-                                    ],
-                                    style={"font-size": "80%"},
-                                ),
-                                width=5,
-                            ),
-                            dbc.Col(
-                                html.Img(src=img_logo, height="45px"),
-                                width=5,
-                            ),
-                        ],
-                        justify="end",
-                        align="center",
+                        style={"margin": "10px"},
                     )
-                ]
-            ),
-            dcc.Store(id="cache_page_settings", storage_type="memory"),
-            dcc.Store(id="cache_filenames", storage_type="memory"),
-            dcc.Store(id="cache_page_data", storage_type="memory"),
-            dcc.Store(id="cache_page_farmdata", storage_type="memory"),
-            dcc.Store(id="cache_page_geodata", storage_type="memory"),
-            dcc.Store(id="cache_aid", storage_type="memory"),
-            dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
+                ],
+            )
         ],
-        style={"margin": "10px"},
     )
+    return a
 
 
 app.layout = layout_gen
@@ -214,79 +254,6 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     if n1:
         return (not is_open,)
     return is_open  # , id
-
-
-@app.callback(
-    Output("Map", "figure", allow_duplicate=True),
-    Output("sidemenu", "is_open", allow_duplicate=True),
-    Output("Disease", "options", allow_duplicate=True),
-    Output("cache_urlorigin", "data"),
-    Output("dummy", "id", allow_duplicate=True),
-    Input("Map", "figure"),
-    Input("_pages_location", "href"),
-    Input("cache_page_data", "data"),
-    Input("cache_page_farmdata", "data"),
-    Input("cache_page_geodata", "data"),
-    Input("cache_page_settings", "data"),
-    Input("cache_urlorigin", "data"),
-    Input("dummy", "id"),
-    prevent_initial_call=True,
-)
-def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
-    first = urlnext.find("/")
-    f = 3
-    while first >= 0 and f > 1:
-        first = urlnext.find("/", first + 1)
-        f -= 1
-    urlnext = urlnext[first + 1 :]  # noqa: E203
-    urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
-    if urlnext == "prlargeanimal":
-        DiseaseList = fetchdata.fetchDiseaselist(
-            bahis_data[bahis_data["species"].isin(["Buffalo", "Cattle", "Goat", "Sheep"])]
-        )
-    elif urlnext == "prpoultry":
-        DiseaseList = fetchdata.fetchDiseaselist(
-            bahis_data[bahis_data["species"].isin(["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"])]
-        )
-    elif urlnext == "prremaining":
-        DiseaseList = fetchdata.fetchDiseaselist(
-            bahis_data[
-                ~bahis_data["species"].isin(
-                    ["Buffalo", "Cattle", "Goat", "Sheep", "Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
-                )
-            ]
-        )
-    else:
-        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
-
-    if urlnext.startswith("fa"):
-        if not urlorigin.startswith("fa") and farmdata is not None:
-            return (
-                MapNResolution.plotMap(
-                    json.loads(settings)["georesolution"],
-                    pd.read_json(farmdata, orient="split"),
-                    pd.read_json(geodata, orient="split"),
-                ),
-                False,
-                DiseaseList,
-                urlnext,
-                dummy,
-            )
-    else:
-        if (not urlorigin or urlorigin.startswith("fa")) and data is not None:
-            return (
-                MapNResolution.plotMap(
-                    json.loads(settings)["georesolution"],
-                    pd.read_json(data, orient="split"),
-                    pd.read_json(geodata, orient="split"),
-                ),
-                False,
-                DiseaseList,
-                urlnext,
-                dummy,
-            )
-
-    return MapFig, False, DiseaseList, urlnext, dummy
 
 
 @app.callback(
@@ -478,6 +445,78 @@ def UpdatePageData(settings, aid):
             # fetchdata.fetchDiseaselist(reportsdata),
             # fetchdata.fetchDiseaselist(bahis_data),
         )
+
+
+@app.callback(
+    Output("Map", "figure", allow_duplicate=True),
+    Output("sidemenu", "is_open", allow_duplicate=True),
+    Output("Disease", "options", allow_duplicate=True),
+    Output("cache_urlorigin", "data"),
+    Output("dummy", "id", allow_duplicate=True),
+    Input("Map", "figure"),
+    Input("_pages_location", "href"),
+    Input("cache_page_data", "data"),
+    Input("cache_page_farmdata", "data"),
+    Input("cache_page_geodata", "data"),
+    Input("cache_page_settings", "data"),
+    Input("cache_urlorigin", "data"),
+    Input("dummy", "id"),
+    #    prevent_initial_call=True,
+)
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
+    first = urlnext.find("/")
+    f = 3
+    while first >= 0 and f > 1:
+        first = urlnext.find("/", first + 1)
+        f -= 1
+    urlnext = urlnext[first + 1 :]  # noqa: E203
+    urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
+    if urlnext == "prlargeanimal":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Buffalo", "Cattle", "Goat", "Sheep"])]
+        )
+    elif urlnext == "prpoultry":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[bahis_data["species"].isin(["Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"])]
+        )
+    elif urlnext == "prremaining":
+        DiseaseList = fetchdata.fetchDiseaselist(
+            bahis_data[
+                ~bahis_data["species"].isin(
+                    ["Buffalo", "Cattle", "Goat", "Sheep", "Chicken", "Duck", "Goose", "Pegion", "Quail", "Turkey"]
+                )
+            ]
+        )
+    else:
+        DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
+    if urlnext.startswith("fa"):
+        if (not urlorigin.startswith("fa") or (urlorigin == urlnext)) and farmdata is not None:
+            return (
+                MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(farmdata, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+                dummy,
+            )
+    else:
+        if ((not urlorigin or urlorigin.startswith("fa")) or (urlorigin == urlnext)) and data is not None:
+            return (
+                MapNResolution.plotMap(
+                    json.loads(settings)["georesolution"],
+                    pd.read_json(data, orient="split"),
+                    pd.read_json(geodata, orient="split"),
+                ),
+                False,
+                DiseaseList,
+                urlnext,
+                dummy,
+            )
+
+    return MapFig, False, DiseaseList, urlnext, dummy
 
 
 # @app.callback(

@@ -55,7 +55,7 @@ def GeoRep(sub_bahis_sourcedata):
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
-    html.Div(id="dummy"),
+    # html.Div(id="dummy"),
     return html.Div(
         [
             html.Div(
@@ -76,21 +76,21 @@ layout = layout_gen
 
 
 @callback(
-    Output("dummy", "id"),
+    # Output("dummy", "id"),
     Output("cache_aid", "data"),
-    Input("dummy", "id"),
+    # Input("dummy", "id"),
     Input("url", "search"),
     State("cache_aid", "data"),
 )
-def set_store(id, url, prev):
+def set_store(url, prev):  # id, url, prev):
     if url != "":
         aid = url.split("=")[1]
     else:
         aid = None
     if aid is None:
-        return id, None
+        return None  # id, None
     else:
-        return id, aid
+        return aid  # id, aid
 
 
 @callback(

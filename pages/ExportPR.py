@@ -37,7 +37,7 @@ layout = layout_gen
     #    State("cache_bahis_geodata", "data"),
     prevent_initial_call=True,
 )
-def Poultry(filenames, dummy, data):  # , fullgeodata):
+def Export(filenames, dummy, data):  # , fullgeodata):
     reportsdata = pd.read_json(data, orient="split")
     geofilename = json.loads(filenames)["geo"]
     fullgeodata = fetchdata.fetchgeodata(geofilename)

@@ -146,6 +146,81 @@ def fetchfarmdata(farmfilename):
     return farm_data
 
 
+def fetchAIinvestdata(AIinvestdatafilename):
+    tmp = pd.read_csv(AIinvestdatafilename)
+    AIinvestdata = tmp[
+        [
+            "id",
+            "basic_info_date",
+            "basic_info_division",
+            "basic_info_district",
+            "basic_info_upazila",
+        ]
+    ]
+    AIinvestdata = AIinvestdata.rename(
+        columns={
+            "basic_info_date": "date",
+            "basic_info_division": "division",
+            "basic_info_district": "district",
+            "basic_info_upazila": "upazila",
+        }
+    )
+    AIinvestdata["date"] = pd.to_datetime(AIinvestdata["date"], errors="coerce")
+    AIinvestdata["date"] = pd.to_datetime(AIinvestdata.date).dt.tz_localize(None)
+    AIinvestdata["date"] = pd.to_datetime(AIinvestdata["date"])
+    AIinvestdata["date"] = AIinvestdata["date"].dt.strftime("%Y-%m-%d")
+    AIinvestdata["date"] = pd.to_datetime(AIinvestdata["date"])
+    return AIinvestdata
+
+
+def fetchDiseaseInvestdata(DiseaseInvestdatafilename):
+    tmp = pd.read_csv(DiseaseInvestdatafilename)
+    DiseaseInvestdata = tmp[
+        [
+            "id",
+            "basic_info_date",
+            "basic_info_division",
+            "basic_info_district",
+            "basic_info_upazila",
+        ]
+    ]
+    DiseaseInvestdata = DiseaseInvestdata.rename(
+        columns={
+            "basic_info_date": "date",
+            "basic_info_division": "division",
+            "basic_info_district": "district",
+            "basic_info_upazila": "upazila",
+        }
+    )
+    DiseaseInvestdata["date"] = pd.to_datetime(DiseaseInvestdata["date"], errors="coerce")
+    DiseaseInvestdata["date"] = pd.to_datetime(DiseaseInvestdata.date).dt.tz_localize(None)
+    return DiseaseInvestdata
+
+
+def fetchPartLSAssdata(PartLSAssisdatafilename):
+    tmp = pd.read_csv(PartLSAssisdatafilename)
+    LSAssisdata = tmp[
+        [
+            "id",
+            "basic_info_date",
+            "basic_info_division",
+            "basic_info_district",
+            "basic_info_upazila",
+        ]
+    ]
+    LSAssisdata = LSAssisdata.rename(
+        columns={
+            "basic_info_date": "date",
+            "basic_info_division": "division",
+            "basic_info_district": "district",
+            "basic_info_upazila": "upazila",
+        }
+    )
+    LSAssisdata["date"] = pd.to_datetime(LSAssisdata["date"], errors="coerce")
+    LSAssisdata["date"] = pd.to_datetime(LSAssisdata.date).dt.tz_localize(None)
+    return LSAssisdata
+
+
 def fetchmedsdata(medsfilename):
     tmp = pd.read_csv(medsfilename)
     tmp = tmp.drop_duplicates(subset=["product_id"]).sort_values(by=["product_id"])

@@ -57,6 +57,7 @@ def BSEntrance(filenames, dummy, data, settings):
     usage.columns = ["Usage", "Counts"]
     usage["Usage"] = usage["Usage"] - 1
     fig = px.bar(usage, x="Usage", y="Counts")
+    fig.update_xaxes(tickmode="linear", dtick=1)
     fig.update_layout(height=550)
     # fig = {}
     return fig
