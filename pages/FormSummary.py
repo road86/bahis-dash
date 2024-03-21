@@ -1,9 +1,11 @@
-from dash import html, callback, dcc, dash_table
-from dash.dependencies import Output, Input
-import dash
 import json
+
+import dash
 import pandas as pd
-from components import pathnames, fetchdata
+from dash import callback, dash_table, dcc, html
+from dash.dependencies import Input, Output
+
+from components import fetchdata, pathnames
 
 dash.register_page(__name__)
 

@@ -1,7 +1,8 @@
-import numpy as np
-import pandas as pd
 import os
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 
 
 def fetchsourcedata(sourcefilename):  # fetch and prepare source data

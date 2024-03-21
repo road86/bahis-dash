@@ -2,14 +2,15 @@
 # store data in cache
 # general layout: navbar and "body"
 
+import json
+
 import dash
 import dash_bootstrap_components as dbc
-from components import navbar, pathnames, fetchdata
-from dash import Dash, Input, Output, dcc, html, State, ctx
-
-from components import RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect
 import pandas as pd
-import json
+from dash import Dash, Input, Output, State, ctx, dcc, html
+
+from components import (DateRangeSelect, DiseaseSelect, MapNResolution,
+                        RegionSelect, fetchdata, navbar, pathnames)
 
 app = Dash(
     __name__,

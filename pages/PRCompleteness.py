@@ -1,12 +1,13 @@
-import dash
-from dash import html, dcc, callback
-import dash_bootstrap_components as dbc
-from dash.dependencies import Output, Input, State
-import pandas as pd
-from datetime import datetime, timedelta
-from components import fetchdata
 import json
+from datetime import datetime, timedelta
 
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import fetchdata
 
 dash.register_page(__name__)  # register page to main dash app
 

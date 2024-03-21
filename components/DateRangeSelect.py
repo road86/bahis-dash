@@ -1,7 +1,8 @@
-from datetime import timedelta, date
-from components import fetchdata, pathnames
-from dash import html, dcc
+from datetime import date, timedelta
 
+from dash import dcc, html
+
+from components import fetchdata, pathnames
 
 sourcepath = "exported_data/"  # called also in Top10, make global or settings parameter
 (

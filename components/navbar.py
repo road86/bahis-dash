@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from dash import html  # , dcc
 import dash_bootstrap_components as dbc
+from dash import html  # , dcc
 
 
 def Navbar(aid):

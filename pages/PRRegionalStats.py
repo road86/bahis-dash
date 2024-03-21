@@ -1,13 +1,13 @@
-import dash
-from dash import html, dcc, callback
-import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
-import pandas as pd
 import json
 from datetime import datetime, timedelta
-import plotly.graph_objects as go
+
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
 import plotly.express as px
-from dash import dash_table
+import plotly.graph_objects as go
+from dash import callback, dash_table, dcc, html
+from dash.dependencies import Input, Output, State
 
 dash.register_page(
     __name__,
