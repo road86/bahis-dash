@@ -307,6 +307,7 @@ def Framework(
         UpazilaList = []
 
     DateRange = [start_date, end_date]
+    print(aid)
 
     if aid == "1620859":
         List = fetchdata.fetchDivisionlist(bahis_geodata)
@@ -317,7 +318,7 @@ def Framework(
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
         List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
         DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        if len(str(aid)) == 4:
+        if len(str(aid)) > 3:
             SelectedDistrict = int(aid[0:4])
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
