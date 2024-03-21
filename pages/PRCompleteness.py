@@ -305,19 +305,22 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     return {"data": data, "layout": layout}  # , vDis
 
 
-layout = html.Div(
-    [
-        # html.Label("Weekly Completeness"),
-        html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
-        html.Div(id="dummy"),
-        # dbc.Col([dcc.Graph(id="Completeness", style={"width": "150%"}), style={"overflowX": "auto"}]),
-        html.Div(
-            dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
-            style={"width": "100%", "overflowX": "auto"},
-        )
-        # dbc.Col([dcc.Graph(id="Completeness")]),
-    ]  # layout_gen
-)
+def layout_gen(aid=None, **other_unknown_query_strings):
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div(
+        [
+            html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
+            html.Div(id="dummy"),
+            html.Div(
+                dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
+                style={"width": "100%", "overflowX": "auto"},
+            ),
+        ]
+    )
+
+
+layout = layout_gen
 
 
 @callback(
