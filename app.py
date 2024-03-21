@@ -307,7 +307,6 @@ def Framework(
         UpazilaList = []
 
     DateRange = [start_date, end_date]
-    print(aid)
 
     if aid == "1620859":
         List = fetchdata.fetchDivisionlist(bahis_geodata)
