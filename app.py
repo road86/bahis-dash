@@ -340,9 +340,13 @@ def Framework(
                 geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
-            SelectedDivision, geoSlider, geoNameNNumber
-        )
+        if len(str(aid)) > 3:
+            SelectedDivision = SelectedDivision
+            SelectedDistrict = SelectedDistrict
+        else:
+            DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
+                SelectedDivision, geoSlider, geoNameNNumber
+            )
 
     if ctx.triggered_id == "District":
         UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
