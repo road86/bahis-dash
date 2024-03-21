@@ -454,7 +454,7 @@ def UpdatePageData(settings, aid):
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_urlorigin", "data"),
-    #    Output("dummy", "id", allow_duplicate=True),
+    Output("dummy", "id", allow_duplicate=True),
     Input("Map", "figure"),
     Input("_pages_location", "href"),
     Input("cache_page_data", "data"),
@@ -462,10 +462,10 @@ def UpdatePageData(settings, aid):
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("cache_urlorigin", "data"),
-    #    Input("dummy", "id"),
+    Input("dummy", "id"),
     #    prevent_initial_call=True,
 )
-def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):  # , dummy):
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
     first = urlnext.find("/")
     f = 3
     while first >= 0 and f > 1:
@@ -502,7 +502,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):  
                 False,
                 DiseaseList,
                 urlnext,
-                # dummy,
+                dummy,
             )
     else:
         if ((not urlorigin or urlorigin.startswith("fa")) or (urlorigin == urlnext)) and data is not None:
@@ -515,7 +515,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):  
                 False,
                 DiseaseList,
                 urlnext,
-                # dummy,
+                dummy,
             )
 
     return (
@@ -523,7 +523,8 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):  
         False,
         DiseaseList,
         urlnext,
-    )  # dummy
+        dummy,
+    )
 
 
 # @app.callback(
