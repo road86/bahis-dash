@@ -255,7 +255,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     z = z.T
     z = z.to_numpy()
     # Heatmap
-    hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Records"
+    hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Reports"
 
     if compcols:
         compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
