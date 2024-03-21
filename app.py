@@ -527,41 +527,6 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
     )
 
 
-# @app.callback(
-#     Output("Map", "figure", allow_duplicate=True),
-#     Output("dummy", "id", allow_duplicate=True),
-#     Input("cache_page_data", "data"),
-#     Input("cache_page_farmdata", "data"),
-#     Input("cache_page_geodata", "data"),
-#     Input("cache_page_settings", "data"),
-#     Input("dummy", "id"),
-# )
-# def UpdateFigs(data, farmdata, geodata, settings, dummy):
-#     print(farmpage)
-#     if farmpage:
-#         if farmdata is not None:
-#             MapFig = MapNResolution.plotMap(
-#                 json.loads(settings)["georesolution"],
-#                 pd.read_json(farmdata, orient="split"),
-#                 pd.read_json(geodata, orient="split"),
-#             )
-#             # dummy="1"
-#             return MapFig, dummy
-#         else:
-#             return {}, dummy
-#     else:
-#         if data is not None:
-#             MapFig = MapNResolution.plotMap(
-#                 json.loads(settings)["georesolution"],
-#                 pd.read_json(data, orient="split"),
-#                 pd.read_json(geodata, orient="split"),
-#             )
-#             # dummy="1"
-#             return MapFig, dummy
-#         else:
-#             return {}, dummy
-
-
 # Run the app on localhost:80
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=80)  # maybe debug false to prevent second loading
