@@ -9,8 +9,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from dash import Dash, Input, Output, State, ctx, dcc, html
 
-from components import (DateRangeSelect, DiseaseSelect, MapNResolution,
-                        RegionSelect, fetchdata, navbar, pathnames)
+from components import DateRangeSelect, DiseaseSelect, MapNResolution, RegionSelect, fetchdata, navbar, pathnames
 
 app = Dash(
     __name__,
@@ -347,6 +346,8 @@ def Framework(
 
     if ctx.triggered_id == "District":
         UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
+        if geoSlider < 2:
+            geoSlider = 2
 
     if ctx.triggered_id == "Upazila":
         if geoSlider < 3:
@@ -453,7 +454,7 @@ def UpdatePageData(settings, aid):
     Output("sidemenu", "is_open", allow_duplicate=True),
     Output("Disease", "options", allow_duplicate=True),
     Output("cache_urlorigin", "data"),
-    Output("dummy", "id", allow_duplicate=True),
+    #    Output("dummy", "id", allow_duplicate=True),
     Input("Map", "figure"),
     Input("_pages_location", "href"),
     Input("cache_page_data", "data"),
@@ -461,10 +462,10 @@ def UpdatePageData(settings, aid):
     Input("cache_page_geodata", "data"),
     Input("cache_page_settings", "data"),
     Input("cache_urlorigin", "data"),
-    Input("dummy", "id"),
+    #    Input("dummy", "id"),
     #    prevent_initial_call=True,
 )
-def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, dummy):
+def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin):  # , dummy):
     first = urlnext.find("/")
     f = 3
     while first >= 0 and f > 1:
@@ -501,7 +502,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
                 False,
                 DiseaseList,
                 urlnext,
-                dummy,
+                # dummy,
             )
     else:
         if ((not urlorigin or urlorigin.startswith("fa")) or (urlorigin == urlnext)) and data is not None:
@@ -514,10 +515,15 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
                 False,
                 DiseaseList,
                 urlnext,
-                dummy,
+                # dummy,
             )
 
-    return MapFig, False, DiseaseList, urlnext, dummy
+    return (
+        MapFig,
+        False,
+        DiseaseList,
+        urlnext,
+    )  # dummy
 
 
 # @app.callback(
