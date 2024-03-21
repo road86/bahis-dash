@@ -330,14 +330,12 @@ def Framework(
         UpazilaList = []
 
     if ctx.triggered_id == "geoSlider":
-        if geoSlider == 2:
-            if SelectedUpazila is not None:
-                geoSlider = 3
-        if geoSlider == 1:
-            if SelectedUpazila is not None:
-                geoSlider = 3
-            elif SelectedDistrict is not None:
-                geoSlider = 2
+        if geoSlider == 2 and SelectedUpazila is not None:
+            geoSlider = 3
+        if geoSlider == 1 and SelectedUpazila is not None:
+            geoSlider = 3
+        elif SelectedDistrict is not None:
+            geoSlider = 2
 
     if ctx.triggered_id == "Division":
         if len(str(aid)) > 3:
@@ -353,9 +351,8 @@ def Framework(
         if geoSlider < 2:
             geoSlider = 2
 
-    if ctx.triggered_id == "Upazila":
-        if geoSlider < 3:
-            geoSlider = 3
+    if ctx.triggered_id == "Upazila" and geoSlider < 3:
+        geoSlider = 3
 
     page_settings = {
         "division": SelectedDivision,
