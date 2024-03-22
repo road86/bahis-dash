@@ -338,7 +338,7 @@ def Framework(
             geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        if len(str(aid)) > 3:
+        if len(str(aid)) > 3 and (aid != "1620859"):
             SelectedDivision = SelectedDivision
             SelectedDistrict = SelectedDistrict
         else:
