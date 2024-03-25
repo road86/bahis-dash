@@ -308,8 +308,6 @@ def fetchGeoName(bahis_geodata, geonumber):  # to be done
     if len(str(geonumber)) == 2:
         geoname = bahis_geodata[(bahis_geodata["loc_type"] == 1) & (bahis_geodata["division"] == geonumber)]
         [["value", "name"]]
-        print(geonumber)
-        print(geoname)
     if len(str(geonumber)) == 4:
         geoname = bahis_geodata[(bahis_geodata["loc_type"] == 2) & (bahis_geodata["district"] == geonumber)]
         [["value", "name"]]
