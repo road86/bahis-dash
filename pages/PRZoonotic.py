@@ -1,13 +1,14 @@
-import dash
-from components import fetchdata
-from dash import html, dcc, callback
-import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
-import pandas as pd
 import json
 from datetime import datetime, timedelta
-import plotly.express as px
 
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
+import plotly.express as px
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import fetchdata
 
 dash.register_page(
     __name__,
@@ -107,9 +108,20 @@ def ZooTrend(filenames, dummy, data, settings):
     reportsdata["date"] = pd.to_datetime(reportsdata["date"])
     tmp = reportsdata.groupby(["date", "top_diagnosis"]).size().reset_index(name="incidences")
 
+    dates = tmp["date"].unique()
+    diagnoses = tmp["top_diagnosis"].unique()
+    date_diagnosis_combinations = pd.MultiIndex.from_product([dates, diagnoses], names=["date", "top_diagnosis"])
+    result_df = pd.DataFrame(index=date_diagnosis_combinations).reset_index()
+
+    # Merge with the grouped DataFrame to fill missing values with 0
+    final_df = pd.merge(result_df, tmp, on=["date", "top_diagnosis"], how="left").fillna(0)
+
+    # Sort the final DataFrame by 'date' and 'top_diagnosis'
+    final_df.sort_values(by=["date", "top_diagnosis"], inplace=True)
+
     figheight = 570
     figTrend = px.line(
-        tmp,
+        final_df,
         x="date",
         y="incidences",
         color="top_diagnosis",

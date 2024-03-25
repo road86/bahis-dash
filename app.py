@@ -2,14 +2,14 @@
 # store data in cache
 # general layout: navbar and "body"
 
+import json
+
 import dash
 import dash_bootstrap_components as dbc
-from components import navbar, pathnames, fetchdata
-from dash import Dash, Input, Output, dcc, html, State, ctx
-
-from components import RegionSelect, MapNResolution, DateRangeSelect, DiseaseSelect
 import pandas as pd
-import json
+from dash import Dash, Input, Output, State, ctx, dcc, html
+
+from components import DateRangeSelect, DiseaseSelect, MapNResolution, RegionSelect, fetchdata, navbar, pathnames
 
 app = Dash(
     __name__,
@@ -317,7 +317,7 @@ def Framework(
         DivisionList = [{"label": i["Division"], "value": i["value"], "disabled": True} for i in List]
         List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
         DistrictList = [{"label": i["District"], "value": i["value"]} for i in List]
-        if len(str(aid)) == 4:
+        if len(str(aid)) > 3:
             SelectedDistrict = int(aid[0:4])
             List = fetchdata.fetchDistrictlist(SelectedDivision, geoNameNNumber)
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
@@ -330,26 +330,29 @@ def Framework(
         UpazilaList = []
 
     if ctx.triggered_id == "geoSlider":
-        if geoSlider == 2:
-            if SelectedUpazila is not None:
-                geoSlider = 3
-        if geoSlider == 1:
-            if SelectedUpazila is not None:
-                geoSlider = 3
-            elif SelectedDistrict is not None:
-                geoSlider = 2
+        if geoSlider == 2 and SelectedUpazila is not None:
+            geoSlider = 3
+        if geoSlider == 1 and SelectedUpazila is not None:
+            geoSlider = 3
+        elif SelectedDistrict is not None:
+            geoSlider = 2
 
     if ctx.triggered_id == "Division":
-        DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
-            SelectedDivision, geoSlider, geoNameNNumber
-        )
+        if len(str(aid)) > 3 and (aid != "1620859"):
+            SelectedDivision = SelectedDivision
+            SelectedDistrict = SelectedDistrict
+        else:
+            DistrictList, UpazilaList, SelectedDistrict, SelectedUpazila = divtrig(
+                SelectedDivision, geoSlider, geoNameNNumber
+            )
 
     if ctx.triggered_id == "District":
         UpazilaList, SelectedUpazila = distrig(SelectedDistrict, geoSlider, geoNameNNumber)
+        if geoSlider < 2:
+            geoSlider = 2
 
-    if ctx.triggered_id == "Upazila":
-        if geoSlider < 3:
-            geoSlider = 3
+    if ctx.triggered_id == "Upazila" and geoSlider < 3:
+        geoSlider = 3
 
     page_settings = {
         "division": SelectedDivision,
@@ -516,42 +519,13 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
                 dummy,
             )
 
-    return MapFig, False, DiseaseList, urlnext, dummy
-
-
-# @app.callback(
-#     Output("Map", "figure", allow_duplicate=True),
-#     Output("dummy", "id", allow_duplicate=True),
-#     Input("cache_page_data", "data"),
-#     Input("cache_page_farmdata", "data"),
-#     Input("cache_page_geodata", "data"),
-#     Input("cache_page_settings", "data"),
-#     Input("dummy", "id"),
-# )
-# def UpdateFigs(data, farmdata, geodata, settings, dummy):
-#     print(farmpage)
-#     if farmpage:
-#         if farmdata is not None:
-#             MapFig = MapNResolution.plotMap(
-#                 json.loads(settings)["georesolution"],
-#                 pd.read_json(farmdata, orient="split"),
-#                 pd.read_json(geodata, orient="split"),
-#             )
-#             # dummy="1"
-#             return MapFig, dummy
-#         else:
-#             return {}, dummy
-#     else:
-#         if data is not None:
-#             MapFig = MapNResolution.plotMap(
-#                 json.loads(settings)["georesolution"],
-#                 pd.read_json(data, orient="split"),
-#                 pd.read_json(geodata, orient="split"),
-#             )
-#             # dummy="1"
-#             return MapFig, dummy
-#         else:
-#             return {}, dummy
+    return (
+        MapFig,
+        False,
+        DiseaseList,
+        urlnext,
+        dummy,
+    )
 
 
 # Run the app on localhost:80

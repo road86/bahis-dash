@@ -1,8 +1,9 @@
-from dash import html, dcc, callback
-from dash.dependencies import Input, Output
-import pandas as pd
 import json
+
+import pandas as pd
 import plotly.express as px
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output
 
 
 def open_data(path):
