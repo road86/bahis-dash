@@ -1,12 +1,13 @@
-import dash
-from dash import html, dcc, callback
-import dash_bootstrap_components as dbc
-from dash.dependencies import Output, Input, State
-import pandas as pd
-from datetime import datetime, timedelta
-from components import fetchdata
 import json
+from datetime import datetime, timedelta
 
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import fetchdata
 
 dash.register_page(__name__)  # register page to main dash app
 
@@ -254,7 +255,10 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     z = z.T
     z = z.to_numpy()
     # Heatmap
-    hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Records"
+    if type(district) is int:
+        hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
+    else:
+        hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Reports"
 
     if compcols:
         compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
@@ -300,19 +304,22 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     return {"data": data, "layout": layout}  # , vDis
 
 
-layout = html.Div(
-    [
-        # html.Label("Weekly Completeness"),
-        html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
-        html.Div(id="dummy"),
-        # dbc.Col([dcc.Graph(id="Completeness", style={"width": "150%"}), style={"overflowX": "auto"}]),
-        html.Div(
-            dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
-            style={"width": "100%", "overflowX": "auto"},
-        )
-        # dbc.Col([dcc.Graph(id="Completeness")]),
-    ]  # layout_gen
-)
+def layout_gen(aid=None, **other_unknown_query_strings):
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
+    return html.Div(
+        [
+            html.H2("Weekly Completeness", style={"textAlign": "center", "font-weight": "bold"}),
+            html.Div(id="dummy"),
+            html.Div(
+                dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
+                style={"width": "100%", "overflowX": "auto"},
+            ),
+        ]
+    )
+
+
+layout = layout_gen
 
 
 @callback(

@@ -1,11 +1,13 @@
+import json
+
 import dash
-from components import fetchdata
-from dash import html, dcc, callback
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
 import pandas as pd
 import plotly.express as px
-import json
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import fetchdata
 
 dash.register_page(
     __name__,
@@ -50,20 +52,23 @@ def TopTen(sub_bahis_sourcedata, bahis_dgdata, distype, to_replace, replace_with
     )
     flani.update_layout(height=250, margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-    tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == distype]
-    selected_diseases = tmpdg["name"].tolist()
-    sub_bahis_sourcedata = sub_bahis_sourcedata[sub_bahis_sourcedata["top_diagnosis"].isin(selected_diseases)]
-    tmp = sub_bahis_sourcedata.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
-    tmp = tmp.sort_values(by="species", ascending=False)
-    tmp = tmp.rename({"species": "counts"}, axis=1)
-    tmp = tmp.head(10)
-    tmp = tmp.iloc[::-1]
-    figDisTyp = px.bar(
-        tmp, x="counts", y="top_diagnosis", labels={"counts": "Number of Reports", "top_diagnosis": ""}, title=""
-    )
-    figDisTyp.update_yaxes(range=[0, 4])
-    figDisTyp.update_xaxes(range=[0, 6])
-    figDisTyp.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    if distype:
+        tmpdg = bahis_dgdata[bahis_dgdata["Disease type"] == distype]
+        selected_diseases = tmpdg["name"].tolist()
+        sub_bahis_sourcedata = sub_bahis_sourcedata[sub_bahis_sourcedata["top_diagnosis"].isin(selected_diseases)]
+        tmp = sub_bahis_sourcedata.groupby(["top_diagnosis"])["species"].agg("count").reset_index()
+        tmp = tmp.sort_values(by="species", ascending=False)
+        tmp = tmp.rename({"species": "counts"}, axis=1)
+        tmp = tmp.head(10)
+        tmp = tmp.iloc[::-1]
+        figDisTyp = px.bar(
+            tmp, x="counts", y="top_diagnosis", labels={"counts": "Number of Reports", "top_diagnosis": ""}, title=""
+        )
+        # figDisTyp.update_yaxes(range=[0, 4])
+        # figDisTyp.update_xaxes(range=[0, 6])
+        figDisTyp.update_layout(height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    else:
+        figDisTyp = {}
 
     return flani, fpoul, figDisTyp
 
@@ -111,7 +116,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                                 dbc.Col(
                                     [
                                         html.Label("Top 10 Disease Types"),
-                                        dcc.Graph(id="figDistypes"),
+                                        dcc.Graph(id="figDistypes", style={"height": "13em"}),
                                     ]
                                 ),
                             ]

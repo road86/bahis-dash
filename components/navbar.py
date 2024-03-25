@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from dash import html  # , dcc
 import dash_bootstrap_components as dbc
+from dash import html  # , dcc
 
 
 def Navbar(aid):
@@ -117,23 +117,6 @@ def Navbar(aid):
                         ],
                         title="Form Data",
                     ),
-                    # dbc.AccordionItem(
-                    #     [
-                    #         html.P("This is the content of the second section"),
-                    #         dbc.Button("Click here"),
-                    #     ],
-                    #     title="Sink Surveillance",
-                    # ),
-                    # dbc.AccordionItem(
-                    #     [
-                    #         dcc.Dropdown(
-                    #             options=["Placeholder 1", "Placeholder 2"],
-                    #             clearable=True,
-                    #             placeholder="Select Option",
-                    #         ),
-                    #     ],
-                    #     title="AMR",
-                    # ),
                 ],
             ),
         ]

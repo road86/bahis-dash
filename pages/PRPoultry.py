@@ -1,11 +1,12 @@
-import dash
-from components import ReportsSickDead
-from dash import html, dcc, callback
-import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
-import pandas as pd
 import json
 
+import dash
+import dash_bootstrap_components as dbc
+import pandas as pd
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import ReportsSickDead
 
 dash.register_page(
     __name__,

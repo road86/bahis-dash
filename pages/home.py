@@ -1,9 +1,9 @@
-from dash import html, callback, dcc
-from dash.dependencies import Output, Input, State
 import dash
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
-import dash_bootstrap_components as dbc
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
 
 dash.register_page(__name__, path="/")
 
@@ -55,7 +55,8 @@ def GeoRep(sub_bahis_sourcedata):
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
-    # html.Div(id="dummy"),
+    if aid is not None:
+        dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
             html.Div(
@@ -67,6 +68,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                     ),
                 ]
             ),
+            html.Div(id="dummy"),
             dbc.Card(dcc.Graph(id="no")),
         ]
     )
@@ -95,9 +97,10 @@ def set_store(url, prev):  # id, url, prev):
 
 @callback(
     Output("no", "figure"),
+    Input("dummy", "id"),
     Input("cache_page_data", "data"),
 )
-def RegionalStats(data):
+def RegionalStats(dummy, data):
     reportsdata = pd.read_json(data, orient="split")
 
     Rfindic = GeoRep(reportsdata)

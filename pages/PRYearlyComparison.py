@@ -1,11 +1,12 @@
-import dash
-from dash import html, dcc, callback
-from dash.dependencies import Input, Output, State
-import pandas as pd
 import json
-import plotly.express as px
-from components import fetchdata
 
+import dash
+import pandas as pd
+import plotly.express as px
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output, State
+
+from components import fetchdata
 
 dash.register_page(
     __name__,

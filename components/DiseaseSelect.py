@@ -1,7 +1,8 @@
-from components import fetchdata
-from dash import html, dcc, callback
-from dash.dependencies import Input, Output
 import pandas as pd
+from dash import callback, dcc, html
+from dash.dependencies import Input, Output
+
+from components import fetchdata
 
 ddDList = []
 
