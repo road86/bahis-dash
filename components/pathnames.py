@@ -13,6 +13,7 @@ def get_pathnames(sourcepath):
         sourcepath, "preped_data2.csv"
     )  # main data resource of prepared data from old and new bahis
     farmdatafilename = glob.glob(sourcepath + "bahis_farm_assessment_p2_table*.csv")[-1]
+    farmdatafilename = glob.glob(sourcepath + "farm_assessment_logger*.csv")[-1]
 
     AIinvestdatafilename = glob.glob(sourcepath + "bahis_avian_influenza_investigate_p2_table*.csv")[-1]
     DiseaseInvestdatafilename = glob.glob(sourcepath + "bahis_disease_investigation_p2_table*.csv")[-1]

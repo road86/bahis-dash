@@ -9,7 +9,8 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from dash import Dash, Input, Output, State, ctx, dcc, html
 
-from components import DateRangeSelect, DiseaseSelect, MapNResolution, RegionSelect, fetchdata, navbar, pathnames
+from components import (DateRangeSelect, DiseaseSelect, MapNResolution,
+                        RegionSelect, fetchdata, navbar, pathnames)
 
 app = Dash(
     __name__,
