@@ -74,7 +74,7 @@ def parse_start_date(start_date_str):
 
 def sum_records_by_week(tmp, start_date_str):
     start_date = parse_start_date(start_date_str)
-    end_date = start_date + timedelta(days=6)
+    end_date = start_date + timedelta(days=(6 - (6 - start_date.weekday())))
     week_mask = (tmp["date"] >= start_date) & (tmp["date"] <= end_date)
     sum_of_record = tmp.loc[week_mask, "counts"].sum()
     return sum_of_record
