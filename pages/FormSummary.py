@@ -130,7 +130,11 @@ def Export(dummy, settings):  # , fullgeodata):
     overview = pd.merge(overview, ar, on=["date", "division", "district", "upazila"], how="outer")
     overview = pd.merge(overview, dr, on=["date", "division", "district", "upazila"], how="outer")
     overview = pd.merge(overview, lr, on=["date", "division", "district", "upazila"], how="outer")
-
+    overview = (
+        overview.groupby(["division", "district", "upazila"])
+        .agg({"patients": "sum", "AIin": "sum", "DisIn": "sum", "PaLs": "sum"})
+        .reset_index()
+    )
     # ExportTable = reportsdata
     # ExportTable["date"] = ExportTable["date"].dt.strftime("%Y-%m-%d")
     # # del ExportTable["Unnamed: 0.1"]
