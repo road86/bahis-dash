@@ -9,8 +9,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from dash import Dash, Input, Output, State, ctx, dcc, html
 
-from components import (DateRangeSelect, DiseaseSelect, MapNResolution,
-                        RegionSelect, fetchdata, navbar, pathnames)
+from components import DateRangeSelect, DiseaseSelect, MapNResolution, RegionSelect, fetchdata, navbar, pathnames
 
 app = Dash(
     __name__,
@@ -274,8 +273,8 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
-    Input("DateRange", "start_date"),
-    Input("DateRange", "end_date"),
+    Input("start_date", "date"),
+    Input("end_date", "date"),
     Input("Disease", "value"),
     Input("cache_aid", "data"),
 )

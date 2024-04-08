@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from dash import dcc, html
+import dash_bootstrap_components as dbc
 
 from components import fetchdata, pathnames
 
@@ -27,21 +28,65 @@ last_date = fetchdata.create_date(sourcefilename)  # implement here
 Form = html.Div(
     [
         # dmc.DateRangePicker(
-        dcc.DatePickerRange(
-            id="DateRange",
-            min_date_allowed=first_date,
-            start_date=last_date - timedelta(weeks=6),
-            max_date_allowed=last_date,
-            end_date=last_date,
-            initial_visible_month=last_date,
-            first_day_of_week=0,
-            display_format="Do MMM 'YY",
-            # minDate=start_date,
-            # value=[last_date - timedelta(weeks=6), last_date],
-            clearable=False,
-            # required=True,
-            # dropdownType="modal",
-            # firstDayOfWeek="sunday",
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.H3(
+                        "From:",
+                        style={"textAlign": "left"},  # , "font-weight": "bold"},
+                    ),
+                    # width=4,
+                ),
+                dbc.Col(
+                    dcc.DatePickerSingle(
+                        id="start_date",
+                        min_date_allowed=first_date,
+                        max_date_allowed=last_date,
+                        initial_visible_month=last_date - timedelta(weeks=6),
+                        date=last_date - timedelta(weeks=6),
+                        display_format="Do MMM 'YY",
+                        clearable=False,
+                        first_day_of_week=0,
+                    ),
+                    # width=2,
+                ),
+                dbc.Col(
+                    html.H3(
+                        "to",
+                        style={"textAlign": "left"},  # , "font-weight": "bold"},
+                    ),
+                    # width=2,
+                ),
+                dbc.Col(
+                    dcc.DatePickerSingle(
+                        id="end_date",
+                        min_date_allowed=first_date,
+                        max_date_allowed=last_date,
+                        initial_visible_month=last_date,
+                        date=last_date,
+                        display_format="Do MMM 'YY",
+                        clearable=False,
+                        first_day_of_week=0,
+                    ),
+                    # width=2,
+                ),
+            ]
         )
+        # dcc.DatePickerRange(
+        #     id="DateRange",
+        #     min_date_allowed=first_date,
+        #     start_date=last_date - timedelta(weeks=6),
+        #     max_date_allowed=last_date,
+        #     end_date=last_date,
+        #     initial_visible_month=last_date,
+        #     first_day_of_week=0,
+        #     display_format="Do MMM 'YY",
+        #     clearable=False,
+        #     # minDate=start_date,
+        #     # value=[last_date - timedelta(weeks=6), last_date],
+        #     # required=True,
+        #     # dropdownType="modal",
+        #     # firstDayOfWeek="sunday",
+        # )
     ]
 )
