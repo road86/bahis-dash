@@ -55,8 +55,11 @@ def BSEntrance(filenames, dummy, data, settings):
     usage = usage.reset_index()
     usage.columns = ["Usage", "Counts"]
     usage["Usage"] = usage["Usage"] - 1
+    total_counts = usage["Counts"].sum()
+    usage["Relative Counts"] = usage["Counts"] / total_counts * 100
     fig = px.bar(usage, x="Usage", y="Counts")
+    fig.data[0].y = usage["Relative Counts"]
     fig.update_xaxes(tickmode="linear", dtick=1)
-    fig.update_layout(height=550)
+    fig.update_layout(xaxis_title="Number of Antibiotics", yaxis_title="Total Farm Percentage", height=550)
     # fig = {}
     return fig
