@@ -140,7 +140,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
     return html.Div(
         [
             # html.Label("Regional Stats Report"),
-            html.H2("Regional Stats Report", style={"textAlign": "center", "font-weight": "bold"}),
+            html.H2("Overall Data Reports", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(
                 [
                     dbc.Col(

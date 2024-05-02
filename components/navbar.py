@@ -28,7 +28,7 @@ def Navbar(aid):
                                         active="exact",
                                     ),
                                     dbc.NavLink(
-                                        "Regional Dynamics Report", href="/prregionaldyn/?aid=" + aid, active="exact"
+                                        "Overall Data Reports", href="/proveralldatarep/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink(
                                         "Large Animal Report",
