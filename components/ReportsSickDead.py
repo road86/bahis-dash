@@ -133,17 +133,17 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
             opacity=0.8,
         )
         if periodClick == 3:
-            fig.update_layout(xaxis=dict(dtick="d"))
-            figSick.update_layout(xaxis=dict(dtick="d"))
-            figDead.update_layout(xaxis=dict(dtick="d"))
+            fig.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
         if periodClick == 2:
-            fig.update_layout(xaxis=dict(dtick=7 * 86400000.0))
-            figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0))
-            figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0))
+            fig.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
         if periodClick == 1:
-            fig.update_layout(xaxis=dict(dtick="M1"))
-            figSick.update_layout(xaxis=dict(dtick="M1"))
-            figDead.update_layout(xaxis=dict(dtick="M1"))
+            fig.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
 
     else:
         # fig = {}
