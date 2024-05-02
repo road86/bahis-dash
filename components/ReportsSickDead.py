@@ -136,14 +136,24 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
             fig.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
             figSick.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
             figDead.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=86400000)
+            figSick.update_traces(width=86400000)
+            figDead.update_traces(width=86400000)
         if periodClick == 2:
             fig.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
             figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
             figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=7 * 86400000)
+            figSick.update_traces(width=7 * 86400000)
+            figDead.update_traces(width=7 * 86400000)
+
         if periodClick == 1:
             fig.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
             figSick.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
             figDead.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=28 * 86400000)
+            figSick.update_traces(width=28 * 86400000)
+            figDead.update_traces(width=28 * 86400000)
 
     else:
         # fig = {}
