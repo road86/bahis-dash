@@ -6,7 +6,7 @@ import pandas as pd
 from dash import callback, dcc, html
 from dash.dependencies import Input, Output, State
 
-from components import ReportsSickDead
+from components import ReportsSickDead, SpeciesSelect, fetchdata
 
 dash.register_page(
     __name__,
@@ -18,8 +18,10 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         dcc.Store(id="cache_aid", storage_type="memory", data=aid),
     return html.Div(
         [
-            # html.Label("Large Animal Report"),
+            # html.Label("Specieswise Report"),
             html.H2("Specieswise Report", style={"textAlign": "center", "font-weight": "bold"}),
+            dbc.Row(SpeciesSelect.Form),
+            html.Div(id="dummy"),
             dbc.Row(
                 [
                     dbc.Col(
@@ -47,7 +49,6 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                         ],
                         width=1,
                     ),
-                    html.Div(id="dummy"),
                 ]
             ),
         ]
@@ -61,20 +62,20 @@ layout = layout_gen
     Output("ReportsSW", "figure"),
     Output("SickSW", "figure"),
     Output("DeadSW", "figure"),
+    Input("Species", "value"),
     Input("SWperiodSlider", "value"),
     Input("dummy", "id"),
     State("cache_page_data", "data"),
     State("cache_page_settings", "data"),
     prevent_initial_call=True,
 )
-def SpeciesWise(SWperiodClick, dummy, data, settings):
+def SpeciesWise(Species, SWperiodClick, dummy, data, settings):
     reportsdata = pd.read_json(data, orient="split")
     DateRange = json.loads(settings)["daterange"]
-    LargeAnimal = ["Buffalo", "Cattle", "Goat", "Sheep"]
-    reportsdata = reportsdata[reportsdata["species"].isin(LargeAnimal)]
+    reportsdata = fetchdata.species_subset(Species, reportsdata)
     figheight = 190
 
     figgSWR, figgSWSick, figgSWDead = ReportsSickDead.ReportsSickDead(
-        reportsdata, DateRange, SWperiodClick, figheight, "NPoultry"
+        reportsdata, DateRange, SWperiodClick, figheight, Species
     )
     return figgSWR, figgSWSick, figgSWDead

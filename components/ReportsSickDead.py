@@ -73,8 +73,11 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
         tmp["date"] = tmp["date"].astype("datetime64[D]")
         if Poultry == "Poultry":
             figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Birds"})
-        else:
+        elif Poultry == "Large Animal":
             figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
+        else:
+            figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick " + Poultry})
+
         figSick.update_traces(marker_color="black")
         figSick.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figSick.update_xaxes(
@@ -104,8 +107,10 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
 
         if Poultry == "Poultry":
             figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Birds"})
-        else:
+        elif Poultry == "Large Animal":
             figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
+        else:
+            figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead " + Poultry})
         figDead.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figDead.update_traces(marker_color="red")
         figDead.update_xaxes(

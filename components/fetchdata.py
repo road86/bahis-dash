@@ -351,6 +351,14 @@ def fetchDiseaselist(bahis_data):
     return dislis
 
 
+def fetchSpecieslist(bahis_data):
+    spelis = bahis_data["species"].unique()
+    spelis = pd.DataFrame(spelis, columns=["species"])
+    spelis = spelis["species"].sort_values().tolist()
+    spelis.insert(0, "All Species")
+    return spelis
+
+
 def date_subset(dates, bahis_data):
     tmask = (bahis_data["date"] >= pd.to_datetime(dates[0])) & (bahis_data["date"] <= pd.to_datetime(dates[1]))
     return bahis_data.loc[tmask]
@@ -361,4 +369,12 @@ def disease_subset(cDisease, sub_bahis_sourcedata):
         sub_bahis_sourcedata = sub_bahis_sourcedata
     else:
         sub_bahis_sourcedata = sub_bahis_sourcedata[sub_bahis_sourcedata["top_diagnosis"] == cDisease]
+    return sub_bahis_sourcedata
+
+
+def species_subset(cSpecies, sub_bahis_sourcedata):
+    if "All Species" in cSpecies:
+        sub_bahis_sourcedata = sub_bahis_sourcedata
+    else:
+        sub_bahis_sourcedata = sub_bahis_sourcedata[sub_bahis_sourcedata["species"] == cSpecies]
     return sub_bahis_sourcedata

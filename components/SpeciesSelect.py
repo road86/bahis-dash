@@ -1,6 +1,6 @@
 import pandas as pd
 from dash import callback, dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 from components import fetchdata
 
@@ -19,9 +19,7 @@ Form = html.Div(
 )
 
 
-@callback(
-    Output("Species", "options", allow_duplicate=True), Input("cache_bahis_data", "data"), prevent_initial_call=True
-)
-def DiseaseList(bahis_data):
-    List = fetchdata.fetchDiseaselist(pd.read_json(bahis_data, orient="split"))
+@callback(Output("Species", "options"), Input("cache_page_data", "data"))  # , prevent_initial_call=True
+def Specieslist(bahis_data):
+    List = fetchdata.fetchSpecieslist(pd.read_json(bahis_data, orient="split"))
     return List

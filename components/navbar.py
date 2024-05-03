@@ -41,6 +41,9 @@ def Navbar(aid):
                                     dbc.NavLink(
                                         "Remaining Animals Report", href="/prremaining/?aid=" + aid, active="exact"
                                     ),
+                                    dbc.NavLink(
+                                        "Specieswise Report", href="/prspecieswise/?aid=" + aid, active="exact"
+                                    ),
                                     dbc.NavLink("Top 10 Report", href="/prtopten/?aid=" + aid, active="exact"),
                                     dbc.NavLink("Zoonotic Reports", href="/przoonotic/?aid=" + aid, active="exact"),
                                     dbc.NavLink(
