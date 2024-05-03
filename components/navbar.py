@@ -23,12 +23,12 @@ def Navbar(aid):
                                         "Completeness Report", href="/prcompleteness/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink(
-                                        "Regional Statistics Report",
-                                        href="/prregionalstats/?aid=" + aid,
+                                        "Overall Data Reports",
+                                        href="/proveralldatarep/?aid=" + aid,
                                         active="exact",
                                     ),
                                     dbc.NavLink(
-                                        "Overall Data Reports", href="/proveralldatarep/?aid=" + aid, active="exact"
+                                        "Regional Dynamics Report", href="/prregionaldyn/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink(
                                         "Large Animal Report",

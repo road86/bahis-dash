@@ -99,6 +99,7 @@ def set_store(url, prev):  # id, url, prev):
     Output("no", "figure"),
     Input("dummy", "id"),
     Input("cache_page_data", "data"),
+    Input("cache_farm_data", "data"),
 )
 def RegionalStats(dummy, data):
     reportsdata = pd.read_json(data, orient="split")
