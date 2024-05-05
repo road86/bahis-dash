@@ -23,8 +23,8 @@ def Navbar(aid):
                                         "Completeness Report", href="/prcompleteness/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink(
-                                        "Regional Statistics Report",
-                                        href="/prregionalstats/?aid=" + aid,
+                                        "Overall Data Reports",
+                                        href="/proveralldatarep/?aid=" + aid,
                                         active="exact",
                                     ),
                                     dbc.NavLink(
@@ -40,6 +40,9 @@ def Navbar(aid):
                                     dbc.NavLink("Poultry Report", href="/prpoultry/?aid=" + aid, active="exact"),
                                     dbc.NavLink(
                                         "Remaining Animals Report", href="/prremaining/?aid=" + aid, active="exact"
+                                    ),
+                                    dbc.NavLink(
+                                        "Specieswise Report", href="/prspecieswise/?aid=" + aid, active="exact"
                                     ),
                                     dbc.NavLink("Top 10 Report", href="/prtopten/?aid=" + aid, active="exact"),
                                     dbc.NavLink("Zoonotic Reports", href="/przoonotic/?aid=" + aid, active="exact"),
@@ -60,6 +63,11 @@ def Navbar(aid):
                         [
                             dbc.Nav(
                                 [
+                                    dbc.NavLink(
+                                        "Overall Farmdata Reports",
+                                        href="/foverallfarmdatarep/?aid=" + aid,
+                                        active="exact",
+                                    ),
                                     dbc.NavLink(
                                         "Antibiotics Usage Poultry", href="/faabusage/?aid=" + aid, active="exact"
                                     ),

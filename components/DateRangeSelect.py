@@ -28,49 +28,60 @@ last_date = fetchdata.create_date(sourcefilename)  # implement here
 Form = html.Div(
     [
         # dmc.DateRangePicker(
-        dbc.Row(
+        dbc.Stack(
             [
-                dbc.Col(
-                    html.H3(
-                        "From:",
-                        style={"textAlign": "left"},  # , "font-weight": "bold"},
-                    ),
-                    # width=4,
+                #                dbc.Col(
+                html.H5(
+                    "FROM:",
+                    style={"textAlign": "center", "lineHeight": "0px", "fontWeight": 600},
                 ),
-                dbc.Col(
-                    dcc.DatePickerSingle(
-                        id="start_date",
-                        min_date_allowed=first_date,
-                        max_date_allowed=last_date,
-                        initial_visible_month=last_date - timedelta(weeks=6),
-                        date=last_date - timedelta(weeks=6),
-                        display_format="Do MMM 'YY",
-                        clearable=False,
-                        first_day_of_week=0,
-                    ),
-                    # width=2,
+                # width=4,
+                # fluid=True,
+                # style={"padding": "0px"},
+                #                ),
+                #                dbc.Col(
+                dcc.DatePickerSingle(
+                    id="start_date",
+                    min_date_allowed=first_date,
+                    max_date_allowed=last_date,
+                    initial_visible_month=last_date - timedelta(weeks=6),
+                    date=last_date - timedelta(weeks=6),
+                    display_format="Do MMM 'YY",
+                    clearable=False,
+                    first_day_of_week=0,
+                    style={"fontWeight": 700},
                 ),
-                dbc.Col(
-                    html.H3(
-                        "to",
-                        style={"textAlign": "left"},  # , "font-weight": "bold"},
-                    ),
-                    # width=2,
+                # style={"padding": "0px", "fontWeight": 700},
+                # fluid=True,
+                # width=2,
+                #                ),
+                #                dbc.Col(
+                html.H5(
+                    "TO:",
+                    style={"textAlign": "center", "lineHeight": "0px", "fontWeight": 600},
                 ),
-                dbc.Col(
-                    dcc.DatePickerSingle(
-                        id="end_date",
-                        min_date_allowed=first_date,
-                        max_date_allowed=last_date,
-                        initial_visible_month=last_date,
-                        date=last_date,
-                        display_format="Do MMM 'YY",
-                        clearable=False,
-                        first_day_of_week=0,
-                    ),
-                    # width=2,
+                # fluid=True,
+                # width=2,
+                # style={"padding": "0px"},
+                #                ),
+                #                dbc.Col(
+                dcc.DatePickerSingle(
+                    id="end_date",
+                    min_date_allowed=first_date,
+                    max_date_allowed=last_date,
+                    initial_visible_month=last_date,
+                    date=last_date,
+                    display_format="Do MMM 'YY",
+                    clearable=False,
+                    first_day_of_week=0,
+                    style={"fontWeight": 700},
                 ),
-            ]
+                # fluid=True,
+                # width=2,
+                #               ),
+            ],
+            direction="horizontal",
+            gap=2,
         )
         # dcc.DatePickerRange(
         #     id="DateRange",

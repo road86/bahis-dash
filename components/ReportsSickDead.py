@@ -73,8 +73,14 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
         tmp["date"] = tmp["date"].astype("datetime64[D]")
         if Poultry == "Poultry":
             figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Birds"})
-        else:
+        elif Poultry == "Large Animal":
             figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick Animals"})
+        else:
+            if Poultry == "All Species":
+                figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of All Sick Animals"})
+            else:
+                figSick = px.bar(tmp, x="date", y="sick", labels={"date": "", "sick": "No. of Sick " + Poultry})
+
         figSick.update_traces(marker_color="black")
         figSick.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figSick.update_xaxes(
@@ -104,8 +110,13 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
 
         if Poultry == "Poultry":
             figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Birds"})
-        else:
+        elif Poultry == "Large Animal":
             figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead Animals"})
+        else:
+            if Poultry == "All Species":
+                figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of All Dead Animals"})
+            else:
+                figDead = px.bar(tmp, x="date", y="dead", labels={"date": "", "dead": "No. of Dead " + Poultry})
         figDead.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
         figDead.update_traces(marker_color="red")
         figDead.update_xaxes(
@@ -133,17 +144,27 @@ def ReportsSickDead(sub_bahis_sourcedata, dates, periodClick, figheight, Poultry
             opacity=0.8,
         )
         if periodClick == 3:
-            fig.update_layout(xaxis=dict(dtick="d"))
-            figSick.update_layout(xaxis=dict(dtick="d"))
-            figDead.update_layout(xaxis=dict(dtick="d"))
+            fig.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick="d"), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=86400000)
+            figSick.update_traces(width=86400000)
+            figDead.update_traces(width=86400000)
         if periodClick == 2:
-            fig.update_layout(xaxis=dict(dtick=7 * 86400000.0))
-            figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0))
-            figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0))
+            fig.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick=7 * 86400000.0), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=7 * 86400000)
+            figSick.update_traces(width=7 * 86400000)
+            figDead.update_traces(width=7 * 86400000)
+
         if periodClick == 1:
-            fig.update_layout(xaxis=dict(dtick="M1"))
-            figSick.update_layout(xaxis=dict(dtick="M1"))
-            figDead.update_layout(xaxis=dict(dtick="M1"))
+            fig.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            figSick.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            figDead.update_layout(xaxis=dict(dtick="M1"), yaxis=dict(minallowed=0, tickformat="d"))
+            fig.update_traces(width=28 * 86400000)
+            figSick.update_traces(width=28 * 86400000)
+            figDead.update_traces(width=28 * 86400000)
 
     else:
         # fig = {}

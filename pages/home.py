@@ -8,7 +8,7 @@ from dash.dependencies import Input, Output, State
 dash.register_page(__name__, path="/")
 
 
-def fIndicator(sub_bahis_sourcedata):
+def fIndicator(sub_bahis_sourcedata, farmdata):
     RfigIndic = go.Figure()
 
     RfigIndic.add_trace(
@@ -40,15 +40,33 @@ def fIndicator(sub_bahis_sourcedata):
         )
     )
 
+    RfigIndic.add_trace(
+        go.Indicator(
+            mode="number",
+            title="Dead Animals",
+            value=sub_bahis_sourcedata["dead"].sum(),  # f"{int(bahis_sourcedata['dead'].sum()):,}",
+            domain={"row": 0, "column": 2},
+        )
+    )
+
+    RfigIndic.add_trace(
+        go.Indicator(
+            mode="number",
+            title="Total Farmreports",
+            value=farmdata.shape[0],
+            domain={"row": 0, "column": 3},
+        )
+    )
+
     RfigIndic.update_layout(
         height=100,
-        grid={"rows": 1, "columns": 3},  # 'pattern': "independent"},
+        grid={"rows": 1, "columns": 4},  # 'pattern': "independent"},
     )
     return RfigIndic
 
 
-def GeoRep(sub_bahis_sourcedata):
-    Rfindic = fIndicator(sub_bahis_sourcedata)
+def GeoRep(sub_bahis_sourcedata, farmdata):
+    Rfindic = fIndicator(sub_bahis_sourcedata, farmdata)
     Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
 
     return Rfindic
@@ -99,9 +117,10 @@ def set_store(url, prev):  # id, url, prev):
     Output("no", "figure"),
     Input("dummy", "id"),
     Input("cache_page_data", "data"),
+    Input("cache_page_farmdata", "data"),
 )
-def RegionalStats(dummy, data):
+def RegionalStats(dummy, data, farmdata):
     reportsdata = pd.read_json(data, orient="split")
-
-    Rfindic = GeoRep(reportsdata)
+    farmdata = pd.read_json(farmdata, orient="split")
+    Rfindic = GeoRep(reportsdata, farmdata)
     return Rfindic
