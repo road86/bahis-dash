@@ -32,7 +32,7 @@ sourcepath = "exported_data/"  # called also in Top10, make global or settings p
     farmdatafilename,
     AIinvestdatafilename,
     DiseaseInvestdatafilename,
-    PartLSAssisdatafilename,
+    PartLSAssessdatafilename,
     medfilename,
     path1,
     path2,
@@ -42,7 +42,7 @@ bahis_data = fetchdata.fetchsourcedata(sourcefilename)
 farm_data = fetchdata.fetchfarmdata(farmdatafilename)
 AIinvest_data = fetchdata.fetchAIinvestdata(AIinvestdatafilename)
 DiseaseInvest_data = fetchdata.fetchDiseaseInvestdata(DiseaseInvestdatafilename)
-PartLSAssis_data = fetchdata.fetchPartLSAssdata(PartLSAssisdatafilename)
+PartLSAssess_data = fetchdata.fetchPartLSAssdata(PartLSAssessdatafilename)
 [bahis_dgdata, bahis_distypes] = fetchdata.fetchdisgroupdata(dgfilename)
 bahis_geodata = fetchdata.fetchgeodata(geofilename)
 
@@ -218,6 +218,9 @@ def layout_gen():
                             dcc.Store(id="cache_page_data", storage_type="memory"),
                             dcc.Store(id="cache_page_farmdata", storage_type="memory"),
                             dcc.Store(id="cache_page_geodata", storage_type="memory"),
+                            dcc.Store(id="cache_page_ai_invest", storage_type="memory"),
+                            dcc.Store(id="cache_page_dis_invest", storage_type="memory"),
+                            dcc.Store(id="cache_page_lifestock_assess", storage_type="memory"),
                             dcc.Store(id="cache_aid", storage_type="memory"),
                             dcc.Store(id="cache_urlorigin", storage_type="memory", data=[]),
                         ],
@@ -391,6 +394,9 @@ def Framework(
     Output("cache_page_data", "data"),
     Output("cache_page_farmdata", "data"),
     Output("cache_page_geodata", "data"),
+    Output("cache_page_ai_invest", "data"),
+    Output("cache_page_dis_invest", "data"),
+    Output("cache_page_lifestock_assess", "data"),
     # Output("Disease", "options", allow_duplicate=True),
     Input("cache_page_settings", "data"),
     Input("cache_aid", "data"),
@@ -437,7 +443,6 @@ def UpdatePageData(settings, aid):
                     farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
                 else:
                     farmdata = farmdata
-
         page_data = reportsdata
         page_farmdata = farmdata
         page_geodata = geodata
@@ -445,6 +450,9 @@ def UpdatePageData(settings, aid):
             page_data.to_json(date_format="iso", orient="split"),
             page_farmdata.to_json(date_format="iso", orient="split"),
             page_geodata.to_json(date_format="iso", orient="split"),
+            AIinvest_data.to_json(date_format="iso", orient="split"),
+            DiseaseInvest_data.to_json(date_format="iso", orient="split"),
+            PartLSAssess_data.to_json(date_format="iso", orient="split"),
             # fetchdata.fetchDiseaselist(reportsdata),
             # fetchdata.fetchDiseaselist(bahis_data),
         )

@@ -198,9 +198,9 @@ def fetchDiseaseInvestdata(DiseaseInvestdatafilename):
     return DiseaseInvestdata
 
 
-def fetchPartLSAssdata(PartLSAssisdatafilename):
-    tmp = pd.read_csv(PartLSAssisdatafilename)
-    LSAssisdata = tmp[
+def fetchPartLSAssdata(PartLSAssessdatafilename):
+    tmp = pd.read_csv(PartLSAssessdatafilename)
+    LSAssessdata = tmp[
         [
             "id",
             "basic_info_date",
@@ -209,7 +209,7 @@ def fetchPartLSAssdata(PartLSAssisdatafilename):
             "basic_info_upazila",
         ]
     ]
-    LSAssisdata = LSAssisdata.rename(
+    LSAssessdata = LSAssessdata.rename(
         columns={
             "basic_info_date": "date",
             "basic_info_division": "division",
@@ -217,9 +217,9 @@ def fetchPartLSAssdata(PartLSAssisdatafilename):
             "basic_info_upazila": "upazila",
         }
     )
-    LSAssisdata["date"] = pd.to_datetime(LSAssisdata["date"], errors="coerce")
-    LSAssisdata["date"] = pd.to_datetime(LSAssisdata.date).dt.tz_localize(None)
-    return LSAssisdata
+    LSAssessdata["date"] = pd.to_datetime(LSAssessdata["date"], errors="coerce")
+    LSAssessdata["date"] = pd.to_datetime(LSAssessdata.date).dt.tz_localize(None)
+    return LSAssessdata
 
 
 def fetchmedsdata(medsfilename):
