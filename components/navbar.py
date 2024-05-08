@@ -65,7 +65,7 @@ def Navbar(aid):
                                 [
                                     dbc.NavLink(
                                         "Overall Farmdata Reports",
-                                        href="/foverallfarmdatarep/?aid=" + aid,
+                                        href="/faoverallfarmdatarep/?aid=" + aid,
                                         active="exact",
                                     ),
                                     dbc.NavLink(
