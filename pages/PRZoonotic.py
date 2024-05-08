@@ -128,14 +128,14 @@ def ZooTrend(filenames, dummy, data, settings):
         markers=True,
         category_orders={"top_diagnosis": Diseases["top_diagnosis"]},
     )
-    figTrend.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    figTrend.update_layout(height=figheight, margin={"r": 0, "t": 0, "l": 0, "b": 0}, legend_title_text="")
     # figTrend.update_xaxes(
     #     range=[
     #         datetime.strptime(DateRange[0], "%Y-%m-%d") - timedelta(days=6),
     #         datetime.strptime(DateRange[1], "%Y-%m-%d") + timedelta(days=6),
     #     ]
     # )
-    figTrend.update_yaxes(tickvals=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    figTrend.update_yaxes(title_text="No. of Reports"),  # tickvals=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
     figTrend.add_annotation(
         x=datetime.strptime(DateRange[1], "%Y-%m-%d")
         - timedelta(
@@ -144,7 +144,7 @@ def ZooTrend(filenames, dummy, data, settings):
                 * 0.08
             )
         ),
-        y=105,  # max(tmp),
+        # y=105,  # max(tmp),
         text="total reports " + str("{:,}".format(reportsdata["date"].size)),
         showarrow=False,
         font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
