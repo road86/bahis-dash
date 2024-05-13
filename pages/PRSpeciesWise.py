@@ -21,6 +21,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
             # html.Label("Specieswise Report"),
             html.H2("Specieswise Report", style={"textAlign": "center", "font-weight": "bold"}),
             dbc.Row(SpeciesSelect.Form),
+            html.Br(),
             html.Div(id="dummy"),
             dbc.Row(
                 [
