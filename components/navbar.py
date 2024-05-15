@@ -59,47 +59,47 @@ def Navbar(aid):
                         ],
                         title="Patient Registry Data",
                     ),
-                    dbc.AccordionItem(
-                        [
-                            dbc.Nav(
-                                [
-                                    dbc.NavLink(
-                                        "Overall Farmdata Reports",
-                                        href="/faoverallfarmdatarep/?aid=" + aid,
-                                        active="exact",
-                                    ),
-                                    dbc.NavLink(
-                                        "Antibiotics Usage Poultry", href="/faabusage/?aid=" + aid, active="exact"
-                                    ),
-                                    dbc.NavLink(
-                                        "Antibiotics Usage Report AWaRe", href="/faabaware/?aid=" + aid, active="exact"
-                                    ),
-                                    dbc.NavLink("Antibiotics Class", href="/faabclass/?aid=" + aid, active="exact"),
-                                    dbc.NavLink(
-                                        "Biosecurity at entrance", href="/fabsentrance/?aid=" + aid, active="exact"
-                                    ),
-                                    dbc.NavLink(
-                                        "Biosecurity between loading and production",
-                                        href="/fabsproduction/?aid=" + aid,
-                                        active="exact",
-                                    ),
-                                    dbc.NavLink(
-                                        "Biosecurity personell management",
-                                        href="/fabspersonell/?aid=" + aid,
-                                        active="exact",
-                                    ),
-                                    dbc.NavLink(
-                                        "Biosecurity equipment management",
-                                        href="/fabsequipment/?aid=" + aid,
-                                        active="exact",
-                                    ),
-                                ],
-                                vertical=True,
-                                pills=True,
-                            ),
-                        ],
-                        title="Farm Assessment Data",
-                    ),
+                    # dbc.AccordionItem(
+                    #     [
+                    #         dbc.Nav(
+                    #             [
+                    #                 dbc.NavLink(
+                    #                     "Overall Farmdata Reports",
+                    #                     href="/faoverallfarmdatarep/?aid=" + aid,
+                    #                     active="exact",
+                    #                 ),
+                    #                 dbc.NavLink(
+                    #                     "Antibiotics Usage Poultry", href="/faabusage/?aid=" + aid, active="exact"
+                    #                 ),
+                    #                 dbc.NavLink(
+                    #                     "Antibiotics Usage Report AWaRe", href="/faabaware/?aid=" + aid, active="exact"
+                    #                 ),
+                    #                 dbc.NavLink("Antibiotics Class", href="/faabclass/?aid=" + aid, active="exact"),
+                    #                 dbc.NavLink(
+                    #                     "Biosecurity at entrance", href="/fabsentrance/?aid=" + aid, active="exact"
+                    #                 ),
+                    #                 dbc.NavLink(
+                    #                     "Biosecurity between loading and production",
+                    #                     href="/fabsproduction/?aid=" + aid,
+                    #                     active="exact",
+                    #                 ),
+                    #                 dbc.NavLink(
+                    #                     "Biosecurity personell management",
+                    #                     href="/fabspersonell/?aid=" + aid,
+                    #                     active="exact",
+                    #                 ),
+                    #                 dbc.NavLink(
+                    #                     "Biosecurity equipment management",
+                    #                     href="/fabsequipment/?aid=" + aid,
+                    #                     active="exact",
+                    #                 ),
+                    #             ],
+                    #             vertical=True,
+                    #             pills=True,
+                    #         ),
+                    #     ],
+                    #     title="Farm Assessment Data",
+                    # ),
                     dbc.AccordionItem(
                         [
                             dbc.Nav(
