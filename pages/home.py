@@ -23,7 +23,10 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
 
     RfigIndic.add_trace(
         go.Indicator(
-            mode="number", title="Poultry Farm", value=farmdata.shape[0], domain={"row": 0, "column": 1}, visible=False
+            mode="number",
+            title="Poultry Farm",
+            value=farmdata.shape[0],
+            domain={"row": 0, "column": 1},  # visible=False
         )
     )
 
