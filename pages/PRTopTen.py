@@ -117,7 +117,6 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                                             clearable=False,
                                         ),
                                     ],
-                                    2,
                                 ),
                                 dbc.Row(
                                     [
