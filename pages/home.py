@@ -23,10 +23,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
 
     RfigIndic.add_trace(
         go.Indicator(
-            mode="number",
-            title="Poultry Farm",
-            value=farmdata.shape[0],
-            domain={"row": 0, "column": 1},
+            mode="number", title="Poultry Farm", value=farmdata.shape[0], domain={"row": 0, "column": 1}, visible=False
         )
     )
 
@@ -36,6 +33,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Avian Influenza",
             value=ai_investdata.shape[0],
             domain={"row": 0, "column": 2},
+            visible=False,
         )
     )
 
@@ -45,6 +43,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Disease Invest.",
             value=dis_investdata.shape[0],
             domain={"row": 0, "column": 3},
+            visible=False,
         )
     )
 
@@ -54,12 +53,13 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Lifestock Assess.",
             value=lifestock_assessdata.shape[0],
             domain={"row": 0, "column": 4},
+            visible=False,
         )
     )
 
     RfigIndic.update_layout(
         height=100,
-        grid={"rows": 1, "columns": 5},  # 'pattern': "independent"},
+        grid={"rows": 1, "columns": 5},
     )
     return RfigIndic
 
@@ -78,10 +78,10 @@ def layout_gen(aid=None, **other_unknown_query_strings):
         [
             html.Div(
                 [
-                    html.H2("Welcome to the bahis dashboard.", style={"textAlign": "center", "font-weight": "bold"}),
-                    html.H2(
-                        "Please select a report from the menu on the top left.",
-                        style={"textAlign": "center", "font-weight": "bold", "marginBottom": "1.5em"},
+                    html.H1("Welcome to the bahis dashboard.", style={"textAlign": "center", "font-weight": "bold"}),
+                    html.H3(
+                        "-> Please select a report from the menu on the top left.",
+                        style={"textAlign": "center", "marginBottom": "1.5em", "color": "green"},
                     ),
                 ]
             ),

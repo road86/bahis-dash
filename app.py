@@ -188,7 +188,7 @@ def layout_gen():
                                         [
                                             dbc.Col(
                                                 html.P(
-                                                    "Data last updated " + str(create_date.strftime("%d %b '%y")),
+                                                    "Data last updated " + str(create_date.strftime("%d %b. %Y")),
                                                     style={"font-size": "80%"},
                                                 )
                                             ),
