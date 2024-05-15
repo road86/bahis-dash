@@ -276,8 +276,8 @@ def display_valueNtoggle_offcanvas(n1, is_open):
     Input("District", "options"),
     Input("Upazila", "options"),
     Input("geoSlider", "value"),
-    Input("start_date", "date"),
-    Input("end_date", "date"),
+    Input("start_date", "value"),
+    Input("end_date", "value"),
     Input("Disease", "value"),
     Input("cache_aid", "data"),
 )
