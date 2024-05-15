@@ -135,9 +135,11 @@ def ZooTrend(filenames, dummy, data, settings):
     #         datetime.strptime(DateRange[1], "%Y-%m-%d") + timedelta(days=6),
     #     ]
     # )
-    figTrend.update_yaxes(
-        title_text="No. of Reports", minallowed=0, tickformat="d"
-    ),  # tickvals=[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    if max(final_df["incidences"]) > 9:
+        ymax = max(final_df["incidences"]) + 1
+    else:
+        ymax = 10
+    figTrend.update_yaxes(title_text="No. of Reports", minallowed=0, tickformat="d", zeroline=False, range=[0, ymax]),
     figTrend.add_annotation(
         x=datetime.strptime(DateRange[1], "%Y-%m-%d")
         - timedelta(
@@ -147,6 +149,7 @@ def ZooTrend(filenames, dummy, data, settings):
             )
         ),
         # y=105,  # max(tmp),
+        y=ymax - 1,
         text="total reports " + str("{:,}".format(reportsdata["date"].size)),
         showarrow=False,
         font=dict(family="Courier New, monospace", size=12, color="#ffffff"),
