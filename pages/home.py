@@ -33,7 +33,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Avian Influenza",
             value=ai_investdata.shape[0],
             domain={"row": 0, "column": 2},
-            visible=False,
+            # visible=False,
         )
     )
 
@@ -43,7 +43,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Disease Invest.",
             value=dis_investdata.shape[0],
             domain={"row": 0, "column": 3},
-            visible=False,
+            # visible=False,
         )
     )
 
@@ -53,7 +53,7 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             title="Lifestock Assess.",
             value=lifestock_assessdata.shape[0],
             domain={"row": 0, "column": 4},
-            visible=False,
+            # visible=False,
         )
     )
 
