@@ -109,7 +109,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                     [
                         dbc.Row(
                             [
-                                dbc.Col(
+                                dbc.Row(
                                     [
                                         dbc.Label("Select Disease Type"),
                                         dcc.Dropdown(
@@ -117,9 +117,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                                             clearable=False,
                                         ),
                                     ],
-                                    width=2,
                                 ),
-                                dbc.Col(
+                                dbc.Row(
                                     [
                                         html.Label("Top 10 Disease Types"),
                                         dcc.Graph(id="figDistypes", style={"height": "13em"}),

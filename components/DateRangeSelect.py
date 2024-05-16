@@ -1,7 +1,8 @@
 from datetime import date, timedelta
 
-from dash import dcc, html
+from dash import html
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 
 from components import fetchdata, pathnames
 
@@ -40,15 +41,16 @@ Form = html.Div(
                 # style={"padding": "0px"},
                 #                ),
                 #                dbc.Col(
-                dcc.DatePickerSingle(
+                dmc.DatePicker(
                     id="start_date",
-                    min_date_allowed=first_date,
-                    max_date_allowed=last_date,
-                    initial_visible_month=last_date - timedelta(weeks=6),
-                    date=last_date - timedelta(weeks=6),
-                    display_format="Do MMM 'YY",
+                    minDate=first_date,
+                    maxDate=last_date,
+                    # initial_visible_month=last_date - timedelta(weeks=6),
+                    value=last_date - timedelta(weeks=6),
+                    inputFormat="D MMM. YYYY",
                     clearable=False,
-                    first_day_of_week=0,
+                    firstDayOfWeek="sunday",
+                    weekendDays=[5, 6],
                     style={"fontWeight": 700},
                 ),
                 # style={"padding": "0px", "fontWeight": 700},
@@ -65,16 +67,18 @@ Form = html.Div(
                 # style={"padding": "0px"},
                 #                ),
                 #                dbc.Col(
-                dcc.DatePickerSingle(
+                dmc.DatePicker(
                     id="end_date",
-                    min_date_allowed=first_date,
-                    max_date_allowed=last_date,
-                    initial_visible_month=last_date,
-                    date=last_date,
-                    display_format="Do MMM 'YY",
+                    minDate=first_date,
+                    maxDate=last_date,
+                    # initial_visible_month=last_date,
+                    value=last_date,
+                    inputFormat="D MMM. YYYY",
                     clearable=False,
-                    first_day_of_week=0,
-                    style={"fontWeight": 700},
+                    firstDayOfWeek="sunday",
+                    weekendDays=[5, 6],
+                    # style={"padding": 0, "width": 800, "fontWeight": 1000},
+                    style={"fontWeight": 800},
                 ),
                 # fluid=True,
                 # width=2,
