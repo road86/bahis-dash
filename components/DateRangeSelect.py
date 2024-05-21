@@ -32,7 +32,7 @@ Form = html.Div(
         dbc.Stack(
             [
                 #                dbc.Col(
-                html.H5(
+                html.H6(
                     "FROM:",
                     style={"textAlign": "center", "lineHeight": "0px", "fontWeight": 600},
                 ),
@@ -58,7 +58,7 @@ Form = html.Div(
                 # width=2,
                 #                ),
                 #                dbc.Col(
-                html.H5(
+                html.H6(
                     "TO:",
                     style={"textAlign": "center", "lineHeight": "0px", "fontWeight": 600},
                 ),
