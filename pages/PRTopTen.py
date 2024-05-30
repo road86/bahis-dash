@@ -111,10 +111,14 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                             [
                                 dbc.Row(
                                     [
-                                        dbc.Label("Select Disease Type"),
-                                        dcc.Dropdown(
-                                            id="Distypes",
-                                            clearable=False,
+                                        dbc.Col(dbc.Label("Select Disease Type"), width=3, md=4),
+                                        dbc.Col(
+                                            dcc.Dropdown(
+                                                id="Distypes",
+                                                clearable=False,
+                                            ),
+                                            width=9,
+                                            md=5,
                                         ),
                                     ],
                                 ),

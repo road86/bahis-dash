@@ -8,10 +8,9 @@ from dash.dependencies import Input, Output, State
 dash.register_page(__name__, path="/")
 
 
-def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata):
-    RfigIndic = go.Figure()
-
-    RfigIndic.add_trace(
+def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata):
+    figPat = go.Figure()
+    figPat.add_trace(
         go.Indicator(
             mode="number",
             title="Patient Registry",
@@ -21,7 +20,8 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
         )
     )
 
-    RfigIndic.add_trace(
+    figFarm = go.Figure()
+    figFarm.add_trace(
         go.Indicator(
             mode="number",
             title="Poultry Farm",
@@ -30,7 +30,8 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
         )
     )
 
-    RfigIndic.add_trace(
+    figAvI = go.Figure()
+    figAvI.add_trace(
         go.Indicator(
             mode="number",
             title="Avian Influenza",
@@ -40,7 +41,8 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
         )
     )
 
-    RfigIndic.add_trace(
+    figDisI = go.Figure()
+    figDisI.add_trace(
         go.Indicator(
             mode="number",
             title="Disease Invest.",
@@ -50,7 +52,8 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
         )
     )
 
-    RfigIndic.add_trace(
+    figLSI = go.Figure()
+    figLSI.add_trace(
         go.Indicator(
             mode="number",
             title="Lifestock Assess.",
@@ -59,19 +62,20 @@ def fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, li
             # visible=False,
         )
     )
+    figPat.update_layout(height=200)
+    figFarm.update_layout(height=200)
+    figAvI.update_layout(height=200)
+    figDisI.update_layout(height=200)
+    figLSI.update_layout(height=200)
 
-    RfigIndic.update_layout(
-        height=100,
-        grid={"rows": 1, "columns": 5},
-    )
-    return RfigIndic
+    # RfigIndic.update_layout(
+    #     height=100,
+    #     grid={"rows": 1, "columns": 5},
+    # )
+    # # Rfindic = fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata)
+    # RfigIndic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
 
-
-def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata):
-    Rfindic = fIndicator(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata)
-    Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
-
-    return Rfindic
+    return figPat, figFarm, figAvI, figDisI, figLSI
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
@@ -91,7 +95,15 @@ def layout_gen(aid=None, **other_unknown_query_strings):
             html.Div(id="dummy"),
             html.Br(),
             html.H2("Number of Reports from:", style={"textAlign": "left"}),  # , "font-weight": "bold"}),
-            dbc.Card(dcc.Graph(id="no")),
+            dbc.Row(
+                [
+                    dbc.Col(dbc.Card(dcc.Graph(id="pat")), lg=6, sm=4),
+                    dbc.Col(dbc.Card(dcc.Graph(id="farm")), lg=6, sm=4),
+                    dbc.Col(dbc.Card(dcc.Graph(id="AvI")), lg=6, sm=4),
+                    dbc.Col(dbc.Card(dcc.Graph(id="DisI")), lg=6, sm=4),
+                    dbc.Col(dbc.Card(dcc.Graph(id="LSA")), lg=6, sm=4),
+                ]
+            ),
         ]
     )
 
@@ -118,7 +130,11 @@ def set_store(url, prev):  # id, url, prev):
 
 
 @callback(
-    Output("no", "figure"),
+    Output("pat", "figure"),
+    Output("farm", "figure"),
+    Output("AvI", "figure"),
+    Output("DisI", "figure"),
+    Output("LSA", "figure"),
     Input("dummy", "id"),
     Input("cache_page_data", "data"),
     Input("cache_page_farmdata", "data"),
@@ -132,5 +148,7 @@ def RegionalStats(dummy, data, farmdata, ai_investdata, dis_investdata, lifestoc
     ai_investdata = pd.read_json(ai_investdata, orient="split")
     dis_investdata = pd.read_json(dis_investdata, orient="split")
     lifestock_assessdata = pd.read_json(lifestock_assessdata, orient="split")
-    Rfindic = GeoRep(reportsdata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata)
-    return Rfindic
+    figPat, figFarm, figAvI, figDisI, figLSI = GeoRep(
+        reportsdata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata
+    )
+    return figPat, figFarm, figAvI, figDisI, figLSI
