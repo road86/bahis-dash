@@ -30,7 +30,8 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                             dbc.Row(dcc.Graph(id="ReportsSW")),
                             dbc.Row(dcc.Graph(id="SickSW")),
                             dbc.Row(dcc.Graph(id="DeadSW")),
-                        ]
+                        ],
+                        width=11,
                     ),
                     dbc.Col(
                         [
