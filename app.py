@@ -482,6 +482,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
         f -= 1
     urlnext = urlnext[first + 1 :]  # noqa: E203
     urlnext = urlnext[: (urlnext.find("/"))]  # noqa: E203
+
     if urlnext == "prlargeanimal":
         DiseaseList = fetchdata.fetchDiseaselist(
             bahis_data[bahis_data["species"].isin(["Buffalo", "Cattle", "Goat", "Sheep"])]
@@ -501,7 +502,7 @@ def sideandmap(MapFig, urlnext, data, farmdata, geodata, settings, urlorigin, du
     else:
         DiseaseList = fetchdata.fetchDiseaselist(bahis_data)
     if urlnext.startswith("fa"):
-        if (not urlorigin.startswith("fa") or (urlorigin == urlnext)) and farmdata is not None:
+        if (not urlorigin or not urlorigin.startswith("fa") or (urlorigin == urlnext)) and farmdata is not None:
             return (
                 MapNResolution.plotMap(
                     json.loads(settings)["georesolution"],
