@@ -94,7 +94,6 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
         aaa[pname] = tmp[pname]
     else:
         aaa = tmp
-    print(tmp, aaa)
     alerts = aaa[aaa.isna().any(axis=1)]
     alerts = alerts[[pname, pnumber]]
     del tmp
