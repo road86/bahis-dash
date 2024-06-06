@@ -111,6 +111,7 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
     if reports.shape[0] != 0:
         Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
         Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        Rfigg.update_layout(yaxis=dict(tickformat=",.0f"))
 
         NRlabel = f"{len(alerts)} {reptxt} with the above settings on location, daterange and disease have no data in the \
             patient database:"
