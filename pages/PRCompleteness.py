@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+import plotly.express as px
 
 import dash
 import dash_bootstrap_components as dbc
@@ -244,64 +245,80 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
     x_axis = find_weeks(start, end)  # [1:] without first week
     x_axis = [str(x) for x in x_axis]
     annotations = []
-    if type(division) is not int:  # for national numbers
-        z, y_axis, annotatetxt = nationalnumber(reportsdata, geoNameNNumber, division, x_axis, annotations)
-    else:  # for divisional numbers
-        z, y_axis, annotatetxt, compcols = divorlowernumber(
-            reportsdata, geoNameNNumber, division, district, x_axis, annotations, compcols, end
+    if reportsdata.shape[0] != 0:
+        if type(division) is not int:  # for national numbers
+            z, y_axis, annotatetxt = nationalnumber(reportsdata, geoNameNNumber, division, x_axis, annotations)
+        else:  # for divisional numbers
+            z, y_axis, annotatetxt, compcols = divorlowernumber(
+                reportsdata, geoNameNNumber, division, district, x_axis, annotations, compcols, end
+            )
+
+        z = z.fillna(0)
+        z = z.T
+        z = z.to_numpy()
+        # Heatmap
+        if type(district) is int:
+            hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
+        else:
+            hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Reports"
+
+        if compcols:
+            compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
+        else:
+            compcol = [[0, "white"], [0.2, "white"], [0.4, "white"], [0.6, "white"], [0.8, "white"], [1, "white"]]
+
+        data = [
+            dict(
+                x=x_axis,
+                y=y_axis,
+                z=z,
+                type="heatmap",
+                name="",
+                hovertemplate=hovertemplate,
+                showscale=False,
+                colorscale=compcol,
+            )
+        ]
+
+        layout = dict(
+            margin=dict(l=100, b=10, t=25, r=30),
+            height=500,
+            modebar={"orientation": "v"},
+            font=dict(family="Open Sans"),
+            annotations=annotations,
+            # shapes=shapes,
+            xaxis=dict(
+                type="category",
+                fixedrange=True,
+                side="top",
+                ticks="",
+                ticklen=2,
+                tickfont=dict(family="sans-serif"),
+                tickcolor="#ffffff",
+            ),
+            yaxis=dict(
+                fixedrange=True,
+                type="category",
+                side="left",
+                ticks="",
+                tickfont=dict(family="sans-serif"),
+                ticksuffix=" ",
+            ),
+            hovermode="closest",
+            showlegend=False,
+        )
+        return {"data": data, "layout": layout}  # , vDis
+    else:
+        fig = px.scatter()
+
+        fig.add_annotation(
+            text="No data available", xref="paper", yref="paper", x=0.5, y=0.5, showarrow=False, font=dict(size=20)
         )
 
-    z = z.fillna(0)
-    z = z.T
-    z = z.to_numpy()
-    # Heatmap
-    if type(district) is int:
-        hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
-    else:
-        hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Reports"
+        # Update layout to center the annotation
+        fig.update_layout(xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor="white")
 
-    if compcols:
-        compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
-    else:
-        compcol = [[0, "white"], [0.2, "white"], [0.4, "white"], [0.6, "white"], [0.8, "white"], [1, "white"]]
-
-    data = [
-        dict(
-            x=x_axis,
-            y=y_axis,
-            z=z,
-            type="heatmap",
-            name="",
-            hovertemplate=hovertemplate,
-            showscale=False,
-            colorscale=compcol,
-        )
-    ]
-
-    layout = dict(
-        margin=dict(l=100, b=10, t=25, r=30),
-        height=500,
-        modebar={"orientation": "v"},
-        font=dict(family="Open Sans"),
-        annotations=annotations,
-        # shapes=shapes,
-        xaxis=dict(
-            type="category",
-            fixedrange=True,
-            side="top",
-            ticks="",
-            ticklen=2,
-            tickfont=dict(family="sans-serif"),
-            tickcolor="#ffffff",
-        ),
-        yaxis=dict(
-            fixedrange=True, type="category", side="left", ticks="", tickfont=dict(family="sans-serif"), ticksuffix=" "
-        ),
-        hovermode="closest",
-        showlegend=False,
-    )
-
-    return {"data": data, "layout": layout}  # , vDis
+        return fig
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
@@ -362,5 +379,8 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings):
     prevent_initial_call=True,
 )
 def adjust_scroll(fig):
-    datapoints = len(fig["data"][0]["x"])
-    return {"minWidth": str(datapoints * 120) + "px"}  # "overflowX": "scroll" if datapoints > 7 else "auto",
+    if fig["data"][0]["type"] == "heatmap":
+        datapoints = len(fig["data"][0]["x"])
+        return {"minWidth": str(datapoints * 120) + "px"}  # "overflowX": "scroll" if datapoints > 7 else "auto",
+    else:
+        return {"minWidth": "10px"}

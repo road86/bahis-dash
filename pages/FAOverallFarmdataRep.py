@@ -75,24 +75,25 @@ def fIndicator(sub_bahis_sourcedata):
 
 def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl):
     reports = sub_bahis_sourcedata[title].value_counts().to_frame()
-
-    reports["cases"] = reports[title]
-    reports[title] = reports.index
-    reports = reports.loc[reports[title] != "nan"]
-
-    for i in range(reports.shape[0]):
-        reports[title].iloc[i] = subDistM.loc[subDistM["value"] == int(reports[title].iloc[i]), "name"].iloc[0]
-
-    reports = reports.sort_values(title)
-    reports[title] = reports[title].str.capitalize()
-
     tmp = subDistM[subDistM["loc_type"] == geoResNo][["value", "name"]]
     tmp = tmp.rename(columns={"value": pnumber, "name": pname})
     tmp[pname] = tmp[pname].str.title()
     tmp["Index"] = tmp[pnumber]
     tmp = tmp.set_index("Index")
-    aaa = reports.combine_first(tmp)
-    aaa[pname] = tmp[pname]
+    if reports.shape[0] != 0:
+        reports["cases"] = reports[title]
+        reports[title] = reports.index
+        reports = reports.loc[reports[title] != "nan"]
+
+        for i in range(reports.shape[0]):
+            reports[title].iloc[i] = subDistM.loc[subDistM["value"] == int(reports[title].iloc[i]), "name"].iloc[0]
+
+        reports = reports.sort_values(title)
+        reports[title] = reports[title].str.capitalize()
+        aaa = reports.combine_first(tmp)
+        aaa[pname] = tmp[pname]
+    else:
+        aaa = tmp
     alerts = aaa[aaa.isna().any(axis=1)]
     alerts = alerts[[pname, pnumber]]
     del tmp
@@ -107,13 +108,20 @@ def GeoRep(sub_bahis_sourcedata, title, subDistM, pnumber, pname, geoResNo, labl
 
     Rfindic = fIndicator(sub_bahis_sourcedata)
     Rfindic.update_layout(height=100, margin={"r": 0, "t": 30, "l": 0, "b": 0})
-
-    Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
-    Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
-
-    NRlabel = f"{len(alerts)} {reptxt} with the above settings on location, daterange and disease have no data in the \
-        farmdata database:"
-    # (Please handle with care as geoshape files and geolocations have issues)"
+    if reports.shape[0] != 0:
+        Rfigg = px.bar(reports, x=title, y="cases", labels={title: labl, "cases": "Reports"})  # ,color='division')
+        Rfigg.update_layout(autosize=True, height=200, margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        Rfigg.update_layout(yaxis=dict(tickformat=",.0f"))
+        NRlabel = f"{len(alerts)} {reptxt} with the above settings on location, daterange and disease have no data in the \
+            farmdata database:"
+        # (Please handle with care as geoshape files and geolocations have issues)"
+    else:
+        Rfigg = px.bar()
+        Rfigg.add_annotation(x=0.5, y=0.5, text="No data available", showarrow=False, font=dict(size=20))
+        Rfigg.update_xaxes(showline=False, showticklabels=False)
+        Rfigg.update_yaxes(showline=False, showticklabels=False)
+        NRlabel = f"With the above settings on location, daterange and disease there is no data in the \
+            farmdata database:"
 
     AlertTable = (
         dash_table.DataTable(
