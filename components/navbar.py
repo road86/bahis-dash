@@ -99,6 +99,7 @@ def Navbar(aid):
                             ),
                         ],
                         title="Farm Assessment Data",
+                        style={"display": "none"}
                     ),
                     dbc.AccordionItem(
                         [

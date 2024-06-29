@@ -101,11 +101,11 @@ def layout_gen(aid=None, **other_unknown_query_strings):
             html.H2("Number of Reports from:", style={"textAlign": "left"}),  # , "font-weight": "bold"}),
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(dcc.Graph(id="pat")), lg=6, sm=4),
-                    dbc.Col(dbc.Card(dcc.Graph(id="farm")), lg=6, sm=4),
-                    dbc.Col(dbc.Card(dcc.Graph(id="AvI")), lg=6, sm=4),
-                    dbc.Col(dbc.Card(dcc.Graph(id="DisI")), lg=6, sm=4),
-                    dbc.Col(dbc.Card(dcc.Graph(id="LSA")), lg=6, sm=4),
+                    dbc.Col(dbc.Card(dcc.Graph(id="pat"))),
+                    # dbc.Col(dbc.Card(dcc.Graph(id="farm")), lg=6, sm=4),
+                    # dbc.Col(dbc.Card(dcc.Graph(id="AvI")), lg=6, sm=4),
+                    # dbc.Col(dbc.Card(dcc.Graph(id="DisI")), lg=6, sm=4),
+                    # dbc.Col(dbc.Card(dcc.Graph(id="LSA")), lg=6, sm=4),
                 ]
             ),
         ]
@@ -133,26 +133,45 @@ def set_store(url, prev):  # id, url, prev):
         return aid  # id, aid
 
 
+# @callback(
+#     Output("pat", "figure"),
+#     Output("farm", "figure"),
+#     Output("AvI", "figure"),
+#     Output("DisI", "figure"),
+#     Output("LSA", "figure"),
+#     Input("dummy", "id"),
+#     Input("cache_page_data", "data"),
+#     Input("cache_page_farmdata", "data"),
+#     Input("cache_page_ai_invest", "data"),
+#     Input("cache_page_dis_invest", "data"),
+#     Input("cache_page_lifestock_assess", "data"),
+# )
+# def RegionalStats(dummy, data, farmdata, ai_investdata, dis_investdata, lifestock_assessdata):
+#     reportsdata = pd.read_json(data, orient="split")
+#     farmdata = pd.read_json(farmdata, orient="split")
+#     ai_investdata = pd.read_json(ai_investdata, orient="split")
+#     dis_investdata = pd.read_json(dis_investdata, orient="split")
+#     lifestock_assessdata = pd.read_json(lifestock_assessdata, orient="split")
+#     figPat, figFarm, figAvI, figDisI, figLSI = GeoRep(
+#         reportsdata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata
+#     )
+#     return figPat, figFarm, figAvI, figDisI, figLSI
+
 @callback(
     Output("pat", "figure"),
-    Output("farm", "figure"),
-    Output("AvI", "figure"),
-    Output("DisI", "figure"),
-    Output("LSA", "figure"),
     Input("dummy", "id"),
     Input("cache_page_data", "data"),
-    Input("cache_page_farmdata", "data"),
-    Input("cache_page_ai_invest", "data"),
-    Input("cache_page_dis_invest", "data"),
-    Input("cache_page_lifestock_assess", "data"),
 )
-def RegionalStats(dummy, data, farmdata, ai_investdata, dis_investdata, lifestock_assessdata):
+def RegionalStats(dummy, data, ):
     reportsdata = pd.read_json(data, orient="split")
-    farmdata = pd.read_json(farmdata, orient="split")
-    ai_investdata = pd.read_json(ai_investdata, orient="split")
-    dis_investdata = pd.read_json(dis_investdata, orient="split")
-    lifestock_assessdata = pd.read_json(lifestock_assessdata, orient="split")
-    figPat, figFarm, figAvI, figDisI, figLSI = GeoRep(
-        reportsdata, farmdata, ai_investdata, dis_investdata, lifestock_assessdata
+
+    figPat = go.Figure()
+    return figPat.add_trace(
+        go.Indicator(
+            mode="number",
+            title={"text": "Patient Registry", "font": {"size": 20}},
+            value=reportsdata.shape[0],  # f"{bahis_sourcedata.shape[0]:,}"),
+            number={"valueformat": ".0f", "font": {"size": 50}},
+            domain={"row": 0, "column": 0},
+        )
     )
-    return figPat, figFarm, figAvI, figDisI, figLSI
