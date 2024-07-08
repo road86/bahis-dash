@@ -364,6 +364,34 @@ def date_subset(dates, bahis_data):
     return bahis_data.loc[tmask]
 
 
+def geo_subset(data, div, dis, upa):
+    if type(upa) is int:
+        data = data.loc[data["upazila"] == upa]
+    else:
+        if type(dis) is int:
+            data = data.loc[data["district"] == dis]
+        else:
+            if type(div) is int:
+                data = data.loc[data["division"] == div]
+            else:
+                data = data
+    return data
+
+
+def geo_name(geodata, div, dis, upa):
+    if type(upa) is int:
+        geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == upa]
+    else:
+        if type(dis) is int:
+            geodata = geodata.loc[geodata["value"].astype(str).str[:4].astype(int) == dis]
+        else:
+            if type(div) is int:
+                geodata = geodata.loc[geodata["value"].astype(str).str[:2].astype(int) == div]
+            else:
+                geodata = geodata
+    return geodata
+
+
 def disease_subset(cDisease, sub_bahis_sourcedata):
     if "All Diseases" in cDisease:
         sub_bahis_sourcedata = sub_bahis_sourcedata

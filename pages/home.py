@@ -24,7 +24,7 @@ def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifest
     figFarm.add_trace(
         go.Indicator(
             mode="number",
-            title={"text": "Poultry Farm", "font": {"size": 20}},
+            title={"text": "Poultry Farm Assessment", "font": {"size": 20}},
             value=farmdata.shape[0],
             number={"valueformat": ".0f", "font": {"size": 50}},
             domain={"row": 0, "column": 1},  # visible=False
@@ -35,7 +35,7 @@ def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifest
     figAvI.add_trace(
         go.Indicator(
             mode="number",
-            title={"text": "Avian Influenza", "font": {"size": 20}},
+            title={"text": "Avian Influenza Investigation", "font": {"size": 20}},
             value=ai_investdata.shape[0],
             number={"valueformat": ".0f", "font": {"size": 50}},
             domain={"row": 0, "column": 2},
@@ -47,7 +47,7 @@ def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifest
     figDisI.add_trace(
         go.Indicator(
             mode="number",
-            title={"text": "Disease Invest.", "font": {"size": 20}},
+            title={"text": "Disease Investigation", "font": {"size": 20}},
             value=dis_investdata.shape[0],
             number={"valueformat": ".0f", "font": {"size": 50}},
             domain={"row": 0, "column": 3},
@@ -59,7 +59,7 @@ def GeoRep(sub_bahis_sourcedata, farmdata, ai_investdata, dis_investdata, lifest
     figLSI.add_trace(
         go.Indicator(
             mode="number",
-            title={"text": "Lifestock Assess.", "font": {"size": 20}},
+            title={"text": "Participatory Lifestock Assessment", "font": {"size": 20}},
             value=lifestock_assessdata.shape[0],
             number={"valueformat": ".0f", "font": {"size": 50}},
             domain={"row": 0, "column": 4},
