@@ -326,6 +326,10 @@ def Framework(
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+            if len(str(aid)) > 5:
+                SelectedUpazila = int(aid[0:6])
+                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+                UpazilaList = [{"label": i["Upazila"], "value": i["value"], "disabled": True} for i in List]
     else:
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
