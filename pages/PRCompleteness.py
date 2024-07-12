@@ -31,16 +31,6 @@ def find_weeks(start, end):
     return list_of_weeks
 
 
-# def find_weeks(start, end):
-# list_of_weeks = []
-# days_to_thursday = (3 - start.weekday()) % 7
-# for i in range((end - start).days + 1):
-#     d = (start + timedelta(days=i)).isocalendar()[:2]  # e.g. (2011, 52)
-#     yearweek = "y{}w{:02}".format(*d)  # e.g. "201152"
-#     list_of_weeks.append(yearweek)
-# return sorted(set(list_of_weeks))
-
-
 def annotatetxt(annotations, text, x_val, yvalue):
     annotation_dict = dict(
         showarrow=False,
@@ -81,164 +71,112 @@ def sum_records_by_week(tmp, start_date_str):
     return sum_of_record
 
 
-def nationalnumber(reportsdata, geoNameNNumber, division, x_axis, annotations):
-    Divisions = fetchdata.fetchDivisionlist(geoNameNNumber)
-    y_axis = [x["Division"] for x in Divisions]
-    y_axis_no = [x["value"] for x in Divisions]
-    y_axis.reverse()
-    y_axis_no.reverse()
-    y_axis.append("Σ " + "Bangladesh")
-    y_axis_no.append("Bangladesh")
-    z = pd.DataFrame(index=x_axis, columns=y_axis)
-    for ind_y, division in enumerate(y_axis):
-        if division != "Σ " + "Bangladesh":
-            tmp = reportsdata[(reportsdata["division"] == y_axis_no[ind_y])].date.value_counts()
-            tmp = tmp.to_frame()
-            tmp["counts"] = tmp["date"]
-            tmp["date"] = pd.to_datetime(tmp.index)
-            tmp = tmp.sort_values("date")
-            for ind_x, x_val in enumerate(x_axis):
-                # sum_of_record = tmp.loc[
-                #     (
-                #         (tmp["date"].dt.year.astype(str) == x_val[1:5])
-                #         & (tmp["date"].dt.isocalendar().week.astype(str).str.zfill(2) == x_val[6:8])
-                #     ),
-                #     "counts",
-                # ].sum()
-                sum_of_record = sum_records_by_week(tmp, x_val)
-                z[division][x_val] = sum_of_record
-                annotatetxt(annotations, sum_of_record, x_val, division)
-        if division == "Σ " + "Bangladesh":
-            tmp = reportsdata.date.value_counts()
-            tmp = tmp.to_frame()
-            tmp["counts"] = tmp["date"]
-            tmp["date"] = pd.to_datetime(tmp.index)
-            for ind_x, x_val in enumerate(x_axis):
-                # sum_of_record = tmp.loc[
-                #     (
-                #         (tmp["date"].dt.year.astype(str) == x_val[1:5])
-                #         & (tmp["date"].dt.isocalendar().week.astype(str).str.zfill(2) == x_val[6:8])
-                #     ),
-                #     "counts",
-                # ].sum()
-                sum_of_record = sum_records_by_week(tmp, x_val)
-                z.loc[x_val, division] = sum_of_record
-                annotatetxt(annotations, sum_of_record, x_val, division)
-    return z, y_axis, annotatetxt
+month_dict = {
+    "Jan": 1,
+    "Feb": 2,
+    "Mar": 3,
+    "Apr": 4,
+    "May": 5,
+    "Jun": 6,
+    "Jul": 7,
+    "Aug": 8,
+    "Sep": 9,
+    "Oct": 10,
+    "Nov": 11,
+    "Dec": 12,
+}
 
 
-def divorlowernumber(reportsdata, geoNameNNumber, division, district, x_axis, annotations, compcols, end):
-    if type(district) is not int:  # is None:
-        Districts = fetchdata.fetchDistrictlist(division, geoNameNNumber)
-        y_axis = [x["District"] for x in Districts]
-        y_axis_no = [x["value"] for x in Districts]
-        y_axis.reverse()
-        y_axis_no.reverse()
-        y_axis.append("Σ " + "Division")
-        y_axis_no.append(int(division))
-        z = pd.DataFrame(index=x_axis, columns=y_axis)
-        for ind_y, district in enumerate(y_axis):  # go through divisions
-            if district[:1] != "Σ":  # for districts
-                tmp = reportsdata[(reportsdata["district"] == y_axis_no[ind_y])].date.value_counts()
-                tmp = tmp.to_frame()
-                tmp["counts"] = tmp["date"]
-                tmp["date"] = pd.to_datetime(tmp.index)
-                for ind_x, x_val in enumerate(x_axis):
-                    # sum_of_record = tmp.loc[
-                    #     (
-                    #         (tmp["date"].dt.year.astype(str) == x_val[1:5])
-                    #         & (tmp["date"].dt.isocalendar().week.astype(str).str.zfill(2) == x_val[6:8])
-                    #     ),
-                    #     "counts",
-                    # ].sum()
-                    sum_of_record = sum_records_by_week(tmp, x_val)
-                    z[district][x_val] = sum_of_record
-                    annotatetxt(annotations, sum_of_record, x_val, district)
-            if district[:1] == "Σ":  # for districts
-                tmp = reportsdata.date.value_counts()
-                tmp = tmp.to_frame()
-                tmp["counts"] = tmp["date"]
-                tmp["date"] = pd.to_datetime(tmp.index)
-                for ind_x, x_val in enumerate(x_axis):
-                    # sum_of_record = tmp.loc[
-                    #     (
-                    #         (tmp["date"].dt.year.astype(str) == x_val[1:5])
-                    #         & (tmp["date"].dt.isocalendar().week.astype(str).str.zfill(2) == x_val[6:8])
-                    #     ),
-                    #     "counts",
-                    # ].sum()
-                    sum_of_record = sum_records_by_week(tmp, x_val)
-                    z.loc[x_val, district] = sum_of_record
-                    annotatetxt(annotations, sum_of_record, x_val, district)
-    else:  # for district numbers
-        Upazilas = fetchdata.fetchUpazilalist(district, geoNameNNumber)
-        y_axis = [x["Upazila"] for x in Upazilas]
-        y_axis_no = [x["value"] for x in Upazilas]
-        y_axis.reverse()
-        y_axis_no.reverse()
-        y_axis.append("Σ " + "District")
-        y_axis_no.append(int(district))
-        z = pd.DataFrame(index=x_axis, columns=y_axis)
+def calculate_sum_of_records(tmp, x_val, end):
+    daysub = 0
+    day = int(x_val.split("(")[1][:2])
+    month = x_val.split("(")[1][-9:-6]
+    year = int(x_val.split("(")[1][7:-1])
+    date_obj = datetime(year, month_dict[month], day)
+    weekday = date_obj.weekday()
+    if weekday == 6:
+        if pd.Timestamp(date_obj) in pd.to_datetime(tmp["date"]):
+            daysub += 1
+        counter = 0
+        a = -1
+    elif weekday == 3 or weekday == 4:
+        counter = 5
+        a = weekday
+    else:
+        counter = weekday
+        a = counter
 
-        for ind_y, upazila in enumerate(y_axis):
-            month_dict = {
-                "Jan": 1,
-                "Feb": 2,
-                "Mar": 3,
-                "Apr": 4,
-                "May": 5,
-                "Jun": 6,
-                "Jul": 7,
-                "Aug": 8,
-                "Sep": 9,
-                "Oct": 10,
-                "Nov": 11,
-                "Dec": 12,
-            }
-            if upazila[:1] == "Σ":
-                tmp = reportsdata.date.value_counts().to_frame()
-                tmp["counts"] = tmp["date"]
-                tmp["date"] = pd.to_datetime(tmp.index)
-            else:
-                compcols = True
-                tmp = reportsdata[reportsdata["upazila"] == y_axis_no[ind_y]].date.value_counts().to_frame()
-                tmp["counts"] = tmp["date"]
-                tmp["date"] = pd.to_datetime(tmp.index)
+    while counter < 6 and (date_obj + timedelta(days=counter - a - 1) < end):
+        if pd.Timestamp(date_obj + timedelta(days=counter - a)) in pd.to_datetime(tmp["date"]):
+            daysub += 1
+        if counter == 2:
+            counter += 3
+        else:
+            counter += 1
 
-            for ind_x, x_val in enumerate(x_axis):
-                daysub = 0
-                day = int(x_val.split("(")[1][:2])
-                month = x_val.split("(")[1][-9:-6]
-                year = int(x_val.split("(")[1][7:-1])
-                date_obj = datetime(year, month_dict[month], day)
-                weekday = date_obj.weekday()
-                if weekday == 6:
-                    if pd.Timestamp(date_obj) in pd.to_datetime(tmp["date"]):
-                        daysub += 1
-                    counter = 0
-                    a = -1
-                elif weekday == 3 or weekday == 4:
-                    counter = 5
-                    a = weekday
-                else:
-                    counter = weekday
-                    a = counter
-
-                while counter < 6 and (date_obj + timedelta(days=counter - a - 1) < end):
-                    if pd.Timestamp(date_obj + timedelta(days=counter - a)) in pd.to_datetime(tmp["date"]):
-                        daysub += 1
-                    if counter == 2:
-                        counter += 3
-                    else:
-                        counter += 1
-
-                z[upazila][x_val] = (daysub / 5) * 100
-                annotatetxt(annotations, "<b>" + "{:.0f}".format((daysub / 5) * 100) + " %<b>", x_val, upazila)
-
-    return z, y_axis, annotatetxt, compcols
+    return (daysub / 5) * 100
 
 
-def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end, division, district):
+def process_data(reportsdata, y_axis_no, x_axis, end, level, name_key, annotations):
+    z = pd.DataFrame(index=x_axis, columns=[x[name_key] for x in y_axis_no])
+    for ind_y, area in enumerate(y_axis_no):
+        tmp = reportsdata[(reportsdata[level] == area["value"])].date.value_counts().to_frame()
+        tmp["counts"] = tmp["date"]
+        tmp["date"] = pd.to_datetime(tmp.index)
+        for ind_x, x_val in enumerate(x_axis):
+            # sum_of_record = calculate_sum_of_records(tmp, x_val, end)
+            sum_of_record = sum_records_by_week(tmp, x_val)
+            weekly_comp = calculate_sum_of_records(tmp, x_val, end)
+            svalue = str(sum_of_record) + " (" + "{:.0%}".format(weekly_comp / 100) + ")"
+            z[area[name_key]][x_val] = sum_of_record  # svalue
+            annotatetxt(annotations, svalue, x_val, area[name_key])
+    return z
+
+
+def process_aggregated_data(reportsdata, x_axis, end, level, annotations):
+    z = pd.DataFrame(index=x_axis, columns=["Σ " + level])
+    tmp = reportsdata.date.value_counts().to_frame()
+    tmp["counts"] = tmp["date"]
+    tmp["date"] = pd.to_datetime(tmp.index)
+    for ind_x, x_val in enumerate(x_axis):
+        sum_of_record = sum_records_by_week(tmp, x_val)
+        weekly_comp = calculate_sum_of_records(tmp, x_val, end)
+        svalue = str(sum_of_record) + " (" + "{:.0%}".format(weekly_comp / 100) + ")"
+        z.loc[x_val, "Σ " + level] = sum_of_record
+        annotatetxt(annotations, svalue, x_val, "Σ " + level)
+    return z
+
+
+def divorlowernumber(reportsdata, geoNameNNumber, division, district, upazila, x_axis, annotations, compcols, end):
+    if not isinstance(division, int):  # for national numbers
+        y_axis_no = fetchdata.fetchDivisionlist(geoNameNNumber)
+        z = process_data(reportsdata, y_axis_no, x_axis, end, "division", "Division", annotations)
+        z_aggregated = process_aggregated_data(reportsdata, x_axis, end, "Bangladesh", annotations)
+        z_combined = pd.concat([z, z_aggregated], axis=1)
+        y = [x["Division"] for x in y_axis_no]
+        y.append("Σ Bangladesh")
+        return z_combined, y, annotatetxt, compcols
+
+    if not isinstance(district, int):  # for divisional numbers
+        y_axis_no = fetchdata.fetchDistrictlist(division, geoNameNNumber)
+        z = process_data(reportsdata, y_axis_no, x_axis, end, "district", "District", annotations)
+        z_aggregated = process_aggregated_data(reportsdata, x_axis, end, "Division", annotations)
+        z_combined = pd.concat([z, z_aggregated], axis=1)
+        y = [x["District"] for x in y_axis_no]
+        y.append("Σ Division")
+        return z_combined, y, annotatetxt, compcols
+
+    y_axis_no = fetchdata.fetchUpazilalist(district, geoNameNNumber)
+    z = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
+    z_aggregated = process_aggregated_data(reportsdata, x_axis, end, "District", annotations)
+    z_combined = pd.concat([z, z_aggregated], axis=1)
+    y = [x["Upazila"] for x in y_axis_no]
+    y.append("Σ District")
+    return z_combined, y, annotatetxt, compcols
+
+
+####
+def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end, division, district, upazila):
     start = datetime.strptime(str(start), "%Y-%m-%d")
     end = datetime.strptime(str(end), "%Y-%m-%d")
     compcols = False
@@ -246,13 +184,9 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
     x_axis = [str(x) for x in x_axis]
     annotations = []
     if reportsdata.shape[0] != 0:
-        if type(division) is not int:  # for national numbers
-            z, y_axis, annotatetxt = nationalnumber(reportsdata, geoNameNNumber, division, x_axis, annotations)
-        else:  # for divisional numbers
-            z, y_axis, annotatetxt, compcols = divorlowernumber(
-                reportsdata, geoNameNNumber, division, district, x_axis, annotations, compcols, end
-            )
-
+        z, y_axis, annotatetxt, compcols = divorlowernumber(
+            reportsdata, geoNameNNumber, division, district, upazila, x_axis, annotations, compcols, end
+        )
         z = z.fillna(0)
         z = z.T
         tmpexport = pd.DataFrame(z)
@@ -261,7 +195,7 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         if type(district) is int:
             hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
         else:
-            hovertemplate = "<b> %{y}  %{x} <br><br> %{z} Reports"
+            hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
 
         if compcols:
             compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
@@ -276,13 +210,14 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
                 type="heatmap",
                 name="",
                 hovertemplate=hovertemplate,
+                text=z,
                 showscale=False,
                 colorscale=compcol,
             )
         ]
 
         layout = dict(
-            margin=dict(l=100, b=10, t=25, r=30),
+            margin=dict(l=110, b=10, t=25, r=30),
             height=500,
             modebar={"orientation": "v"},
             font=dict(family="Open Sans"),
@@ -374,6 +309,7 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
             (json.loads(settings))["daterange"][1],
             (json.loads(settings))["division"],
             (json.loads(settings))["district"],
+            (json.loads(settings))["upazila"],
         )
         # style = {"width": "150%"}
     else:
