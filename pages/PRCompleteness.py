@@ -44,33 +44,6 @@ def annotatetxt(annotations, text, x_val, yvalue):
     annotations.append(annotation_dict)
 
 
-def parse_start_date(start_date_str):
-    month_dict = {
-        "Jan": 1,
-        "Feb": 2,
-        "Mar": 3,
-        "Apr": 4,
-        "May": 5,
-        "Jun": 6,
-        "Jul": 7,
-        "Aug": 8,
-        "Sep": 9,
-        "Oct": 10,
-        "Nov": 11,
-        "Dec": 12,
-    }
-    day, month, year = start_date_str[3:-1].split(".")
-    return datetime(int(year), month_dict[month], int(day))
-
-
-def sum_records_by_week(tmp, start_date_str):
-    start_date = parse_start_date(start_date_str)
-    end_date = start_date + timedelta(days=(6 - (6 - start_date.weekday())))
-    week_mask = (tmp["date"] >= start_date) & (tmp["date"] <= end_date)
-    sum_of_record = tmp.loc[week_mask, "counts"].sum()
-    return sum_of_record
-
-
 month_dict = {
     "Jan": 1,
     "Feb": 2,
@@ -85,6 +58,18 @@ month_dict = {
     "Nov": 11,
     "Dec": 12,
 }
+
+
+def parse_start_date(start_date_str):
+    day, month, year = start_date_str[3:-1].split(".")
+    return datetime(int(year), month_dict[month], int(day))
+
+
+def sum_records_by_week(tmp, start_date_str):
+    start_date = parse_start_date(start_date_str)
+    end_date = start_date + timedelta(days=(6 - (6 - start_date.weekday())))
+    week_mask = (tmp["date"] >= start_date) & (tmp["date"] <= end_date)
+    return tmp.loc[week_mask, "counts"].sum()
 
 
 def calculate_sum_of_records(tmp, x_val, end):
@@ -155,7 +140,7 @@ def divorlowernumber(reportsdata, geoNameNNumber, division, district, upazila, x
         z_combined = pd.concat([z, z_aggregated], axis=1)
         y = [x["Division"] for x in y_axis_no]
         y.append("Σ Bangladesh")
-        return z_combined, y, annotatetxt, compcols
+        return z_combined, y, compcols
 
     if not isinstance(district, int):  # for divisional numbers
         y_axis_no = fetchdata.fetchDistrictlist(division, geoNameNNumber)
@@ -164,18 +149,30 @@ def divorlowernumber(reportsdata, geoNameNNumber, division, district, upazila, x
         z_combined = pd.concat([z, z_aggregated], axis=1)
         y = [x["District"] for x in y_axis_no]
         y.append("Σ Division")
-        return z_combined, y, annotatetxt, compcols
+        return z_combined, y, compcols
 
-    y_axis_no = fetchdata.fetchUpazilalist(district, geoNameNNumber)
-    z = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
-    z_aggregated = process_aggregated_data(reportsdata, x_axis, end, "District", annotations)
-    z_combined = pd.concat([z, z_aggregated], axis=1)
-    y = [x["Upazila"] for x in y_axis_no]
-    y.append("Σ District")
-    return z_combined, y, annotatetxt, compcols
+    if not isinstance(upazila, int):  # for district numbers
+        y_axis_no = fetchdata.fetchUpazilalist(district, geoNameNNumber)
+        z = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
+        z_aggregated = process_aggregated_data(reportsdata, x_axis, end, "District", annotations)
+        z_combined = pd.concat([z, z_aggregated], axis=1)
+        y = [x["Upazila"] for x in y_axis_no]
+        y.append("Σ District")
+        return z_combined, y, compcols
+
+    if isinstance(upazila, int):  # for upazila numbers
+        y_axis_no = [
+            {
+                "value": int(geoNameNNumber[["value"]].to_string(index=False, header=False)),
+                "Upazila": geoNameNNumber[["name"]].to_string(index=False, header=False).capitalize(),
+            }
+        ]
+        z = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
+        y = [x["Upazila"] for x in y_axis_no]
+        compcols = False
+        return z, y, compcols
 
 
-####
 def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end, division, district, upazila):
     start = datetime.strptime(str(start), "%Y-%m-%d")
     end = datetime.strptime(str(end), "%Y-%m-%d")
@@ -184,7 +181,7 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
     x_axis = [str(x) for x in x_axis]
     annotations = []
     if reportsdata.shape[0] != 0:
-        z, y_axis, annotatetxt, compcols = divorlowernumber(
+        z, y_axis, compcols = divorlowernumber(
             reportsdata, geoNameNNumber, division, district, upazila, x_axis, annotations, compcols, end
         )
         z = z.fillna(0)
@@ -281,12 +278,8 @@ layout = layout_gen
 @callback(
     Output("Completeness", "figure"),
     Output("exportdata", "data"),
-    # Output("Completeness", "style"),
     Input("Completeness", "figure"),
-    # Input("Refresh", "n_clicks"),
     Input("dummy", "id"),
-    # State("cache_bahis_data", "data"),
-    # State("cache_bahis_geodata", "data"),
     State("cache_page_data", "data"),
     State("cache_page_geodata", "data"),
     State("cache_page_settings", "data"),
@@ -300,20 +293,20 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
         tmpexport = json.loads(tmpexport)
     else:
         tmpexport = []
-    if type((json.loads(settings))["upazila"]) != int:
-        tmpexport, CompletenessFig = generate_reports_heatmap(
-            tmpexport,
-            reportsdata,
-            geoNameNNumber,
-            (json.loads(settings))["daterange"][0],
-            (json.loads(settings))["daterange"][1],
-            (json.loads(settings))["division"],
-            (json.loads(settings))["district"],
-            (json.loads(settings))["upazila"],
-        )
-        # style = {"width": "150%"}
-    else:
-        CompletenessFig = CompletenessFig
+    #    if type((json.loads(settings))["upazila"]) != int:
+    tmpexport, CompletenessFig = generate_reports_heatmap(
+        tmpexport,
+        reportsdata,
+        geoNameNNumber,
+        (json.loads(settings))["daterange"][0],
+        (json.loads(settings))["daterange"][1],
+        (json.loads(settings))["division"],
+        (json.loads(settings))["district"],
+        (json.loads(settings))["upazila"],
+    )
+    #     # style = {"width": "150%"}
+    # else:
+    # CompletenessFig = CompletenessFig
     return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
 
 
