@@ -200,7 +200,7 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         else:
             hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
 
-        compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
+        compcol = [[0, "#FF7777"], [0.2, "#FFAAAA"], [0.4, "#ffb796"], [0.6, "#ffd59b"], [0.8, "#fef0d9"], [1, "white"]]
 
         data = [
             dict(
