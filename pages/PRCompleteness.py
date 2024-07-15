@@ -310,7 +310,6 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
     #     # style = {"width": "150%"}
     # else:
     # CompletenessFig = CompletenessFig
-
     return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
 
 
