@@ -6,6 +6,7 @@ import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.graph_objects as go
 from dash import callback, dcc, html
 from dash.dependencies import Input, Output, State
 
@@ -200,7 +201,10 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         else:
             hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
 
-        compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
+        if compcols:
+            compcol = [[0, "red"], [0.2, "#d7301f"], [0.4, "#fc8d59"], [0.6, "#fdcc8a"], [0.8, "#fef0d9"], [1, "white"]]
+        else:
+            compcol = [[0, "white"], [0.2, "white"], [0.4, "white"], [0.6, "white"], [0.8, "white"], [1, "white"]]
 
         data = [
             dict(
@@ -292,26 +296,21 @@ layout = layout_gen
 def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
     reportsdata = pd.read_json(data, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
-    if tmpexport is not None:
-        tmpexport = json.loads(tmpexport)
-    else:
-        tmpexport = []
-    #    if type((json.loads(settings))["upazila"]) != int:
-    tmpexport, CompletenessFig = generate_reports_heatmap(
-        tmpexport,
-        reportsdata,
-        geoNameNNumber,
-        (json.loads(settings))["daterange"][0],
-        (json.loads(settings))["daterange"][1],
-        (json.loads(settings))["division"],
-        (json.loads(settings))["district"],
-        (json.loads(settings))["upazila"],
-    )
-    #     # style = {"width": "150%"}
-    # else:
-    # CompletenessFig = CompletenessFig
+    if type((json.loads(settings))["upazila"]) != int:
+        CompletenessFig = generate_reports_heatmap(
+            reportsdata,
+            geoNameNNumber,
+            (json.loads(settings))["daterange"][0],
+            (json.loads(settings))["daterange"][1],
+            (json.loads(settings))["division"],
+            (json.loads(settings))["district"],
+        )
 
-    return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
+        # style = {"width": "150%"}
+    else:
+        CompletenessFig = CompletenessFig
+
+    return CompletenessFig  # , style
 
 
 @callback(
