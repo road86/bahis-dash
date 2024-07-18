@@ -195,10 +195,10 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         col = col.T
         col = col.to_numpy()
         # Heatmap
-        if type(district) is int:
-            hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
-        else:
-            hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
+        # if type(district) is int:
+        #     hovertemplate = "<b> %{y}  %{x} <br><br> %{z} % report completeness"
+        # else:
+        hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
 
         compcol = [[0, "#FF7777"], [0.2, "#FFAAAA"], [0.4, "#F3D0D7"], [0.6, "#FFE0B5"], [0.8, "#FFF2D7"], [1, "white"]]
 
