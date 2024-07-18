@@ -269,7 +269,18 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                 style={"width": "100%", "overflowX": "auto"},
             ),
             dcc.Store(id="exportdata"),
-            html.Button("Export", id="btn_csv"),
+            dbc.Row(
+                [
+                    dbc.Col(html.Button("Export", id="btn_csv")),
+                    dbc.Col(
+                        html.P(
+                            "The percentage represents the number of days reported out of 5 workdays.",
+                            style={"font-size": "80%"},
+                        ),
+                        width=7,
+                    ),
+                ]
+            ),
             dcc.Download(id="download-dataframe-csv"),
         ]
     )
