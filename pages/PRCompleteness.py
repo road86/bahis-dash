@@ -275,7 +275,7 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                     dbc.Col(
                         html.P(
                             "The percentage represents the number of days reported out of 5 workdays.",
-                            style={"font-size": "80%"},
+                            style={"font-size": "80%", "text-align": "right"},
                         ),
                         width=7,
                     ),
@@ -321,7 +321,11 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
     #     # style = {"width": "150%"}
     # else:
     # CompletenessFig = CompletenessFig
-    return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
+    if not isinstance(tmpexport, pd.DataFrame):
+        return CompletenessFig, "{}"  # Return an empty JSON object
+    else:
+        return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")
+    # return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
 
 
 @callback(
