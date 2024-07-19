@@ -142,28 +142,31 @@ def divorlowernumber(reportsdata, geoNameNNumber, division, district, upazila, x
         y_axis_no = fetchdata.fetchDivisionlist(geoNameNNumber)
         z, col = process_data(reportsdata, y_axis_no, x_axis, end, "division", "Division", annotations)
         z_aggregated, col2 = process_aggregated_data(reportsdata, x_axis, end, "Bangladesh", annotations)
-        z_combined = pd.concat([z, z_aggregated], axis=1)
+        z_combined = pd.concat([z_aggregated, z], axis=1)
         y = [x["Division"] for x in y_axis_no]
+        y.reverse()
         y.append("Σ Bangladesh")
-        return z_combined, y, pd.concat([col, col2], axis=1)
+        return z_combined, y, pd.concat([col2, col], axis=1)
 
     if not isinstance(district, int):  # for divisional numbers
         y_axis_no = fetchdata.fetchDistrictlist(division, geoNameNNumber)
         z, col = process_data(reportsdata, y_axis_no, x_axis, end, "district", "District", annotations)
         z_aggregated, col2 = process_aggregated_data(reportsdata, x_axis, end, "Division", annotations)
-        z_combined = pd.concat([z, z_aggregated], axis=1)
+        z_combined = pd.concat([z_aggregated, z], axis=1)
         y = [x["District"] for x in y_axis_no]
+        y.reverse()
         y.append("Σ Division")
-        return z_combined, y, pd.concat([col, col2], axis=1)
+        return z_combined, y, pd.concat([col2, col], axis=1)
 
     if not isinstance(upazila, int):  # for district numbers
         y_axis_no = fetchdata.fetchUpazilalist(district, geoNameNNumber)
         z, col = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
         z_aggregated, col2 = process_aggregated_data(reportsdata, x_axis, end, "District", annotations)
-        z_combined = pd.concat([z, z_aggregated], axis=1)
+        z_combined = pd.concat([z_aggregated, z], axis=1)
         y = [x["Upazila"] for x in y_axis_no]
+        y.reverse()
         y.append("Σ District")
-        return z_combined, y, pd.concat([col, col2], axis=1)
+        return z_combined, y, pd.concat([col2, col], axis=1)
 
     if isinstance(upazila, int):  # for upazila numbers
         y_axis_no = [
@@ -174,6 +177,7 @@ def divorlowernumber(reportsdata, geoNameNNumber, division, district, upazila, x
         ]
         z, col = process_data(reportsdata, y_axis_no, x_axis, end, "upazila", "Upazila", annotations)
         y = [x["Upazila"] for x in y_axis_no]
+        y.reverse()
         return z, y, col
 
 
@@ -193,6 +197,7 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         z = z.to_numpy()
         col = col.fillna(0)
         col = col.T
+        col = col.iloc[::-1]
         col = col.to_numpy()
         # Heatmap
         # if type(district) is int:
@@ -201,7 +206,6 @@ def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end,
         hovertemplate = "<b> %{y}  %{x} <br><br> %{text} Reports"  # %{z} Reports"
 
         compcol = [[0, "#FF7777"], [0.2, "#FFAAAA"], [0.4, "#F3D0D7"], [0.6, "#FFE0B5"], [0.8, "#FFF2D7"], [1, "white"]]
-
         data = [
             dict(
                 x=x_axis,
