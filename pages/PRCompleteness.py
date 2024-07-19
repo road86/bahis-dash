@@ -238,7 +238,7 @@ def divorlowernumber(reportsdata, geoNameNNumber, division, district, x_axis, an
     return z, y_axis, annotatetxt, compcols
 
 
-def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, district):
+def generate_reports_heatmap(tmpexport, reportsdata, geoNameNNumber, start, end, division, district):
     start = datetime.strptime(str(start), "%Y-%m-%d")
     end = datetime.strptime(str(end), "%Y-%m-%d")
     compcols = False
@@ -255,6 +255,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
 
         z = z.fillna(0)
         z = z.T
+        tmpexport = pd.DataFrame(z)
         z = z.to_numpy()
         # Heatmap
         if type(district) is int:
@@ -307,7 +308,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
             hovermode="closest",
             showlegend=False,
         )
-        return {"data": data, "layout": layout}  # , vDis
+        return tmpexport, {"data": data, "layout": layout}  # , vDis
     else:
         fig = px.scatter()
 
@@ -318,7 +319,7 @@ def generate_reports_heatmap(reportsdata, geoNameNNumber, start, end, division, 
         # Update layout to center the annotation
         fig.update_layout(xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor="white")
 
-        return fig
+        return tmpexport, fig
 
 
 def layout_gen(aid=None, **other_unknown_query_strings):
@@ -332,6 +333,9 @@ def layout_gen(aid=None, **other_unknown_query_strings):
                 dbc.Col([dcc.Graph(id="Completeness", style={"overflowX": "scroll", "minWidth": "1200px"})]),
                 style={"width": "100%", "overflowX": "auto"},
             ),
+            dcc.Store(id="exportdata"),
+            html.Button("Export", id="btn_csv"),
+            dcc.Download(id="download-dataframe-csv"),
         ]
     )
 
@@ -341,6 +345,7 @@ layout = layout_gen
 
 @callback(
     Output("Completeness", "figure"),
+    Output("exportdata", "data"),
     # Output("Completeness", "style"),
     Input("Completeness", "figure"),
     # Input("Refresh", "n_clicks"),
@@ -350,13 +355,19 @@ layout = layout_gen
     State("cache_page_data", "data"),
     State("cache_page_geodata", "data"),
     State("cache_page_settings", "data"),
+    State("exportdata", "data"),
     prevent_initial_call=True,
 )
-def Completeness(CompletenessFig, dummy, data, geodata, settings):
+def Completeness(CompletenessFig, dummy, data, geodata, settings, tmpexport):
     reportsdata = pd.read_json(data, orient="split")
     geoNameNNumber = pd.read_json(geodata, orient="split")
+    if tmpexport is not None:
+        tmpexport = json.loads(tmpexport)
+    else:
+        tmpexport = []
     if type((json.loads(settings))["upazila"]) != int:
-        CompletenessFig = generate_reports_heatmap(
+        tmpexport, CompletenessFig = generate_reports_heatmap(
+            tmpexport,
             reportsdata,
             geoNameNNumber,
             (json.loads(settings))["daterange"][0],
@@ -364,12 +375,10 @@ def Completeness(CompletenessFig, dummy, data, geodata, settings):
             (json.loads(settings))["division"],
             (json.loads(settings))["district"],
         )
-
         # style = {"width": "150%"}
     else:
         CompletenessFig = CompletenessFig
-
-    return CompletenessFig  # , style
+    return CompletenessFig, tmpexport.to_json(date_format="iso", orient="split")  # , style
 
 
 @callback(
@@ -384,3 +393,15 @@ def adjust_scroll(fig):
         return {"minWidth": str(datapoints * 120) + "px"}  # "overflowX": "scroll" if datapoints > 7 else "auto",
     else:
         return {"minWidth": "10px"}
+
+
+@callback(
+    Output("download-dataframe-csv", "data"),
+    Input("btn_csv", "n_clicks"),
+    State("exportdata", "data"),
+    prevent_initial_call=True,
+)
+def func(n_clicks, data):
+    tmpdata = json.loads(data)
+    exportdata = pd.DataFrame(tmpdata["data"], columns=tmpdata["columns"], index=tmpdata["index"])
+    return dcc.send_data_frame(exportdata.to_csv, "my_data.csv")
