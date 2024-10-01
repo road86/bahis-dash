@@ -326,6 +326,10 @@ def Framework(
             DistrictList = [{"label": i["District"], "value": i["value"], "disabled": True} for i in List]
             List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
             UpazilaList = [{"label": i["Upazila"], "value": i["value"]} for i in List]
+            if len(str(aid)) > 5:
+                SelectedUpazila = int(aid[0:6])
+                List = fetchdata.fetchUpazilalist(SelectedDistrict, geoNameNNumber)
+                UpazilaList = [{"label": i["Upazila"], "value": i["value"], "disabled": True} for i in List]
     else:
         List = fetchdata.fetchDivisionlist(bahis_geodata)
         DivisionList = [{"label": i["Division"], "value": i["value"]} for i in List]
@@ -409,50 +413,69 @@ def UpdatePageData(settings, aid):
         geodata = bahis_geodata
         reportsdata = fetchdata.date_subset(json.loads(settings)["daterange"], reportsdata)
         reportsdata = fetchdata.disease_subset(json.loads(settings)["disease"], reportsdata)
-
-        if type(json.loads(settings)["upazila"]) == int:
-            reportsdata = reportsdata.loc[reportsdata["upazila"] == json.loads(settings)["upazila"]]
-            geodata = geodata.loc[geodata["value"].astype(str).str[:6].astype(int) == json.loads(settings)["upazila"]]
-        else:
-            if type(json.loads(settings)["district"]) == int:
-                reportsdata = reportsdata.loc[reportsdata["district"] == json.loads(settings)["district"]]
-                geodata = geodata.loc[
-                    geodata["value"].astype(str).str[:4].astype(int) == json.loads(settings)["district"]
-                ]
-            else:
-                if type(json.loads(settings)["division"]) == int:
-                    reportsdata = reportsdata.loc[reportsdata["division"] == json.loads(settings)["division"]]
-                    geodata = geodata.loc[
-                        geodata["value"].astype(str).str[:2].astype(int) == json.loads(settings)["division"]
-                    ]
-                else:
-                    reportsdata = reportsdata
-                    geodata = geodata
+        reportsdata = fetchdata.geo_subset(
+            reportsdata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
+        geodata = fetchdata.geo_name(
+            geodata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
 
         farmdata = farm_data
         farmdata = fetchdata.date_subset(json.loads(settings)["daterange"], farmdata)
         # farmdata = fetchdata.disease_subset(json.loads(settings)["disease"], farmdata)
+        farmdata = fetchdata.geo_subset(
+            farmdata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
 
-        if type(json.loads(settings)["upazila"]) == int:
-            farmdata = farmdata.loc[farmdata["upazila"] == json.loads(settings)["upazila"]]
-        else:
-            if type(json.loads(settings)["district"]) == int:
-                farmdata = farmdata.loc[farmdata["district"] == json.loads(settings)["district"]]
-            else:
-                if type(json.loads(settings)["division"]) == int:
-                    farmdata = farmdata.loc[farmdata["division"] == json.loads(settings)["division"]]
-                else:
-                    farmdata = farmdata
+        AIinvestdata = AIinvest_data
+        AIinvestdata = fetchdata.date_subset(json.loads(settings)["daterange"], AIinvestdata)
+        AIinvestdata = fetchdata.geo_subset(
+            AIinvestdata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
+
+        DiseaseInvestdata = DiseaseInvest_data
+        DiseaseInvestdata = fetchdata.date_subset(json.loads(settings)["daterange"], DiseaseInvestdata)
+        DiseaseInvestdata = fetchdata.geo_subset(
+            DiseaseInvestdata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
+
+        PartLSAssessdata = PartLSAssess_data
+        PartLSAssessdata = fetchdata.date_subset(json.loads(settings)["daterange"], PartLSAssessdata)
+        PartLSAssessdata = fetchdata.geo_subset(
+            PartLSAssessdata,
+            json.loads(settings)["division"],
+            json.loads(settings)["district"],
+            json.loads(settings)["upazila"],
+        )
+
         page_data = reportsdata
-        page_farmdata = farmdata
         page_geodata = geodata
+        page_farmdata = farmdata
+        page_AIinvest_data = AIinvestdata
+        page_DiseaseInvest_data = DiseaseInvestdata
+        page_PartLSAssess_data = PartLSAssessdata
         return (
             page_data.to_json(date_format="iso", orient="split"),
             page_farmdata.to_json(date_format="iso", orient="split"),
             page_geodata.to_json(date_format="iso", orient="split"),
-            AIinvest_data.to_json(date_format="iso", orient="split"),
-            DiseaseInvest_data.to_json(date_format="iso", orient="split"),
-            PartLSAssess_data.to_json(date_format="iso", orient="split"),
+            page_AIinvest_data.to_json(date_format="iso", orient="split"),
+            page_DiseaseInvest_data.to_json(date_format="iso", orient="split"),
+            page_PartLSAssess_data.to_json(date_format="iso", orient="split"),
             # fetchdata.fetchDiseaselist(reportsdata),
             # fetchdata.fetchDiseaselist(bahis_data),
         )
